@@ -1,10 +1,10 @@
 #include "dumper.hpp"
 
-#define SEARCH_FOR_CLASS_BY_FIELD_COUNT( FieldCount, Equality, ... ) \
+#define SEARCH_FOR_CLASS_BY_FIELD_COUNT( field_ct, equality, ... ) \
 [=]( ) -> il2cpp::il2cpp_class_t* \
 { \
-	il2cpp::il2cpp_class_t* matchClasses[ ] = { __VA_ARGS__ }; \
-	return il2cpp::search_for_class_by_field_count( matchClasses, _countof( matchClasses ), FieldCount, Equality ); \
+	il2cpp::il2cpp_class_t* match_klasses[ ] = { __VA_ARGS__ }; \
+	return il2cpp::search_for_class_by_field_count( match_klasses, _countof( match_klasses ), field_ct, equality ); \
 } ( ) \
 
 #define SEARCH_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_MULTIPLE( ... ) \
@@ -32,9 +32,9 @@
 #define DUMPER_SECTION( dump_name ) dumper::write_to_file( "\t\n// " dump_name "\n" );
 #define DUMPER_CLASS_HEADER( klass_name ) dumper::write_to_file( "namespace %s {\n", dumper::clean_klass_name( klass_name ) );
 
-#define DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( klass_name, NameSpaze ) \
+#define DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( klass_name, namespaze ) \
 	{ \
-		il2cpp::il2cpp_class_t* dumper_klass = il2cpp::get_class_by_name( klass_name, NameSpaze ); \
+		il2cpp::il2cpp_class_t* dumper_klass = il2cpp::get_class_by_name( klass_name, namespaze ); \
 		DUMPER_CLASS_HEADER( klass_name );
 
 #define DUMPER_CLASS_BEGIN_FROM_NAME( klass_name ) DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( klass_name, "" )
@@ -69,10 +69,10 @@
 	} \
 } ( )
 
-#define DUMP_METHOD_BY_RETURN_TYPE_ATTRS( NAME, ReturnType, ParamCount, wanted_vis, wanted_attrs ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_return_type_attrs( dumper_klass, ReturnType, wanted_attrs, wanted_vis, ParamCount )->get_fn_ptr<uint64_t>() ) )
-#define DUMP_METHOD_BY_SIG_REL( NAME, Base, Sig, Off ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( uint64_t( dumper::relative_32( FIND_PATTERN( Base, 0x1000, Sig ), Off ) ) ) )
-#define DUMP_METHOD_BY_INFO_PTR( NAME, PTR ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( PTR->get_fn_ptr<uint64_t>( ) ) )
-#define DUMP_METHOD_BY_PARAM_CLASS( NAME, ParamClass, ParamCount, Flags ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_param_class( dumper_klass, ParamClass, ParamCount, Flags )->get_fn_ptr<uint64_t>( ) ) )
+#define DUMP_METHOD_BY_RETURN_TYPE_ATTRS( NAME, ret_type, param_ct, wanted_vis, wanted_attrs ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_return_type_attrs( dumper_klass, ret_type, wanted_attrs, wanted_vis, param_ct )->get_fn_ptr<uint64_t>() ) )
+#define DUMP_METHOD_BY_SIG_REL( NAME, base, sig, off ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( uint64_t( dumper::relative_32( FIND_PATTERN( base, 0x1000, sig ), off ) ) ) )
+#define DUMP_METHOD_BY_INFO_PTR( NAME, ptr ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( ptr->get_fn_ptr<uint64_t>( ) ) )
+#define DUMP_METHOD_BY_PARAM_CLASS( NAME, param_class, param_ct, flags ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_param_class( dumper_klass, param_class, param_ct, flags )->get_fn_ptr<uint64_t>( ) ) )
 
 char* GetInnerClassFromEncClass( const char* name )
 {
@@ -91,7 +91,7 @@ char* GetInnerClassFromEncClass( const char* name )
 	return buf;
 }
 
-#define DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( NAME, off )	\
+#define DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( NAME, off ) \
 	{ il2cpp::il2cpp_type_t* enc_type = il2cpp::get_field_by_offset( dumper_klass, off )->type(); \
 	il2cpp::method_info_t* enc_getter = il2cpp::get_method_by_return_type_str( enc_type->klass( ), GetInnerClassFromEncClass( enc_type->name( ) ), 0 ); \
 	il2cpp::method_info_t* enc_setter = il2cpp::get_method_by_return_type_str( enc_type->klass( ), "System.Void", 1 ); \
