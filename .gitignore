@@ -1,0 +1,15 @@
+# Ignore vs files
+.vs/
+
+# Ignore compiled files
+x64/Release/
+Release/
+bin_int/
+bin_debug/
+
+# Ignore config
+config.h
+
+# Ignore binary files
+*.dll
+*.lib
