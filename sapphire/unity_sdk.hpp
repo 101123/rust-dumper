@@ -4,39 +4,6 @@
 
 namespace unity
 {
-	inline std::uintptr_t asset_bundle, camera;
-
-	//class c_component {
-	//public:
-	//	template < typename type >
-	//	auto get_component( std::uintptr_t type_name ) -> type {
-	//		SAPPHIRE_METHOD( get_component_fn, "UnityEngine::Component.GetComponent()", -1, "", -1, type( * )( void*, std::uintptr_t ) );
-	//		return get_component_fn( this, type_name );
-	//	}
-	//};
-
-	//class c_game_object : public c_component {
-	//public:
-	//	template < typename type >
-	//	auto get_component( std::uintptr_t type_name ) -> type {
-	//		SAPPHIRE_METHOD( game_object_get_component_fn, "UnityEngine::GameObject.GetComponent()", 1, "", -1, std::uintptr_t( * )( void*, std::uintptr_t ) );
-	//		return *reinterpret_cast< type* >( game_object_get_component_fn( this, type_name ) );
-	//	}
-	//};
-
-	//class c_screen {
-	//public:
-	//	static auto get_width( ) -> int {
-	//		SAPPHIRE_METHOD( get_screen_width_fn, "UnityEngine::Screen.get_width()", 0, "", -1, int ( * )( ) );
-	//		return get_screen_width_fn( );
-	//	}
-
-	//	static auto get_height( ) -> int {
-	//		SAPPHIRE_METHOD( get_screen_height_fn, "UnityEngine::Screen.get_height()", 0, "", -1, int ( * )( ) );
-	//		return get_screen_height_fn( );
-	//	}
-	//};
-
 	namespace Internal
 	{
 		//#define DO_ASSERT( name, size ) static_assert( sizeof( name ) == size, "sizeof " #name " is not "

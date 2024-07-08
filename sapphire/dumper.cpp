@@ -1,48 +1,84 @@
 #include "dumper.hpp"
 
-#define DUMPER_RVA( X ) X - dumper::game_base
-#define DUMPER_CLASS( Name ) il2cpp::GetClassByName( Name )
-
 #define SEARCH_FOR_CLASS_BY_FIELD_COUNT( FieldCount, Equality, ... ) \
-	[]() -> il2cpp::Il2CppClass* \
+[=]( ) -> il2cpp::il2cpp_class_t* \
+{ \
+	il2cpp::il2cpp_class_t* matchClasses[ ] = { __VA_ARGS__ }; \
+	return il2cpp::search_for_class_by_field_count( matchClasses, _countof( matchClasses ), FieldCount, Equality ); \
+} ( ) \
+
+#define SEARCH_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_MULTIPLE( ... ) \
+[=]( ) -> il2cpp::field_info_t* \
+{ \
+	const char* search_terms[ ] = { __VA_ARGS__ }; \
+	return il2cpp::get_field_if_type_contains_terms( dumper_klass, search_terms, _countof( search_terms ) ); \
+} ( )
+
+#define SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES( ret_type, ... ) \
+[=]( ) -> il2cpp::method_info_t* \
+{ \
+	il2cpp::il2cpp_type_t* param_types[ ] = { __VA_ARGS__ }; \
+	return il2cpp::get_method_by_return_type_and_param_types( dumper_klass, ret_type, param_types, _countof( param_types ) ); \
+} ( )
+
+#define DUMPER_RVA( X ) X - dumper::game_base
+#define DUMPER_CLASS( name ) il2cpp::get_class_by_name( name )
+#define DUMPER_CLASS_NAMESPACE( namespaze, name ) il2cpp::get_class_by_name( name, namespaze )
+
+#define DUMPER_TYPE( name ) DUMPER_CLASS( name )->type()
+#define DUMPER_TYPE_NAMESPACE( namespaze, name ) DUMPER_CLASS_NAMESPACE( namespaze, name )->type()
+
+#define DUMPER_PTR_CLASS_NAME( dump_name, klass_ptr ) dumper::write_to_file( "#define " dump_name "_ClassName \"%s\"\n\n", klass_ptr->name( ) );
+#define DUMPER_SECTION( dump_name ) dumper::write_to_file( "\t\n// " dump_name "\n" );
+#define DUMPER_CLASS_HEADER( klass_name ) dumper::write_to_file( "namespace %s {\n", dumper::clean_klass_name( klass_name ) );
+
+#define DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( klass_name, NameSpaze ) \
 	{ \
-		il2cpp::Il2CppClass* matchClasses[ ] = { __VA_ARGS__ }; \
-		return il2cpp::SearchForClassByFieldCount( matchClasses, _countof( matchClasses ), FieldCount, Equality ); \
-	}() \
+		il2cpp::il2cpp_class_t* dumper_klass = il2cpp::get_class_by_name( klass_name, NameSpaze ); \
+		DUMPER_CLASS_HEADER( klass_name );
 
-#define DUMPER_CLASS_PRINT_HEADER( KlassName ) \
-	dumper::write_to_file( "namespace %s {\n", dumper::clean_klass_name( KlassName ) );
-#define DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( KlassName, NameSpaze ) \
+#define DUMPER_CLASS_BEGIN_FROM_NAME( klass_name ) DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( klass_name, "" )
+
+#define DUMPER_CLASS_BEGIN_FROM_PTR( dump_name, klass_ptr ) \
 	{ \
-		il2cpp::Il2CppClass* dumperClass = il2cpp::GetClassByName( KlassName, NameSpaze ); \
-		DUMPER_CLASS_PRINT_HEADER( KlassName );
-
-#define DUMPER_CLASS_BEGIN_FROM_NAME( KlassName ) DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( KlassName, "" )
-
-#define DUMP_CLASS_NAME( DumpName, ClassPtr ) dumper::write_to_file( "#define " DumpName "_ClassName \"%s\"\n\n", ClassPtr->Name( ) );
-
-#define DUMPER_CLASS_BEGIN_FROM_PTR( DumpName, ClassPtr ) \
-	{ \
-		il2cpp::Il2CppClass* dumperClass = ClassPtr; \
-		dumper::write_to_file( "// obf name: %s::%s\n", dumperClass->Namespace(), dumperClass->Name() ); \
-		DUMP_CLASS_NAME( DumpName, ClassPtr );	\
-		DUMPER_CLASS_PRINT_HEADER( DumpName );
+		il2cpp::il2cpp_class_t* dumper_klass = klass_ptr; \
+		dumper::write_to_file( "// obf name: %s::%s\n", dumper_klass->namespaze(), dumper_klass->name() ); \
+		DUMPER_PTR_CLASS_NAME( dump_name, klass_ptr );	\
+		DUMPER_CLASS_HEADER( dump_name );
 
 #define DUMPER_CLASS_END dumper::write_to_file( "}\n\n" ); } 
 
 #define DUMP_MEMBER_BY_X( NAME, X ) uint64_t NAME##_Offset = X; dumper::write_to_file("\tconstexpr const static size_t " #NAME " = 0x%x;\n", static_cast<uint32_t>( NAME##_Offset ) )
 
-#define DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( NAME, FieldType, Attrs ) DUMP_MEMBER_BY_X( NAME, il2cpp::GetFieldByTypeName( dumperClass, FieldType, Attrs )->Offset( ) ) 
-#define DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( NAME, Search )       DUMP_MEMBER_BY_X( NAME, il2cpp::GetFieldIfTypeContains( dumperClass, Search )->Offset( ) )
-#define DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( NAME, Search, Visibility, Attrs ) DUMP_MEMBER_BY_X( NAME, il2cpp::GetFieldIfTypeContains( dumperClass, Search, Visibility, Attrs )->Offset( ) )
+#define DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( NAME, field_type, wanted_vis, wanted_attrs )			DUMP_MEMBER_BY_X( NAME, il2cpp::get_field_by_type_name_attrs( dumper_klass, field_type, wanted_vis, wanted_attrs )->offset( ) ) 
+#define DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( NAME, search )									DUMP_MEMBER_BY_X( NAME, il2cpp::get_field_if_type_contains( dumper_klass, search )->offset( ) )
+#define DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( NAME, search, wanted_vis, wanted_attrs )	DUMP_MEMBER_BY_X( NAME, il2cpp::get_field_if_type_contains( dumper_klass, search, wanted_vis, wanted_attrs )->offset( ) )
+#define DUMP_MEMBER_BY_FIELD_TYPE_CLASS( NAME, wanted_klass )										DUMP_MEMBER_BY_X( NAME, il2cpp::get_field_from_field_type_class( dumper_klass, wanted_klass )->offset( ) )
+#define DUMP_MEMBER_BY_NAME( NAME )																	DUMP_MEMBER_BY_X( NAME, il2cpp::get_field_by_name( dumper_klass, #NAME )->offset( ) )
+#define DUMP_MEMBER_BY_NEAR_OFFSET( NAME, off )														DUMP_MEMBER_BY_X( NAME, il2cpp::get_field_by_offset( dumper_klass, off )->offset( ) )
+#define DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_MULTIPLE( NAME, ... )								DUMP_MEMBER_BY_X( NAME, SEARCH_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_MULTIPLE( __VA_ARGS__ )->offset( ) )
 
-#define DUMP_MEMBER_BY_FIELD_TYPE_CLASS( NAME, WantedKlass )		   DUMP_MEMBER_BY_X( NAME, il2cpp::GetFieldFromTypeClass( dumperClass, WantedKlass )->Offset( ) )
-#define DUMP_MEMBER_BY_NAME( NAME )									   DUMP_MEMBER_BY_X( NAME, il2cpp::GetFieldByName( dumperClass, #NAME )->Offset( ) )
-#define DUMP_MEMBER_BY_NEAR_OFFSET( NAME, Off )						   DUMP_MEMBER_BY_X( NAME, il2cpp::GetFieldByOffset( dumperClass, Off )->Offset( ) )
+#define DUMP_ALL_MEMBERS_OF_TYPE( NAME, wanted_type ) \
+[=] ( ) {	\
+	void* iter = nullptr; \
+	int i = 0; \
+	while ( il2cpp::field_info_t* field = dumper_klass->fields( &iter ) ) { \
+		if ( strcmp( field->type( )->name( ), wanted_type->name( ) ) == 0 ) { \
+			dumper::write_to_file( "\tconstexpr const static size_t %s_%d = 0x%x;\n", NAME, i, field->offset( ) ); i++; \
+		} \
+	} \
+} ( )
+
+#define DUMP_METHOD_BY_RETURN_TYPE_ATTRS( NAME, ReturnType, ParamCount, wanted_vis, wanted_attrs ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_return_type_attrs( dumper_klass, ReturnType, wanted_attrs, wanted_vis, ParamCount )->get_fn_ptr<uint64_t>() ) )
+#define DUMP_METHOD_BY_SIG_REL( NAME, Base, Sig, Off ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( uint64_t( dumper::relative_32( FIND_PATTERN( Base, 0x1000, Sig ), Off ) ) ) )
+#define DUMP_METHOD_BY_INFO_PTR( NAME, PTR ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( PTR->get_fn_ptr<uint64_t>( ) ) )
+#define DUMP_METHOD_BY_PARAM_CLASS( NAME, ParamClass, ParamCount, Flags ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_param_class( dumper_klass, ParamClass, ParamCount, Flags )->get_fn_ptr<uint64_t>( ) ) )
 
 char* GetInnerClassFromEncClass( const char* name )
 {
 	static char buf[ 128 ] = { 0 };
+	memset( buf, 0, sizeof( buf ) );
+
 	const char* start = strchr( name, '<' );
 	const char* end = strrchr( name, '>' );
 
@@ -55,12 +91,12 @@ char* GetInnerClassFromEncClass( const char* name )
 	return buf;
 }
 
-#define DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( NAME, Off )	\
-	il2cpp::Il2CppType* encryptedType = il2cpp::GetFieldByOffset( dumperClass, Off )->Type(); \
-	il2cpp::MethodInfo* encGetter = il2cpp::GetMethodByReturnTypeString( encryptedType->Class( ), GetInnerClassFromEncClass( encryptedType->Name( ) ) ); \
-	il2cpp::MethodInfo* encSetter = il2cpp::GetMethodByReturnTypeString( encryptedType->Class( ), "System.Void" ); \
-	dumper::write_to_file("\tconstexpr const static size_t " #NAME "_EncryptedValueGetter = 0x%x;\n",  DUMPER_RVA( encGetter->GetFnPointer<uint64_t>() ) );\
-	dumper::write_to_file("\tconstexpr const static size_t " #NAME "_EncryptedValueSetter = 0x%x;\n",  DUMPER_RVA( encSetter->GetFnPointer<uint64_t>() ) );
+#define DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( NAME, off )	\
+	{ il2cpp::il2cpp_type_t* enc_type = il2cpp::get_field_by_offset( dumper_klass, off )->type(); \
+	il2cpp::method_info_t* enc_getter = il2cpp::get_method_by_return_type_str( enc_type->klass( ), GetInnerClassFromEncClass( enc_type->name( ) ), 0 ); \
+	il2cpp::method_info_t* enc_setter = il2cpp::get_method_by_return_type_str( enc_type->klass( ), "System.Void", 1 ); \
+	dumper::write_to_file("\tconstexpr const static size_t " #NAME "_EncryptedValueGetter = 0x%x;\n",  DUMPER_RVA( enc_getter->get_fn_ptr<uint64_t>() ) );\
+	dumper::write_to_file("\tconstexpr const static size_t " #NAME "_EncryptedValueSetter = 0x%x;\n",  DUMPER_RVA( enc_setter->get_fn_ptr<uint64_t>() ) ); }
 
 #define DUMPER_OFFSET( NAME ) NAME##_Offset
 
@@ -106,29 +142,35 @@ void dumper::produce( )
 	dumper::write_to_file( "#include <cstdint>\n\n" );
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseNetworkable" );
+		DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( prefabID ); // Dump a member by it's name.
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( parentEntity, SEARCH_FOR_CLASS_BY_FIELD_COUNT( 2, 0, DUMPER_CLASS( "BaseEntity" ), DUMPER_CLASS( "NetworkableId" ) ) ); // Search for EntityRef class.
 		DUMP_MEMBER_BY_NEAR_OFFSET( children, DUMPER_OFFSET( parentEntity ) + 0x10 ); // Dump a member by an offset from another member of the class.
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "Model" );
+		DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( boneTransforms );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseEntity" );
+		DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( flags );
 		DUMP_MEMBER_BY_NAME( model );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseCombatEntity" );
+		DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( lifestate );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ModelState" );
+		DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( flags );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemDefinition" );
+		DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( itemid );
 		DUMP_MEMBER_BY_NAME( category );
 		DUMP_MEMBER_BY_NAME( shortname );
@@ -136,6 +178,7 @@ void dumper::produce( )
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "RecoilProperties" );
+		DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( recoilYawMin );
 		DUMP_MEMBER_BY_NAME( recoilYawMax );
 		DUMP_MEMBER_BY_NAME( recoilPitchMin );
@@ -144,14 +187,17 @@ void dumper::produce( )
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Magazine", "ProtoBuf" );
+		DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( ammoType );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "AttackEntity" );
+		DUMPER_SECTION( "Offsets" ); 
 		DUMP_MEMBER_BY_NAME( repeatDelay );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseProjectile" );
+		DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( automatic );
 		DUMP_MEMBER_BY_NAME( primaryMagazine );
 		DUMP_MEMBER_BY_NAME( aimSway );
@@ -166,15 +212,17 @@ void dumper::produce( )
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "FlintStrikeWeapon" );
+		DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( strikeRecoil );
 		DUMP_MEMBER_BY_NEAR_OFFSET( sightAimConeScale, DUMPER_OFFSET( strikeRecoil ) + 0x8 );
 	DUMPER_CLASS_END;
 
 	auto player_loot_class = DUMPER_CLASS( "PlayerLoot" );
-	auto entity_source_offset = il2cpp::GetFieldByName( player_loot_class, "entitySource" )->Offset( );
-	auto item_class = il2cpp::GetFieldByOffset( player_loot_class, entity_source_offset + 0x8 )->Type( )->Class( );
+	auto entity_source_offset = il2cpp::get_field_by_name( player_loot_class, "entitySource" )->offset( );
+	auto item_class = il2cpp::get_field_by_offset( player_loot_class, entity_source_offset + 0x8 )->type( )->klass( );
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "Item", item_class );
+		DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( uid, DUMPER_CLASS( "ItemId" ) );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( info, DUMPER_CLASS( "ItemDefinition" ) );
 
@@ -187,33 +235,38 @@ void dumper::produce( )
 		DUMP_MEMBER_BY_NEAR_OFFSET( heldEntity, DUMPER_OFFSET( amount ) + 0x8 );
 	DUMPER_CLASS_END;
 
-	il2cpp::Il2CppClass* base_raidable_animal_class = DUMPER_CLASS( "BaseRidableAnimal" );
-	uint64_t is_lootable_offset = il2cpp::GetFieldByName( base_raidable_animal_class, "isLootable" )->Offset( );
-	il2cpp::Il2CppClass* item_container_class = il2cpp::GetFieldByOffset( base_raidable_animal_class, is_lootable_offset + 0x7 )->Type( )->Class( );
+	il2cpp::il2cpp_class_t* base_raidable_animal_class = DUMPER_CLASS( "BaseRidableAnimal" );
+	uint64_t is_lootable_offset = il2cpp::get_field_by_name( base_raidable_animal_class, "isLootable" )->offset( );
+	il2cpp::il2cpp_class_t* item_container_class = il2cpp::get_field_by_offset( base_raidable_animal_class, is_lootable_offset + 0x7 )->type( )->klass( );
 
 	char searchBuf[ 128 ] = { 0 };
-	sprintf_s( searchBuf, "System.Collections.Generic.List<%s>", item_class->Name( ) );
+	sprintf_s( searchBuf, "System.Collections.Generic.List<%s>", item_class->name( ) );
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "ItemContainer", item_container_class );
+		DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( itemList, searchBuf );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerInventory" );
+		DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( crafting );
 		DUMP_MEMBER_BY_NEAR_OFFSET( containerBelt, DUMPER_OFFSET( crafting ) - 0x10 );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerInput" );
+		DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( state, SEARCH_FOR_CLASS_BY_FIELD_COUNT( 3, 0, DUMPER_CLASS( "InputMessage" ), DUMPER_CLASS( "InputMessage" ) ) ); // Search for InputState class.
 		DUMP_MEMBER_BY_NEAR_OFFSET( bodyAngles, DUMPER_OFFSET( state ) + 0x1C );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerEyes" );
+		DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( viewOffset, "PlayerEyes" ); // Contains PlayerEyes.EncryptedValue<Vector3>
 		DUMP_MEMBER_BY_NEAR_OFFSET( bodyRotation, DUMPER_OFFSET( viewOffset ) + 0xC ); // <bodyRotation>k__BackingField
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BasePlayer" );
+		DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( playerModel, DUMPER_CLASS( "PlayerModel" ) );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( input, DUMPER_CLASS( "PlayerInput" ) );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( movement, DUMPER_CLASS( "BaseMovement" ) );
@@ -225,9 +278,17 @@ void dumper::produce( )
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( playerRigidbody, "UnityEngine.Rigidbody" );
 		DUMP_MEMBER_BY_NEAR_OFFSET( userID, DUMPER_OFFSET( playerRigidbody ) + 0x8 );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( inventory, "PlayerInventory" );
-		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( _displayName, "System.String", TYPE_ATTRIBUTE_NESTED_FAMILY );
+		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( _displayName, "System.String", TYPE_ATTRIBUTE_NESTED_FAMILY, 0 );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( _lookingAtCollider, "UnityEngine.Collider" );
 		DUMP_MEMBER_BY_NEAR_OFFSET( _lookingAtEntity, DUMPER_OFFSET( _lookingAtCollider ) - 0x8 );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_MULTIPLE( lastSentTickTime, "BasePlayer", "System.Single" );
+		
+		DUMPER_SECTION( "EncryptedValue Functions" );
+		DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( lastSentTickTime, DUMPER_OFFSET( lastSentTickTime ) );
+		DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( clActiveItem, DUMPER_OFFSET( clActiveItem ) );
+
+		DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_PARAM_CLASS( ClientInput, SEARCH_FOR_CLASS_BY_FIELD_COUNT( 3, 0, DUMPER_CLASS( "InputMessage" ), DUMPER_CLASS( "InputMessage" ) ), 1, METHOD_ATTRIBUTE_VIRTUAL );
 
 	/*
 		parser.ParseTypeMethods(basePlayer, [](const char* className, const char* methodName, uint32_t rva) {
@@ -239,12 +300,15 @@ void dumper::produce( )
 	*/
 	DUMPER_CLASS_END;
 
+
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BuildingPrivlidge" );
+		DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( allowedConstructionItems );
 		DUMP_MEMBER_BY_NEAR_OFFSET( cachedProtectedMinutes, DUMPER_OFFSET( allowedConstructionItems ) + 0x8 );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "WorldItem" );
+		DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( allowPickup );
 		DUMP_MEMBER_BY_NEAR_OFFSET( item, DUMPER_OFFSET( allowPickup ) + 0x8 );
 	/*
@@ -258,31 +322,37 @@ void dumper::produce( )
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "HackableLockedCrate" );
+		DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( timerText );
 		DUMP_MEMBER_BY_NAME( hackProgressBeep );
 		DUMP_MEMBER_BY_NEAR_OFFSET( hackSeconds, DUMPER_OFFSET( hackProgressBeep ) + 0x8 );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ProjectileWeaponMod" );
+		DUMPER_SECTION( "Offsets" );	
 		DUMP_MEMBER_BY_NAME( projectileVelocity );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerWalkMovement" );
+		DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( capsule, "UnityEngine.CapsuleCollider" );
 		DUMP_MEMBER_BY_NEAR_OFFSET( groundTime, DUMPER_OFFSET( capsule ) + 0x14 );
 	DUMPER_CLASS_END;
 
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ConsoleSystem/Command" );
+		DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( AllowRunFromServer );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "LootableCorpse" );
+		DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( playerSteamID, "System.UInt64" );
 		DUMP_MEMBER_BY_NEAR_OFFSET( _playerName, DUMPER_OFFSET( playerSteamID ) + 0x8 );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "DroppedItemContainer" )
+		DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( playerSteamID, "System.UInt64" );
 		DUMP_MEMBER_BY_NEAR_OFFSET( _playerName, DUMPER_OFFSET( playerSteamID ) + 0x8 );
 	/*
@@ -333,26 +403,64 @@ void dumper::produce( )
 	}
 	*/
 
-	il2cpp::Il2CppClass* convarGraphicsClass = il2cpp::SearchForClassByMethodReturnTypeName( "UnityEngine.FullScreenMode", METHOD_ATTRIBUTE_PRIVATE, METHOD_ATTRIBUTE_STATIC );
+	il2cpp::il2cpp_class_t* convar_graphics_klass = il2cpp::search_for_class_by_method_return_type_name( "UnityEngine.FullScreenMode", METHOD_ATTRIBUTE_PRIVATE, METHOD_ATTRIBUTE_STATIC );
 
-	DUMPER_CLASS_BEGIN_FROM_PTR( "Convar_Graphics", convarGraphicsClass );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( _fov, convarGraphicsClass->Name( ), FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_STATIC );
+	DUMPER_CLASS_BEGIN_FROM_PTR( "Convar_Graphics", convar_graphics_klass );
+		DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( _fov, convar_graphics_klass->name( ), FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_STATIC );
+		DUMPER_SECTION( "EncryptedValue Functions" );
 		DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( _fov, DUMPER_OFFSET( _fov ) );
 	DUMPER_CLASS_END;
 
+	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseFishingRod" );
+		DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( UpdateLineRenderer, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_PRIVATE, 0 );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "GameManifest" );
+		DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GUIDToObject, DUMPER_CLASS_NAMESPACE( "UnityEngine", "Object" ), 1, METHOD_ATTRIBUTE_ASSEM, 0 );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemModProjectile" );
+		DUMPER_SECTION( "Offsets" );	
+		DUMP_MEMBER_BY_NAME( projectileObject );
+		DUMP_MEMBER_BY_NAME( ammoType );
+		DUMP_MEMBER_BY_NAME( projectileVelocity );
+		DUMP_MEMBER_BY_NAME( projectileVelocitySpread );
+	DUMPER_CLASS_END;
+
+	il2cpp::method_info_t* zipline_audio_update = il2cpp::get_method_by_name( DUMPER_CLASS( "ZiplineAudio" ), "Update" );
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseEntity" );
+		DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_SIG_REL( GetWorldVelocity, zipline_audio_update->get_fn_ptr<uint8_t*>( ), "\x45\x33\xC0\x48\x8D\x48\x88\xE8\xCC\xCC\xCC\xCC\x33\xD2", 8 );
+	DUMPER_CLASS_END;
+
+	// LaunchProjectileClientSide.
+	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseProjectile" );
+		il2cpp::method_info_t* launch_projectile_client_side_info = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES( 
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ), 
+			DUMPER_TYPE( "ItemDefinition" ),			// Param 1
+			DUMPER_TYPE_NAMESPACE( "System", "Int32" ), // Param 2 
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ) // Param 3
+		);
+
+		DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_INFO_PTR( LaunchProjectileClientSide, launch_projectile_client_side_info );
+	DUMPER_CLASS_END;
+
+	il2cpp::il2cpp_class_t* con_button_class = il2cpp::search_for_class_by_interfaces_contain( "IConsoleButton" );
+	il2cpp::il2cpp_class_t* buttons_class = il2cpp::search_for_class_by_field_types( con_button_class->type( ), 56, FIELD_ATTRIBUTE_STATIC );
+	DUMPER_CLASS_BEGIN_FROM_PTR( "Buttons", buttons_class );
+	DUMPER_CLASS_END;
+
+	il2cpp::il2cpp_class_t* effect_class = il2cpp::search_for_class_by_parent_class_type( DUMPER_TYPE( "EffectData" ) );
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "Effect", effect_class );
+		DUMPER_SECTION( "Offsets" );
+		DUMP_ALL_MEMBERS_OF_TYPE( "UnkVector", DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ) );
+	DUMPER_CLASS_END;
+
 	fclose( outfile_handle );
-}
-
-void dumper::components::dump_typeinfo( uint64_t base_addr, il2cpp::Il2CppClass* klass )
-{
-	// uint64_t base_addr = ( uint64_t )( GetModuleHandleA( "GameAssembly.dll" ) );
-
-	
-// printf( "convarGraphicsClass: 0x%p\n", convarGraphicsClass );
-// 
-// if ( convarGraphicsClass )
-// {
-// 	components::dump_typeinfo( assemblyBase, convarGraphicsClass );
-// }
-
 }
