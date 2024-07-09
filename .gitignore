@@ -2,10 +2,10 @@
 .vs/
 
 # Ignore compiled files
-x64/Release/
-Release/
-bin_int/
-bin_debug/
+sapphire/bin_debug/
+sapphire/bin_int/
+sapphire/bin_release/
+sapphire/bin-int/
 
 # Ignore config
 config.h
