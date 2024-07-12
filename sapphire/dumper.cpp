@@ -295,7 +295,10 @@ void dumper::produce( )
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseCombatEntity" );
 	DUMPER_SECTION( "Offsets" );
-	DUMP_MEMBER_BY_NAME( lifestate );
+		DUMP_MEMBER_BY_NAME( lifestate );
+		DUMP_MEMBER_BY_NAME( markAttackerHostile );
+		DUMP_MEMBER_BY_NEAR_OFFSET( _health, DUMPER_OFFSET( markAttackerHostile ) + 0x2 );
+		DUMP_MEMBER_BY_NEAR_OFFSET( _maxHealth, DUMPER_OFFSET( markAttackerHostile ) + 0x6 );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ModelState" );
@@ -313,11 +316,13 @@ void dumper::produce( )
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "RecoilProperties" );
 	DUMPER_SECTION( "Offsets" );
-	DUMP_MEMBER_BY_NAME( recoilYawMin );
-	DUMP_MEMBER_BY_NAME( recoilYawMax );
-	DUMP_MEMBER_BY_NAME( recoilPitchMin );
-	DUMP_MEMBER_BY_NAME( recoilPitchMax );
-	DUMP_MEMBER_BY_NAME( newRecoilOverride );
+		DUMP_MEMBER_BY_NAME( recoilYawMin );
+		DUMP_MEMBER_BY_NAME( recoilYawMax );
+		DUMP_MEMBER_BY_NAME( recoilPitchMin );
+		DUMP_MEMBER_BY_NAME( recoilPitchMax );
+		DUMP_MEMBER_BY_NAME( overrideAimconeWithCurve );
+		DUMP_MEMBER_BY_NAME( aimconeProbabilityCurve );
+		DUMP_MEMBER_BY_NAME( newRecoilOverride );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Magazine", "ProtoBuf" );
@@ -332,20 +337,23 @@ void dumper::produce( )
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseProjectile" );
 	DUMPER_SECTION( "Offsets" );
-	DUMP_MEMBER_BY_NAME( automatic );
-	DUMP_MEMBER_BY_NAME( primaryMagazine );
-	DUMP_MEMBER_BY_NAME( aimSway );
-	DUMP_MEMBER_BY_NAME( recoil );
-	DUMP_MEMBER_BY_NAME( aimCone );
-	// timeSinceReloadFinished is used to get the 4 floats near it.
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( timeSinceReloadFinished, DUMPER_CLASS( "TimeSince" ) );
-	DUMP_MEMBER_BY_NEAR_OFFSET( hipAimConeOffset, DUMPER_OFFSET( timeSinceReloadFinished ) - 0x8 ); // Ideally if they stay together you would just update this one and the rest should be fine.
-	DUMP_MEMBER_BY_NEAR_OFFSET( hipAimConeScale, DUMPER_OFFSET( hipAimConeOffset ) - 0x4 );
-	DUMP_MEMBER_BY_NEAR_OFFSET( sightAimConeOffset, DUMPER_OFFSET( hipAimConeScale ) - 0x4 );
-	DUMP_MEMBER_BY_NEAR_OFFSET( sightAimConeScale, DUMPER_OFFSET( sightAimConeOffset ) - 0x4 );
+		DUMP_MEMBER_BY_NAME( projectileVelocityScale );
+		DUMP_MEMBER_BY_NAME( automatic );
+		DUMP_MEMBER_BY_NAME( primaryMagazine );
+		DUMP_MEMBER_BY_NAME( aimSway );
+		DUMP_MEMBER_BY_NAME( aimSwaySpeed );
+		DUMP_MEMBER_BY_NAME( recoil );
+		DUMP_MEMBER_BY_NAME( aimconeCurve );
+		DUMP_MEMBER_BY_NAME( aimCone );
 
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( createdProjectiles, "Projectile", FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_INIT_ONLY | FIELD_ATTRIBUTE_STATIC );
+		// timeSinceReloadFinished is used to get the 4 floats near it.
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( timeSinceReloadFinished, DUMPER_CLASS( "TimeSince" ) );
+		DUMP_MEMBER_BY_NEAR_OFFSET( hipAimConeOffset, DUMPER_OFFSET( timeSinceReloadFinished ) - 0x8 ); // Ideally if they stay together you would just update this one and the rest should be fine.
+		DUMP_MEMBER_BY_NEAR_OFFSET( hipAimConeScale, DUMPER_OFFSET( hipAimConeOffset ) - 0x4 );
+		DUMP_MEMBER_BY_NEAR_OFFSET( sightAimConeOffset, DUMPER_OFFSET( hipAimConeScale ) - 0x4 );
+		DUMP_MEMBER_BY_NEAR_OFFSET( sightAimConeScale, DUMPER_OFFSET( sightAimConeOffset ) - 0x4 );
 
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( createdProjectiles, "Projectile", FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_INIT_ONLY | FIELD_ATTRIBUTE_STATIC );
 	DUMPER_SECTION( "Functions" );
 	
 	il2cpp::method_info_t* base_projectile_launch_projectile_clientside = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
@@ -385,8 +393,8 @@ void dumper::produce( )
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "FlintStrikeWeapon" );
 	DUMPER_SECTION( "Offsets" );
-	DUMP_MEMBER_BY_NAME( strikeRecoil );
-	DUMP_MEMBER_BY_NEAR_OFFSET( sightAimConeScale, DUMPER_OFFSET( strikeRecoil ) + 0x8 );
+		DUMP_MEMBER_BY_NAME( strikeRecoil );
+		DUMP_MEMBER_BY_NEAR_OFFSET( _didSparkThisFrame, DUMPER_OFFSET( strikeRecoil ) + 0x8 );
 	DUMPER_CLASS_END;
 
 	auto player_loot_class = DUMPER_CLASS( "PlayerLoot" );
@@ -683,10 +691,13 @@ void dumper::produce( )
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemModProjectile" );
 	DUMPER_SECTION( "Offsets" );
-	DUMP_MEMBER_BY_NAME( projectileObject );
-	DUMP_MEMBER_BY_NAME( ammoType );
-	DUMP_MEMBER_BY_NAME( projectileVelocity );
-	DUMP_MEMBER_BY_NAME( projectileVelocitySpread );
+		DUMP_MEMBER_BY_NAME( projectileObject );
+		DUMP_MEMBER_BY_NAME( ammoType );
+		DUMP_MEMBER_BY_NAME( projectileSpread );
+		DUMP_MEMBER_BY_NAME( projectileVelocity );
+		DUMP_MEMBER_BY_NAME( projectileVelocitySpread );
+		DUMP_MEMBER_BY_NAME( useCurve );
+		DUMP_MEMBER_BY_NAME( spreadScalar );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "Projectile" );
@@ -801,6 +812,11 @@ void dumper::produce( )
 	il2cpp::il2cpp_class_t* buttons_class = il2cpp::search_for_class_by_field_types( con_button_class->type( ), 56, FIELD_ATTRIBUTE_STATIC );
 	DUMPER_CLASS_BEGIN_FROM_PTR( "Buttons", buttons_class );
 	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME("EffectData")
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( pooledstringid );
+	DUMPER_CLASS_END
 
 	il2cpp::il2cpp_class_t* effect_class = il2cpp::search_for_class_by_parent_class_type( DUMPER_TYPE( "EffectData" ) );
 
