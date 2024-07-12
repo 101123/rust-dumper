@@ -213,6 +213,7 @@ void dumper::produce( )
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseNetworkable" );
 	DUMPER_SECTION( "Offsets" );
 	DUMP_MEMBER_BY_NAME( prefabID ); // Dump a member by it's name.
+	DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( net, "Network.Networkable", DUMPER_VIS_DONT_CARE, DUMPER_ATTR_DONT_CARE );
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( parentEntity, entity_ref_class ); // Search for EntityRef class.
 	DUMP_MEMBER_BY_NEAR_OFFSET( children, DUMPER_OFFSET( parentEntity ) + 0x10 ); // Dump a member by an offset from another member of the class.
 
@@ -291,6 +292,8 @@ void dumper::produce( )
 	DUMP_MEMBER_BY_NEAR_OFFSET( hipAimConeScale, DUMPER_OFFSET( hipAimConeOffset ) - 0x4 );
 	DUMP_MEMBER_BY_NEAR_OFFSET( sightAimConeOffset, DUMPER_OFFSET( hipAimConeScale ) - 0x4 );
 	DUMP_MEMBER_BY_NEAR_OFFSET( sightAimConeScale, DUMPER_OFFSET( sightAimConeOffset ) - 0x4 );
+
+	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( createdProjectiles, "Projectile", FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_INIT_ONLY | FIELD_ATTRIBUTE_STATIC );
 
 	//DUMPER_SECTION( "Functions" );
 	//DUMP_METHOD_BY_RETURN_TYPE_METHOD_ATTRIBUTE( UpdateAmmoDisplay,  )
@@ -505,8 +508,17 @@ void dumper::produce( )
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseFishingRod" );
+	DUMPER_SECTION("Offsets")
+		DUMP_MEMBER_BY_TYPE_METHOD_ATTRIBUTE( CurrentState,
+			DUMPER_CLASS( "BaseFishingRod/CatchState" ),
+			DUMPER_CLASS_NAMESPACE( "System.Runtime.CompilerServices", "CompilerGeneratedAttribute" ),
+			DUMPER_VIS_DONT_CARE,
+			DUMPER_ATTR_DONT_CARE,
+			il2cpp::attr_search_want );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( currentBobber, "FishingBobber" );
+		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( clientStrainAmountNormalised, "System.Single", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
 	DUMPER_SECTION( "Functions" );
-	DUMP_METHOD_BY_RETURN_TYPE_ATTRS( UpdateLineRenderer, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( UpdateLineRenderer, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "GameManifest" );
@@ -516,10 +528,37 @@ void dumper::produce( )
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemModProjectile" );
 	DUMPER_SECTION( "Offsets" );
-	DUMP_MEMBER_BY_NAME( projectileObject );
-	DUMP_MEMBER_BY_NAME( ammoType );
-	DUMP_MEMBER_BY_NAME( projectileVelocity );
-	DUMP_MEMBER_BY_NAME( projectileVelocitySpread );
+		DUMP_MEMBER_BY_NAME( projectileObject );
+		DUMP_MEMBER_BY_NAME( ammoType );
+		DUMP_MEMBER_BY_NAME( projectileVelocity );
+		DUMP_MEMBER_BY_NAME( projectileVelocitySpread );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "Projectile" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( initialVelocity );
+		DUMP_MEMBER_BY_NAME( drag );
+		DUMP_MEMBER_BY_NAME( gravityModifier );
+		DUMP_MEMBER_BY_NAME( thickness );
+		DUMP_MEMBER_BY_NAME( initialDistance );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( owner, DUMPER_CLASS( "BasePlayer" ) );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( sourceProjectilePrefab, DUMPER_CLASS( "Projectile" ) );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "CraftingQueue" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( icons, "List" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "CraftingQueueIcon" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( endTime, "System.Single" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( item, DUMPER_CLASS( "ItemDefinition" ) );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "Planner" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( currentConstruction, DUMPER_CLASS( "Construction" ) );
 	DUMPER_CLASS_END;
 
 	il2cpp::method_info_t* zipline_audio_update = il2cpp::get_method_by_name( DUMPER_CLASS( "ZiplineAudio" ), "Update" );
@@ -614,15 +653,6 @@ void dumper::produce( )
 	);
 
 	DUMP_METHOD_BY_INFO_PTR( GetWaterLevel, get_water_level );
-	DUMPER_CLASS_END;
-
-	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseFishingRod" );
-	DUMP_MEMBER_BY_TYPE_METHOD_ATTRIBUTE( CurrentState,
-		DUMPER_CLASS( "BaseFishingRod/CatchState" ),
-		DUMPER_CLASS_NAMESPACE( "System.Runtime.CompilerServices", "CompilerGeneratedAttribute" ),
-		DUMPER_VIS_DONT_CARE,
-		DUMPER_ATTR_DONT_CARE,
-		il2cpp::attr_search_want );
 	DUMPER_CLASS_END;
 
 	/*
