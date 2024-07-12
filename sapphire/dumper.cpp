@@ -638,20 +638,6 @@ void dumper::produce( )
 		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( heightMap, "TerrainHeightMap", FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_STATIC ); // <HeightMap>k__BackingField
 	DUMPER_CLASS_END
 
-	il2cpp::method_info_t* zipline_audio_update = il2cpp::get_method_by_name( DUMPER_CLASS( "ZiplineAudio" ), "Update" );
-
-	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseEntity" );
-	DUMPER_SECTION( "Functions" );
-
-	DUMP_METHOD_BY_INFO_PTR( FindBone, SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-		DUMPER_TYPE_NAMESPACE( "UnityEngine", "Transform" ),
-		DUMPER_VIS_DONT_CARE,
-		METHOD_ATTRIBUTE_VIRTUAL,
-		DUMPER_TYPE_NAMESPACE( "System", "String" ) ) );
-
-	DUMP_METHOD_BY_SIG_REL( GetWorldVelocity, zipline_audio_update->get_fn_ptr<uint8_t*>( ), "\x45\x33\xC0\x48\x8D\x48\x88\xE8\xCC\xCC\xCC\xCC\x33\xD2", 8 );
-	DUMPER_CLASS_END;
-
 	// LaunchProjectileClientSide.
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseProjectile" );
 	il2cpp::method_info_t* launch_projectile_client_side_info = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
