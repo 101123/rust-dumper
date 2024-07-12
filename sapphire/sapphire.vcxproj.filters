@@ -4,11 +4,17 @@
     <Filter Include="impl">
       <UniqueIdentifier>{66bd09ff-e96a-4bd7-af02-b6c21ba37359}</UniqueIdentifier>
     </Filter>
+    <Filter Include="hde">
+      <UniqueIdentifier>{694bff41-6a61-4c44-b7b9-04f635fd2c0a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="dumper.cpp">
       <Filter>impl</Filter>
+    </ClCompile>
+    <ClCompile Include="hde\hde64.cpp">
+      <Filter>hde</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -17,6 +23,12 @@
     </ClInclude>
     <ClInclude Include="dumper.hpp">
       <Filter>impl</Filter>
+    </ClInclude>
+    <ClInclude Include="hde\hde64.h">
+      <Filter>hde</Filter>
+    </ClInclude>
+    <ClInclude Include="hde\table64.h">
+      <Filter>hde</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

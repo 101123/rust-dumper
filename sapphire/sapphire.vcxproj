@@ -143,9 +143,12 @@
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="dumper.cpp" />
+    <ClCompile Include="hde\hde64.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dumper.hpp" />
+    <ClInclude Include="hde\hde64.h" />
+    <ClInclude Include="hde\table64.h" />
     <ClInclude Include="il2cpp_lib.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

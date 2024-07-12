@@ -9,6 +9,12 @@
 
 namespace il2cpp
 {
+	// get_method_by_return_type_attrs_method_attr
+	enum e_method_attr_search : uint8_t {
+		method_attr_search_want = 0,
+		method_attr_search_ignore
+	};
+
 #define METHOD_ATTRIBUTE_MEMBER_ACCESS_MASK        0x0007
 #define METHOD_ATTRIBUTE_COMPILER_CONTROLLED       0x0000
 #define METHOD_ATTRIBUTE_PRIVATE                   0x0001
@@ -94,7 +100,7 @@ namespace il2cpp
 	CREATE_TYPE( method_get_return_type, il2cpp_type_t* ( * )( void* ) );
 	CREATE_TYPE( method_get_class, il2cpp_class_t* ( * )( method_info_t* ) );
 	CREATE_TYPE( method_get_flags, uint32_t ( * )( method_info_t*, uint32_t* ) );
-
+	CREATE_TYPE( method_has_attribute, bool( * )( method_info_t*, il2cpp_class_t* ) );
 	// Fields.
 	CREATE_TYPE( field_get_offset, size_t( * )( void* ) );
 	CREATE_TYPE( field_get_type, il2cpp_type_t* ( * )( void* ) );
@@ -424,6 +430,14 @@ namespace il2cpp
 			return name && strcmp( name, wanted_type->name( ) ) == 0;
 			} );
 	}
+
+	inline il2cpp_class_t* get_class_from_field_type_by_type_contains( il2cpp_class_t* klass, const char* search ) {
+		return get_class_from_class_field_type( klass, [ = ] ( field_info_t* field ) -> bool {
+			const char* name = field->type( )->name( );
+			return name && strstr( name, search ) != nullptr;
+			} );
+	}
+
 	inline il2cpp_class_t* get_class_from_field_type_by_class( il2cpp_class_t* klass, il2cpp_class_t* wanted_klass )
 	{
 		return get_class_from_field_type_by_type( klass, wanted_klass->type( ) );
@@ -700,7 +714,7 @@ namespace il2cpp
 
 		return get_method_from_class( klass, get_method_by_return_type_name );
 	}
-	inline method_info_t* get_method_by_return_type_and_param_types( il2cpp_class_t* klass, il2cpp_type_t* ret_type, il2cpp_type_t** param_types, int param_ct ) {
+	inline method_info_t* get_method_by_return_type_and_param_types( il2cpp_class_t* klass, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, il2cpp_type_t** param_types, int param_ct ) {
 		void* iter = nullptr;
 
 		const auto get_method_by_return_type_and_param_types = [ = ] ( method_info_t* method ) -> bool {
@@ -710,6 +724,13 @@ namespace il2cpp
 
 			il2cpp::il2cpp_type_t* ret = method->return_type( );
 			if ( !ret || strcmp( ret->name( ), ret_type->name( ) ) != 0 )
+				return false;
+
+			int vis = method->flags( ) & METHOD_ATTRIBUTE_MEMBER_ACCESS_MASK;
+			if ( wanted_vis && vis != wanted_vis )
+				return false;
+
+			if ( wanted_flags && !( method->flags( ) & wanted_flags ) )
 				return false;
 
 			int matchedTypes = 0;
@@ -783,7 +804,7 @@ namespace il2cpp
 
 		return get_method_from_class( klass, get_method_by_return_type_attrs );
 	}
-	inline method_info_t* get_method_by_param_class( il2cpp_class_t* klass, il2cpp_class_t* param_klass, int param_ct, int wanted_flags )
+	inline method_info_t* get_method_by_param_class( il2cpp_class_t* klass, il2cpp_class_t* param_klass, int param_ct, int wanted_vis, int wanted_flags )
 	{
 		const auto get_method_by_param_class = [ = ] ( method_info_t* method ) -> bool {
 			uint32_t count = method->param_count( );
@@ -798,8 +819,14 @@ namespace il2cpp
 
 				if ( param->klass( ) == param_klass )
 				{
-					if ( wanted_flags && ( method->flags( ) & wanted_flags ) )
-						return true;;
+					int vis = method->flags( ) & METHOD_ATTRIBUTE_MEMBER_ACCESS_MASK;
+					if ( wanted_vis && wanted_vis != vis )
+						return false;
+
+					if ( wanted_flags && !( method->flags( ) & wanted_flags ) )
+						return false;
+
+					return true;
 				}
 			}
 
@@ -808,6 +835,44 @@ namespace il2cpp
 
 		return get_method_from_class( klass, get_method_by_param_class );
 	}
+
+	inline method_info_t* get_method_by_return_type_attrs_method_attr( il2cpp_class_t* klass, il2cpp_class_t* ret_type_klass, il2cpp_class_t* method_attr_klass, int wanted_flags = 0, int wanted_vis = 0, int param_ct = -1, bool want_or_ignore = false ) {
+		void* iter = nullptr;
+
+		const auto get_method_by_return_type_attrs = [ = ] ( method_info_t* method ) -> bool {
+			uint32_t count = method->param_count( );
+			if ( param_ct != -1 && count != param_ct )
+				return false;
+
+			il2cpp_type_t* returnType = method->return_type( );
+
+			if ( strcmp( returnType->klass( )->name( ), ret_type_klass->name( ) ) == 0 )
+			{
+				bool has_attr = method_has_attribute( method, method_attr_klass );
+				if ( has_attr && want_or_ignore == e_method_attr_search::method_attr_search_ignore )
+					return false;
+				if ( !has_attr && want_or_ignore == e_method_attr_search::method_attr_search_want )
+					return false;
+
+				uint32_t vis = method->flags( ) & METHOD_ATTRIBUTE_MEMBER_ACCESS_MASK;
+				if ( wanted_vis && ( vis != wanted_vis ) )
+					return false;
+
+				if ( wanted_flags && !( method->flags( ) & wanted_flags ) )
+					return false;
+
+				return true;
+			}
+
+			return false;
+		};
+
+		return get_method_from_class( klass, get_method_by_return_type_attrs );
+	}
+
+
+
+	// il2cpp_method_has_attribute
 
 	template<typename Comparator>
 	inline field_info_t* get_field_from_class( il2cpp_class_t* klass, Comparator comparator ) {
@@ -938,6 +1003,7 @@ namespace il2cpp
 		ASSIGN_TYPE( method_get_return_type );
 		ASSIGN_TYPE( method_get_class );
 		ASSIGN_TYPE( method_get_flags );
+		ASSIGN_TYPE( method_has_attribute );
 
 		// Fields.
 		ASSIGN_TYPE( field_get_offset );
