@@ -206,6 +206,21 @@ void dumper::produce( )
 	il2cpp::il2cpp_class_t* entity_ref_class = SEARCH_FOR_CLASS_BY_FIELD_COUNT( 2, 0, DUMPER_CLASS( "BaseEntity" ), DUMPER_CLASS( "NetworkableId" ) );
 	il2cpp::il2cpp_class_t* hidden_value_base_class = nullptr;
 
+	il2cpp::il2cpp_class_t* hitbox_collision_class = DUMPER_CLASS( "HitboxCollision" );
+	il2cpp::il2cpp_class_t* hit_test_class = nullptr;
+
+	if ( hitbox_collision_class ) {
+		il2cpp::method_info_t* hitbox_collision_trace_test = il2cpp::get_method_by_return_type_attrs( hitbox_collision_class, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, 0, 2 );
+
+		if ( hitbox_collision_trace_test ) {
+			il2cpp::il2cpp_type_t* param_type = hitbox_collision_trace_test->get_param( 0 );
+
+			if ( param_type ) {
+				hit_test_class = param_type->klass();
+			}
+		}
+	}
+
 	/*printf( "get world velocity: %d\n", get_fn_length( ( void* ) ( game_base + 0x62C380 ) ) );
 	printf( "get local velocity: %d\n", get_fn_length( ( void* ) ( game_base + 0x627920 ) ) );
 	printf( "other: %d\n", get_fn_length( ( void* ) ( game_base + 0x0649A20 ) ) );*/
@@ -331,9 +346,42 @@ void dumper::produce( )
 
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( createdProjectiles, "Projectile", FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_INIT_ONLY | FIELD_ATTRIBUTE_STATIC );
 
-	//DUMPER_SECTION( "Functions" );
-	//DUMP_METHOD_BY_RETURN_TYPE_METHOD_ATTRIBUTE( UpdateAmmoDisplay,  )
+	DUMPER_SECTION( "Functions" );
+	
+	il2cpp::method_info_t* base_projectile_launch_projectile_clientside = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+		DUMPER_VIS_DONT_CARE,
+		DUMPER_ATTR_DONT_CARE,
+		DUMPER_TYPE( "ItemDefinition" ),			
+		DUMPER_TYPE_NAMESPACE( "System", "Int32" ), 
+		DUMPER_TYPE_NAMESPACE( "System", "Single" ) 
+	);
+
+	DUMP_METHOD_BY_INFO_PTR( LaunchProjectileClientSide, base_projectile_launch_projectile_clientside );
+
+	il2cpp::method_info_t* base_projectile_scale_repeat_delay = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+		METHOD_ATTRIBUTE_PUBLIC,
+		DUMPER_ATTR_DONT_CARE,
+		DUMPER_TYPE_NAMESPACE( "System", "Single" )
+	);
+
+	DUMP_METHOD_BY_INFO_PTR( ScaleRepeatDelay, base_projectile_scale_repeat_delay );
+
+	DUMP_METHOD_BY_RETURN_TYPE_ATTRS( UpdateAmmoDisplay, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_FAMILY, METHOD_ATTRIBUTE_VIRTUAL );
+
 	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseMelee" );
+	DUMPER_SECTION( "Functions" );
+		il2cpp::method_info_t* base_melee_process_attack = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_FAMILY,
+			METHOD_ATTRIBUTE_VIRTUAL,
+			hit_test_class->type()
+		);
+		DUMP_METHOD_BY_INFO_PTR( ProcessAttack, base_melee_process_attack );
+	DUMPER_CLASS_END
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "FlintStrikeWeapon" );
 	DUMPER_SECTION( "Offsets" );
@@ -369,8 +417,10 @@ void dumper::produce( )
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerInventory" );
 	DUMPER_SECTION( "Offsets" );
-	DUMP_MEMBER_BY_NAME( crafting );
-	DUMP_MEMBER_BY_NEAR_OFFSET( containerBelt, DUMPER_OFFSET( crafting ) - 0x10 );
+		DUMP_MEMBER_BY_NAME( crafting );
+		DUMP_MEMBER_BY_NEAR_OFFSET( containerBelt, DUMPER_OFFSET( crafting ) - 0x10 );
+	DUMPER_SECTION( "Functions" );
+		
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerInput" );
@@ -434,6 +484,36 @@ void dumper::produce( )
 	DUMPER_SECTION( "Functions" );
 	DUMP_METHOD_BY_PARAM_CLASS( ClientInput, input_state_class, 1, DUMPER_VIS_DONT_CARE, METHOD_ATTRIBUTE_VIRTUAL );
 
+	il2cpp::method_info_t* base_player_get_speed = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+		METHOD_ATTRIBUTE_PUBLIC,
+		DUMPER_ATTR_DONT_CARE,
+		DUMPER_TYPE_NAMESPACE( "System", "Single" ),	
+		DUMPER_TYPE_NAMESPACE( "System", "Single" ), 
+		DUMPER_TYPE_NAMESPACE( "System", "Single" ) 
+	);
+
+	DUMP_METHOD_BY_INFO_PTR( GetSpeed, base_player_get_speed );
+
+	il2cpp::method_info_t* base_player_send_projectile_update = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+		METHOD_ATTRIBUTE_PUBLIC,
+		DUMPER_ATTR_DONT_CARE,
+		DUMPER_TYPE_NAMESPACE( "ProtoBuf", "PlayerProjectileUpdate" )
+	);
+
+	DUMP_METHOD_BY_INFO_PTR( SendProjectileUpdate, base_player_send_projectile_update );
+
+	il2cpp::method_info_t* base_player_send_projectile_attack = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+		METHOD_ATTRIBUTE_PUBLIC,
+		DUMPER_ATTR_DONT_CARE,
+		DUMPER_TYPE_NAMESPACE( "ProtoBuf", "PlayerProjectileAttack" )
+	);
+
+	DUMP_METHOD_BY_INFO_PTR( SendProjectileAttack, base_player_send_projectile_attack );
+
+
 	/*
 		parser.ParseTypeMethods(basePlayer, [](const char* className, const char* methodName, uint32_t rva) {
 			uint64_t hash = CoreSDK_Hash(methodName);
@@ -442,6 +522,18 @@ void dumper::produce( )
 				Offsets::BasePlayer__OnViewModeChanged = rva;
 		});
 	*/
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseMovement" );
+	DUMPER_SECTION( "Functions" );	
+		il2cpp::method_info_t* base_movement_set_target_movement = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_FAMILY,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( set_TargetMovement, base_movement_set_target_movement );
 	DUMPER_CLASS_END;
 
 
@@ -569,6 +661,19 @@ void dumper::produce( )
 	DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( clientStrainAmountNormalised, "System.Single", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
 	DUMPER_SECTION( "Functions" );
 	DUMP_METHOD_BY_RETURN_TYPE_ATTRS( UpdateLineRenderer, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
+
+	/*il2cpp::method_info_t* base_fishing_rod_evaluate_fishing_position = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+		METHOD_ATTRIBUTE_PRIVATE,
+		DUMPER_ATTR_DONT_CARE,
+		DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
+		DUMPER_TYPE( "BasePlayer" ),
+		DUMPER_TYPE( "BaseFishingRod/FailReason" ),
+		DUMPER_TYPE( "WaterBody" )
+	);
+
+	DUMP_METHOD_BY_INFO_PTR( EvaluateFishingPosition, base_fishing_rod_evaluate_fishing_position );*/
+
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "GameManifest" );
@@ -586,16 +691,25 @@ void dumper::produce( )
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "Projectile" );
 	DUMPER_SECTION( "Offsets" );
-	DUMP_MEMBER_BY_NAME( initialVelocity );
-	DUMP_MEMBER_BY_NAME( drag );
-	DUMP_MEMBER_BY_NAME( gravityModifier );
-	DUMP_MEMBER_BY_NAME( thickness );
-	DUMP_MEMBER_BY_NAME( initialDistance );
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( owner, DUMPER_CLASS( "BasePlayer" ) );
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( sourceProjectilePrefab, DUMPER_CLASS( "Projectile" ) );
+		DUMP_MEMBER_BY_NAME( initialVelocity );
+		DUMP_MEMBER_BY_NAME( drag );
+		DUMP_MEMBER_BY_NAME( gravityModifier );
+		DUMP_MEMBER_BY_NAME( thickness );
+		DUMP_MEMBER_BY_NAME( initialDistance );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( owner, DUMPER_CLASS( "BasePlayer" ) );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( sourceProjectilePrefab, DUMPER_CLASS( "Projectile" ) );
+	DUMPER_SECTION( "Functions" );
+		//il2cpp::method_info_t* projectile_do_hit = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		//	DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+		//	METHOD_ATTRIBUTE_PRIVATE,
+		//	DUMPER_ATTR_DONT_CARE,
+		//	hit_test_class->type(),
+		//	DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
+		//	DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" )
+		//);
 	DUMPER_CLASS_END
 
-		DUMPER_CLASS_BEGIN_FROM_NAME( "CraftingQueue" );
+	DUMPER_CLASS_BEGIN_FROM_NAME( "CraftingQueue" );
 	DUMPER_SECTION( "Offsets" );
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( icons, "List" );
 	DUMPER_CLASS_END;
@@ -627,6 +741,11 @@ void dumper::produce( )
 		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( resetTime, "System.Single", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
 	DUMPER_CLASS_END
 
+	DUMPER_CLASS_BEGIN_FROM_NAME( "WaterSystem" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( get_Ocean, DUMPER_CLASS( "WaterBody" ), 0, METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC );
+	DUMPER_CLASS_END
+
 	DUMPER_CLASS_BEGIN_FROM_NAME( "WaterBody" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( meshFilter, "UnityEngine.MeshFilter" ); // <MeshFilter>k__BackingField
@@ -638,20 +757,31 @@ void dumper::produce( )
 		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( heightMap, "TerrainHeightMap", FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_STATIC ); // <HeightMap>k__BackingField
 	DUMPER_CLASS_END
 
-	// LaunchProjectileClientSide.
-	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseProjectile" );
-	il2cpp::method_info_t* launch_projectile_client_side_info = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-		DUMPER_VIS_DONT_CARE,
-		DUMPER_ATTR_DONT_CARE,
-		DUMPER_TYPE( "ItemDefinition" ),			// Param 1
-		DUMPER_TYPE_NAMESPACE( "System", "Int32" ), // Param 2 
-		DUMPER_TYPE_NAMESPACE( "System", "Single" ) // Param 3
-	);
-
+	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainCollision" );
 	DUMPER_SECTION( "Functions" );
-	DUMP_METHOD_BY_INFO_PTR( LaunchProjectileClientSide, launch_projectile_client_side_info );
-	DUMPER_CLASS_END;
+		il2cpp::method_info_t* terrain_collision_get_ignore = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Single" )
+		);
+		DUMP_METHOD_BY_INFO_PTR( GetIgnore, terrain_collision_get_ignore );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemIcon" );
+	DUMPER_SECTION( "Functions" );
+		il2cpp::method_info_t* item_icon_set_timed_loot_action = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			item_container_class->type(),
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Action" )
+		);
+		DUMP_METHOD_BY_INFO_PTR( SetTimedLootAction, item_icon_set_timed_loot_action );
+	DUMPER_CLASS_END
+
 
 	/*
 	DUMPER_CLASS_BEGIN_FROM_NAME( "Projecitle" );
