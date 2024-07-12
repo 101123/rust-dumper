@@ -927,6 +927,7 @@ namespace il2cpp
 
 		return nullptr;
 	}
+	
 	inline field_info_t* get_field_if_type_contains( il2cpp_class_t* klass, const char* search, int wanted_vis = 0, int flags = 0 )
 	{
 		const auto get_field_if_type_contains = [ = ] ( field_info_t* field ) -> bool {
@@ -944,6 +945,25 @@ namespace il2cpp
 
 		return get_field_from_class( klass, get_field_if_type_contains );
 	}
+
+	inline field_info_t* get_field_if_type_contains_without_attrs( il2cpp_class_t* klass, const char* search, int wanted_vis = 0, int flags = 0 )
+	{
+		const auto get_field_if_type_contains = [ = ] ( field_info_t* field ) -> bool {
+			const char* name = field->type( )->name( );
+			if ( !name )
+				return false;
+
+			int fl = field->flags( );
+			int vis = fl & FIELD_ATTRIBUTE_FIELD_ACCESS_MASK;
+			if ( ( wanted_vis && ( vis != wanted_vis ) ) || ( flags && ( fl & flags ) ) )
+				return false;
+
+			return strstr( name, search ) != nullptr;
+		};
+
+		return get_field_from_class( klass, get_field_if_type_contains );
+	}
+
 	inline field_info_t* get_field_from_field_type_class( il2cpp_class_t* klass, il2cpp_class_t* wanted_klass )
 	{
 		const auto get_field_from_field_type_class = [ = ] ( field_info_t* field ) -> bool {

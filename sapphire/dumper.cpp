@@ -235,12 +235,37 @@ void dumper::produce( )
 	DUMP_MEMBER_BY_NAME( boneTransforms );
 	DUMPER_CLASS_END;
 
+	il2cpp::il2cpp_class_t* position_lerp_class = nullptr;
+
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseEntity" );
-	printf( "BaseEntity typedef index: %d\n", il2cpp::get_typedef_idx_for_class( dumper_klass ) );
 	DUMPER_SECTION( "Offsets" );
 	DUMP_MEMBER_BY_NAME( flags );
 	DUMP_MEMBER_BY_NAME( model );
+
+	auto position_lerp = il2cpp::get_field_if_type_contains( dumper_klass, "%", FIELD_ATTRIBUTE_ASSEMBLY, DUMPER_ATTR_DONT_CARE );
+	DUMP_MEMBER_BY_X( positionLerp, position_lerp->offset( ) );
+	position_lerp_class = position_lerp->type( )->klass( );
 	DUMPER_CLASS_END;
+
+	il2cpp::il2cpp_class_t* interpolator_class = nullptr;
+	if ( position_lerp_class ) {
+		DUMPER_CLASS_BEGIN_FROM_PTR( "PositionLerp", position_lerp_class );
+
+		DUMPER_SECTION( "Offsets" );
+			
+		auto interpolator = il2cpp::get_field_if_type_contains_without_attrs( dumper_klass, "%", FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_STATIC );
+		DUMP_MEMBER_BY_X( interpolator, interpolator->offset( ) );
+
+		interpolator_class = interpolator->type( )->klass( );
+
+		DUMPER_CLASS_END;
+	}
+
+	if ( interpolator_class ) {
+		DUMPER_CLASS_BEGIN_FROM_PTR( "Interpolator", interpolator_class );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( List, "System.Collections.Generic.List" );
+		DUMPER_CLASS_END;
+	}
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseCombatEntity" );
 	DUMPER_SECTION( "Offsets" );
