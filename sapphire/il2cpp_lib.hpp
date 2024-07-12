@@ -10,9 +10,9 @@
 namespace il2cpp
 {
 	// get_method_by_return_type_attrs_method_attr
-	enum e_method_attr_search : uint8_t {
-		method_attr_search_want = 0,
-		method_attr_search_ignore
+	enum e_attr_search : uint8_t {
+		attr_search_want = 0,
+		attr_search_ignore
 	};
 
 #define METHOD_ATTRIBUTE_MEMBER_ACCESS_MASK        0x0007
@@ -92,6 +92,8 @@ namespace il2cpp
 	CREATE_TYPE( class_get_static_field_data, uint64_t*( * )( void* ) );
 	CREATE_TYPE( class_get_parent, il2cpp_class_t* ( * )( il2cpp_class_t* klass ) );
 	CREATE_TYPE( class_get_interfaces, il2cpp_class_t* ( * )( void*, void** ) );
+	CREATE_TYPE( class_get_image, il2cpp_image_t* ( * )( void* ) );
+
 	// Methods.
 	CREATE_TYPE( method_get_param_count, uint32_t( * )( void* ) );
 	CREATE_TYPE( method_get_name, const char* ( * )( void* ) );
@@ -108,6 +110,8 @@ namespace il2cpp
 	CREATE_TYPE( field_get_name, const char* ( * )( void* ) );
 	CREATE_TYPE( field_static_get_value, void( * )( void*, uint64_t* ) );
 	CREATE_TYPE( field_get_flags, int( * )( void* ) );
+	CREATE_TYPE( field_has_attribute, bool( * )( void*, il2cpp_class_t* ) );
+
 	// Object.
 	CREATE_TYPE( object_get_class, il2cpp_class_t* ( * )( void* ) );
 
@@ -253,7 +257,7 @@ namespace il2cpp
 	};
 
 	struct il2cpp_class_t
-	{
+	{ 
 		const char* name( )
 		{
 			if ( !this )
@@ -326,10 +330,33 @@ namespace il2cpp
 
 			return class_get_interfaces( this, iter );
 		}
+
+		il2cpp_image_t* image( ) {
+			if ( !this )
+				return nullptr;
+
+			return class_get_image( this );
+		}
+	};
+
+	struct image_global_metadata_t {
+		int32_t m_type_start;
+		int32_t m_exported_type_start;
+		int32_t m_custom_attribute_start;
+		int32_t m_entry_point_index;
+		il2cpp_image_t* image;
 	};
 
 	struct il2cpp_image_t
 	{
+		image_global_metadata_t* metadata( ) {
+			return *( image_global_metadata_t** ) ( uint64_t( this ) + 0x28 );
+		}
+
+		uint32_t type_count( ) {
+			return *( uint32_t* ) ( uint64_t( this ) + 0x18 );
+		}
+
 		size_t class_count( )
 		{
 			if ( !this )
@@ -395,6 +422,26 @@ namespace il2cpp
 		}
 	};
 
+	extern il2cpp_class_t** s_TypeInfoDefinitionTable;
+
+	inline int32_t get_typedef_idx_for_class( il2cpp_class_t* klass ) {
+		il2cpp_image_t* image = klass->image( );
+		if ( !image )
+			return 0;
+
+		uint32_t type_count = image->type_count( );
+		for ( int i = 0; i < type_count; i++ ) {
+			il2cpp_class_t* type = s_TypeInfoDefinitionTable[ image->metadata( )->m_type_start + i ];
+			if ( !type )
+				continue;
+
+			if ( strcmp( type->namespaze( ), klass->namespaze( ) ) == 0 && strcmp( type->name( ), klass->name( ) ) == 0 )
+				return i;
+		}
+
+		return 0;
+
+	}
 	inline il2cpp_assembly_t* get_assembly_by_name( const char* assemblyName )
 	{
 		il2cpp_domain_t* domain = il2cpp_domain_t::get( );
@@ -844,14 +891,13 @@ namespace il2cpp
 			if ( param_ct != -1 && count != param_ct )
 				return false;
 
-			il2cpp_type_t* returnType = method->return_type( );
-
-			if ( strcmp( returnType->klass( )->name( ), ret_type_klass->name( ) ) == 0 )
+			il2cpp_type_t* return_type = method->return_type( );
+			if ( strcmp( return_type->klass( )->name( ), ret_type_klass->name( ) ) == 0 )
 			{
 				bool has_attr = method_has_attribute( method, method_attr_klass );
-				if ( has_attr && want_or_ignore == e_method_attr_search::method_attr_search_ignore )
+				if ( has_attr && want_or_ignore == e_attr_search::attr_search_ignore )
 					return false;
-				if ( !has_attr && want_or_ignore == e_method_attr_search::method_attr_search_want )
+				if ( !has_attr && want_or_ignore == e_attr_search::attr_search_want )
 					return false;
 
 				uint32_t vis = method->flags( ) & METHOD_ATTRIBUTE_MEMBER_ACCESS_MASK;
@@ -869,10 +915,6 @@ namespace il2cpp
 
 		return get_method_from_class( klass, get_method_by_return_type_attrs );
 	}
-
-
-
-	// il2cpp_method_has_attribute
 
 	template<typename Comparator>
 	inline field_info_t* get_field_from_class( il2cpp_class_t* klass, Comparator comparator ) {
@@ -965,6 +1007,34 @@ namespace il2cpp
 		return get_field_from_class( klass, get_field_if_type_contains_multiple );
 	}
 
+	inline field_info_t* get_field_by_type_attrs_method_attr( il2cpp_class_t* klass, il2cpp_class_t* type_klass, il2cpp_class_t* method_attr_klass, int wanted_flags = 0, int wanted_vis = 0, bool want_or_ignore = false ) {
+		void* iter = nullptr;
+
+		const auto get_field_by_type_attrs_method_attrs = [ = ] ( field_info_t* field ) -> bool {
+			if ( strcmp( field->type( )->name( ), type_klass->type( )->name( ) ) == 0 )
+			{
+				bool has_attr = field_has_attribute( field, method_attr_klass );
+				if ( has_attr && want_or_ignore == e_attr_search::attr_search_ignore )
+					return false;
+				if ( !has_attr && want_or_ignore == e_attr_search::attr_search_want )
+					return false;
+
+				uint32_t vis = field->flags( ) & FIELD_ATTRIBUTE_FIELD_ACCESS_MASK;
+				if ( wanted_vis && ( vis != wanted_vis ) )
+					return false;
+
+				if ( wanted_flags && !( field->flags( ) & wanted_flags ) )
+					return false;
+
+				return true;
+			}
+
+			return false;
+		};
+
+		return get_field_from_class( klass, get_field_by_type_attrs_method_attrs );
+	}
+
 	inline void init( )
 	{
 		ASSIGN_TYPE( domain_get );
@@ -994,6 +1064,7 @@ namespace il2cpp
 		ASSIGN_TYPE( class_get_static_field_data );
 		ASSIGN_TYPE( class_get_parent );
 		ASSIGN_TYPE( class_get_interfaces );
+		ASSIGN_TYPE( class_get_image );
 
 		// Methods.
 		ASSIGN_TYPE( method_get_param_count );
@@ -1012,6 +1083,8 @@ namespace il2cpp
 		ASSIGN_TYPE( field_get_name );
 		ASSIGN_TYPE( field_static_get_value );
 		ASSIGN_TYPE( field_get_flags );
+		ASSIGN_TYPE( field_has_attribute );
+
 		// Object.
 		ASSIGN_TYPE( object_get_class );
 

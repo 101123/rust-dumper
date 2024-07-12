@@ -1,6 +1,10 @@
 #include "dumper.hpp"
 #include "hde/hde64.h"
 
+// il2cpp::global_metadata_header_t* il2cpp::s_GlobalMetadata = nullptr;
+
+il2cpp::il2cpp_class_t** il2cpp::s_TypeInfoDefinitionTable = nullptr;
+
 #define SEARCH_FOR_CLASS_BY_FIELD_COUNT( field_ct, equality, ... ) \
 [=]( ) -> il2cpp::il2cpp_class_t* \
 { \
@@ -61,6 +65,7 @@
 #define DUMP_MEMBER_BY_NAME( NAME )																	DUMP_MEMBER_BY_X( NAME, il2cpp::get_field_by_name( dumper_klass, #NAME )->offset( ) )
 #define DUMP_MEMBER_BY_NEAR_OFFSET( NAME, off )														DUMP_MEMBER_BY_X( NAME, il2cpp::get_field_by_offset( dumper_klass, off )->offset( ) )
 #define DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_MULTIPLE( NAME, ... )								DUMP_MEMBER_BY_X( NAME, SEARCH_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_MULTIPLE( __VA_ARGS__ )->offset( ) )
+#define DUMP_MEMBER_BY_TYPE_METHOD_ATTRIBUTE(NAME, type_klass, method_attr, wanted_vis, wanted_attrs, want_or_ignore ) DUMP_MEMBER_BY_X( NAME, il2cpp::get_field_by_type_attrs_method_attr( dumper_klass, type_klass, method_attr, wanted_attrs, wanted_vis, want_or_ignore )->offset() )
 
 #define DUMP_ALL_MEMBERS_OF_TYPE( NAME, wanted_type, wanted_vis, wanted_attrs ) \
 [=] ( ) {	\
@@ -196,12 +201,14 @@ void dumper::produce( )
 
 	write_pe_checksum( ( uint8_t* ) game_base );
 
+	il2cpp::s_TypeInfoDefinitionTable = *( il2cpp::il2cpp_class_t*** ) ( game_base + 0x3E1D058 );
+
 	il2cpp::il2cpp_class_t* entity_ref_class = SEARCH_FOR_CLASS_BY_FIELD_COUNT( 2, 0, DUMPER_CLASS( "BaseEntity" ), DUMPER_CLASS( "NetworkableId" ) );
 	il2cpp::il2cpp_class_t* hidden_value_base_class = nullptr;
 
-	printf( "get world velocity: %d\n", get_fn_length( ( void* ) ( game_base + 0x62C380 ) ) );
+	/*printf( "get world velocity: %d\n", get_fn_length( ( void* ) ( game_base + 0x62C380 ) ) );
 	printf( "get local velocity: %d\n", get_fn_length( ( void* ) ( game_base + 0x627920 ) ) );
-	printf( "other: %d\n", get_fn_length( ( void* ) ( game_base + 0x0649A20 ) ) );
+	printf( "other: %d\n", get_fn_length( ( void* ) ( game_base + 0x0649A20 ) ) );*/
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseNetworkable" );
 	DUMPER_SECTION( "Offsets" );
@@ -228,6 +235,7 @@ void dumper::produce( )
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseEntity" );
+	printf( "BaseEntity typedef index: %d\n", il2cpp::get_typedef_idx_for_class( dumper_klass ) );
 	DUMPER_SECTION( "Offsets" );
 	DUMP_MEMBER_BY_NAME( flags );
 	DUMP_MEMBER_BY_NAME( model );
@@ -303,15 +311,7 @@ void dumper::produce( )
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( uid, DUMPER_CLASS( "ItemId" ) );
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( info, DUMPER_CLASS( "ItemDefinition" ) );
 
-	// position is the next int after Item.Flags 
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( flags, "Flag" );
-	DUMP_MEMBER_BY_NEAR_OFFSET( position, DUMPER_OFFSET( flags ) + 0x4 );
-
-	// This one is trickier I think this is fine for now.
-	DUMP_MEMBER_BY_NEAR_OFFSET( amount, DUMPER_OFFSET( info ) + 0x20 );
-	DUMP_MEMBER_BY_NEAR_OFFSET( heldEntity, DUMPER_OFFSET( amount ) + 0x8 );
-
-	DUMP_ALL_MEMBERS_OF_TYPE( "UnkInt", DUMPER_CLASS_NAMESPACE( "System", "Int32" ), DUMPER_VIS_DONT_CARE, DUMPER_ATTR_DONT_CARE );
+	DUMP_ALL_MEMBERS_OF_TYPE( "UnkInt", DUMPER_CLASS_NAMESPACE( "System", "Int32" ), TYPE_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
 	DUMP_ALL_MEMBERS_OF_TYPE( "UnkEntityRef", entity_ref_class->type( ), TYPE_ATTRIBUTE_NOT_PUBLIC, DUMPER_ATTR_DONT_CARE );
 	DUMPER_CLASS_END;
 
@@ -352,7 +352,7 @@ void dumper::produce( )
 		DUMPER_ATTR_DONT_CARE,
 		METHOD_ATTRIBUTE_PUBLIC,
 		0,
-		il2cpp::method_attr_search_ignore
+		il2cpp::attr_search_ignore
 	);
 
 	DUMPER_CLASS_END;
@@ -615,6 +615,26 @@ void dumper::produce( )
 
 	DUMP_METHOD_BY_INFO_PTR( GetWaterLevel, get_water_level );
 	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseFishingRod" );
+	DUMP_MEMBER_BY_TYPE_METHOD_ATTRIBUTE( CurrentState,
+		DUMPER_CLASS( "BaseFishingRod/CatchState" ),
+		DUMPER_CLASS_NAMESPACE( "System.Runtime.CompilerServices", "CompilerGeneratedAttribute" ),
+		DUMPER_VIS_DONT_CARE,
+		DUMPER_ATTR_DONT_CARE,
+		il2cpp::attr_search_want );
+	DUMPER_CLASS_END;
+
+	/*
+		DUMP_METHOD_BY_RETURN_TYPE_METHOD_ATTRIBUTE( get_Rotation,
+		DUMPER_CLASS_NAMESPACE( "UnityEngine", "Quaternion" ),
+		DUMPER_CLASS_NAMESPACE( "System.Runtime.CompilerServices", "CompilerGeneratedAttribute" ),
+		DUMPER_ATTR_DONT_CARE,
+		METHOD_ATTRIBUTE_PUBLIC,
+		0,
+		il2cpp::attr_search_ignore
+	);
+	*/
 
 	fclose( outfile_handle );
 }
