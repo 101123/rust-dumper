@@ -236,6 +236,7 @@ void dumper::produce( )
 	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* position_lerp_class = nullptr;
+	il2cpp::method_info_t* zipline_audio_update = il2cpp::get_method_by_name( DUMPER_CLASS( "ZiplineAudio" ), "Update" );
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseEntity" );
 	DUMPER_SECTION( "Offsets" );
@@ -245,6 +246,16 @@ void dumper::produce( )
 	auto position_lerp = il2cpp::get_field_if_type_contains( dumper_klass, "%", FIELD_ATTRIBUTE_ASSEMBLY, DUMPER_ATTR_DONT_CARE );
 	DUMP_MEMBER_BY_X( positionLerp, position_lerp->offset( ) );
 	position_lerp_class = position_lerp->type( )->klass( );
+
+	DUMPER_SECTION( "Functions" );
+
+	DUMP_METHOD_BY_INFO_PTR( FindBone, SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		DUMPER_TYPE_NAMESPACE( "UnityEngine", "Transform" ),
+		DUMPER_VIS_DONT_CARE,
+		METHOD_ATTRIBUTE_VIRTUAL,
+		DUMPER_TYPE_NAMESPACE( "System", "String" ) ) );
+
+	DUMP_METHOD_BY_SIG_REL( GetWorldVelocity, zipline_audio_update->get_fn_ptr<uint8_t*>( ), "\x45\x33\xC0\x48\x8D\x48\x88\xE8\xCC\xCC\xCC\xCC\x33\xD2", 8 );
 	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* interpolator_class = nullptr;
@@ -252,7 +263,7 @@ void dumper::produce( )
 		DUMPER_CLASS_BEGIN_FROM_PTR( "PositionLerp", position_lerp_class );
 
 		DUMPER_SECTION( "Offsets" );
-			
+
 		auto interpolator = il2cpp::get_field_if_type_contains_without_attrs( dumper_klass, "%", FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_STATIC );
 		DUMP_MEMBER_BY_X( interpolator, interpolator->offset( ) );
 
@@ -339,7 +350,7 @@ void dumper::produce( )
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( uid, DUMPER_CLASS( "ItemId" ) );
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( info, DUMPER_CLASS( "ItemDefinition" ) );
 
-	DUMP_ALL_MEMBERS_OF_TYPE( "UnkInt", DUMPER_CLASS_NAMESPACE( "System", "Int32" ), TYPE_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+	DUMP_ALL_MEMBERS_OF_TYPE( "UnkInt", DUMPER_TYPE_NAMESPACE( "System", "Int32" ), DUMPER_VIS_DONT_CARE, DUMPER_ATTR_DONT_CARE );
 	DUMP_ALL_MEMBERS_OF_TYPE( "UnkEntityRef", entity_ref_class->type( ), TYPE_ATTRIBUTE_NOT_PUBLIC, DUMPER_ATTR_DONT_CARE );
 	DUMPER_CLASS_END;
 
@@ -385,6 +396,8 @@ void dumper::produce( )
 
 	DUMPER_CLASS_END;
 
+	il2cpp::il2cpp_class_t* input_state_class = SEARCH_FOR_CLASS_BY_FIELD_COUNT( 3, 0, DUMPER_CLASS( "InputMessage" ), DUMPER_CLASS( "InputMessage" ) );
+
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BasePlayer" );
 	DUMPER_SECTION( "Offsets" );
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( playerModel, DUMPER_CLASS( "PlayerModel" ) );
@@ -408,7 +421,7 @@ void dumper::produce( )
 	DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( clActiveItem, DUMPER_OFFSET( clActiveItem ) );
 
 	DUMPER_SECTION( "Functions" );
-	DUMP_METHOD_BY_PARAM_CLASS( ClientInput, SEARCH_FOR_CLASS_BY_FIELD_COUNT( 3, 0, DUMPER_CLASS( "InputMessage" ), DUMPER_CLASS( "InputMessage" ) ), 1, DUMPER_VIS_DONT_CARE, METHOD_ATTRIBUTE_VIRTUAL );
+	DUMP_METHOD_BY_PARAM_CLASS( ClientInput, input_state_class, 1, DUMPER_VIS_DONT_CARE, METHOD_ATTRIBUTE_VIRTUAL );
 
 	/*
 		parser.ParseTypeMethods(basePlayer, [](const char* className, const char* methodName, uint32_t rva) {
@@ -533,17 +546,17 @@ void dumper::produce( )
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseFishingRod" );
-	DUMPER_SECTION("Offsets")
+	DUMPER_SECTION( "Offsets" )
 		DUMP_MEMBER_BY_TYPE_METHOD_ATTRIBUTE( CurrentState,
 			DUMPER_CLASS( "BaseFishingRod/CatchState" ),
 			DUMPER_CLASS_NAMESPACE( "System.Runtime.CompilerServices", "CompilerGeneratedAttribute" ),
 			DUMPER_VIS_DONT_CARE,
 			DUMPER_ATTR_DONT_CARE,
 			il2cpp::attr_search_want );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( currentBobber, "FishingBobber" );
-		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( clientStrainAmountNormalised, "System.Single", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
+	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( currentBobber, "FishingBobber" );
+	DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( clientStrainAmountNormalised, "System.Single", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
 	DUMPER_SECTION( "Functions" );
-		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( UpdateLineRenderer, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
+	DUMP_METHOD_BY_RETURN_TYPE_ATTRS( UpdateLineRenderer, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "GameManifest" );
@@ -553,51 +566,37 @@ void dumper::produce( )
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemModProjectile" );
 	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_NAME( projectileObject );
-		DUMP_MEMBER_BY_NAME( ammoType );
-		DUMP_MEMBER_BY_NAME( projectileVelocity );
-		DUMP_MEMBER_BY_NAME( projectileVelocitySpread );
+	DUMP_MEMBER_BY_NAME( projectileObject );
+	DUMP_MEMBER_BY_NAME( ammoType );
+	DUMP_MEMBER_BY_NAME( projectileVelocity );
+	DUMP_MEMBER_BY_NAME( projectileVelocitySpread );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "Projectile" );
 	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_NAME( initialVelocity );
-		DUMP_MEMBER_BY_NAME( drag );
-		DUMP_MEMBER_BY_NAME( gravityModifier );
-		DUMP_MEMBER_BY_NAME( thickness );
-		DUMP_MEMBER_BY_NAME( initialDistance );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( owner, DUMPER_CLASS( "BasePlayer" ) );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( sourceProjectilePrefab, DUMPER_CLASS( "Projectile" ) );
+	DUMP_MEMBER_BY_NAME( initialVelocity );
+	DUMP_MEMBER_BY_NAME( drag );
+	DUMP_MEMBER_BY_NAME( gravityModifier );
+	DUMP_MEMBER_BY_NAME( thickness );
+	DUMP_MEMBER_BY_NAME( initialDistance );
+	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( owner, DUMPER_CLASS( "BasePlayer" ) );
+	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( sourceProjectilePrefab, DUMPER_CLASS( "Projectile" ) );
 	DUMPER_CLASS_END
 
-	DUMPER_CLASS_BEGIN_FROM_NAME( "CraftingQueue" );
+		DUMPER_CLASS_BEGIN_FROM_NAME( "CraftingQueue" );
 	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( icons, "List" );
+	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( icons, "List" );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "CraftingQueueIcon" );
 	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( endTime, "System.Single" );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( item, DUMPER_CLASS( "ItemDefinition" ) );
+	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( endTime, "System.Single" );
+	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( item, DUMPER_CLASS( "ItemDefinition" ) );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "Planner" );
 	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( currentConstruction, DUMPER_CLASS( "Construction" ) );
-	DUMPER_CLASS_END;
-
-	il2cpp::method_info_t* zipline_audio_update = il2cpp::get_method_by_name( DUMPER_CLASS( "ZiplineAudio" ), "Update" );
-
-	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseEntity" );
-	DUMPER_SECTION( "Functions" );
-
-	DUMP_METHOD_BY_INFO_PTR( FindBone, SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-		DUMPER_TYPE_NAMESPACE( "UnityEngine", "Transform" ),
-		DUMPER_VIS_DONT_CARE,
-		METHOD_ATTRIBUTE_VIRTUAL,
-		DUMPER_TYPE_NAMESPACE( "System", "String" ) ) );
-
-	DUMP_METHOD_BY_SIG_REL( GetWorldVelocity, zipline_audio_update->get_fn_ptr<uint8_t*>( ), "\x45\x33\xC0\x48\x8D\x48\x88\xE8\xCC\xCC\xCC\xCC\x33\xD2", 8 );
+	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( currentConstruction, DUMPER_CLASS( "Construction" ) );
 	DUMPER_CLASS_END;
 
 	// LaunchProjectileClientSide.
@@ -638,6 +637,7 @@ void dumper::produce( )
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "Effect", effect_class );
 	DUMPER_SECTION( "Offsets" );
+
 	DUMP_ALL_MEMBERS_OF_TYPE( "UnkVector", DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), DUMPER_VIS_DONT_CARE, DUMPER_ATTR_DONT_CARE );
 	DUMPER_CLASS_END;
 
@@ -655,8 +655,9 @@ void dumper::produce( )
 
 	DUMP_METHOD_BY_INFO_PTR( UpgradeToGrade, upgrade_to_grade );
 	DUMPER_CLASS_END;
-	
-	DUMPER_CLASS_BEGIN_FROM_NAME( "WaterLevel" );
+
+	// Class name doesnt exist...
+	/*DUMPER_CLASS_BEGIN_FROM_NAME( "WaterLevel" );
 	il2cpp::method_info_t* test = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 		DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
 		METHOD_ATTRIBUTE_PRIVATE,
@@ -679,6 +680,7 @@ void dumper::produce( )
 
 	DUMP_METHOD_BY_INFO_PTR( GetWaterLevel, get_water_level );
 	DUMPER_CLASS_END;
+	*/
 
 	/*
 		DUMP_METHOD_BY_RETURN_TYPE_METHOD_ATTRIBUTE( get_Rotation,
@@ -689,7 +691,22 @@ void dumper::produce( )
 		0,
 		il2cpp::attr_search_ignore
 	);
+
 	*/
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerWalkMovement" );
+
+	il2cpp::method_info_t* client_input = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+		METHOD_ATTRIBUTE_PUBLIC,
+		DUMPER_ATTR_DONT_CARE,
+		input_state_class->type( ),
+		DUMPER_TYPE( "ModelState" )
+	);
+
+	DUMP_METHOD_BY_INFO_PTR( ClientInput, client_input );
+	DUMPER_CLASS_END;
+
 
 	fclose( outfile_handle );
 }
