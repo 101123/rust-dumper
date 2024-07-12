@@ -363,6 +363,7 @@ void dumper::produce( )
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "ItemContainer", item_container_class );
 	DUMPER_SECTION( "Offsets" );
+	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( uid, "ItemContainerId" );
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( itemList, searchBuf );
 	DUMPER_CLASS_END;
 
@@ -393,7 +394,16 @@ void dumper::produce( )
 		0,
 		il2cpp::attr_search_ignore
 	);
+	DUMPER_CLASS_END
 
+	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerTick" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( inputState );
+		DUMP_MEMBER_BY_NAME( position );
+		DUMP_MEMBER_BY_NAME( modelState );
+		DUMP_MEMBER_BY_NAME( activeItem );
+		DUMP_MEMBER_BY_NAME( eyePos );
+		DUMP_MEMBER_BY_NAME( parentID );
 	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* input_state_class = SEARCH_FOR_CLASS_BY_FIELD_COUNT( 3, 0, DUMPER_CLASS( "InputMessage" ), DUMPER_CLASS( "InputMessage" ) );
@@ -415,6 +425,7 @@ void dumper::produce( )
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( _lookingAtCollider, "UnityEngine.Collider" );
 	DUMP_MEMBER_BY_NEAR_OFFSET( _lookingAtEntity, DUMPER_OFFSET( _lookingAtCollider ) - 0x8 );
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_MULTIPLE( lastSentTickTime, "BasePlayer", "System.Single" );
+	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( lastSentTick, DUMPER_CLASS( "PlayerTick" ) );
 
 	DUMPER_SECTION( "EncryptedValue Functions" );
 	DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( lastSentTickTime, DUMPER_OFFSET( lastSentTickTime ) );
@@ -469,6 +480,7 @@ void dumper::produce( )
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerWalkMovement" );
 	DUMPER_SECTION( "Offsets" );
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( capsule, "UnityEngine.CapsuleCollider" );
+	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( ladder, DUMPER_CLASS( "TriggerLadder" ) );
 	DUMP_MEMBER_BY_NEAR_OFFSET( groundTime, DUMPER_OFFSET( capsule ) + 0x14 );
 	DUMPER_CLASS_END;
 
@@ -596,7 +608,48 @@ void dumper::produce( )
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "Planner" );
 	DUMPER_SECTION( "Offsets" );
+
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( currentConstruction, DUMPER_CLASS( "Construction" ) );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "HeldEntity" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( viewModel, DUMPER_CLASS( "ViewModel" ) ); // <viewModel>k__BackingField
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "ViewModel" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( instance, DUMPER_CLASS( "BaseViewModel" ) ); 
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "MedicalTool" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( resetTime, "System.Single", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "WaterBody" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( meshFilter, "UnityEngine.MeshFilter" ); // <MeshFilter>k__BackingField
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainMeta" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( collision, "TerrainCollision", FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_STATIC ); // <Collision>k__BackingField
+		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( heightMap, "TerrainHeightMap", FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_STATIC ); // <HeightMap>k__BackingField
+	DUMPER_CLASS_END
+
+	il2cpp::method_info_t* zipline_audio_update = il2cpp::get_method_by_name( DUMPER_CLASS( "ZiplineAudio" ), "Update" );
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseEntity" );
+	DUMPER_SECTION( "Functions" );
+
+	DUMP_METHOD_BY_INFO_PTR( FindBone, SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		DUMPER_TYPE_NAMESPACE( "UnityEngine", "Transform" ),
+		DUMPER_VIS_DONT_CARE,
+		METHOD_ATTRIBUTE_VIRTUAL,
+		DUMPER_TYPE_NAMESPACE( "System", "String" ) ) );
+
+	DUMP_METHOD_BY_SIG_REL( GetWorldVelocity, zipline_audio_update->get_fn_ptr<uint8_t*>( ), "\x45\x33\xC0\x48\x8D\x48\x88\xE8\xCC\xCC\xCC\xCC\x33\xD2", 8 );
 	DUMPER_CLASS_END;
 
 	// LaunchProjectileClientSide.
