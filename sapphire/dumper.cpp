@@ -679,6 +679,36 @@ void dumper::produce( )
 	}
 	*/
 
+	il2cpp::il2cpp_class_t* pet_command_desc_class = DUMPER_CLASS( "PetCommandList/PetCommandDesc" );
+	il2cpp::il2cpp_class_t* local_player_class = il2cpp::search_for_class_by_field_types( pet_command_desc_class->type(), 1, FIELD_ATTRIBUTE_STATIC );
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "LocalPlayer", local_player_class );
+	DUMPER_SECTION( "Functions" );
+		il2cpp::method_info_t* local_player_item_command = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			METHOD_ATTRIBUTE_STATIC,
+			DUMPER_TYPE( "ItemId" ),
+			DUMPER_TYPE_NAMESPACE( "System", "String" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( ItemCommand, local_player_item_command );
+
+		il2cpp::method_info_t* local_player_move_item = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			METHOD_ATTRIBUTE_STATIC,
+			DUMPER_TYPE( "ItemId" ),
+			DUMPER_TYPE( "ItemContainerId" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Int32" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Int32" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( MoveItem, local_player_move_item );
+	DUMPER_CLASS_END;
+
+	//il2cpp::il2cpp_class_t* water_level_class = il2cpp::search_for_class_by_field_types( con_button_class->type(), 56, FIELD_ATTRIBUTE_STATIC );
+
 	il2cpp::il2cpp_class_t* convar_graphics_klass = il2cpp::search_for_class_by_method_return_type_name( "UnityEngine.FullScreenMode", METHOD_ATTRIBUTE_PRIVATE, METHOD_ATTRIBUTE_STATIC );
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "Convar_Graphics", convar_graphics_klass );
