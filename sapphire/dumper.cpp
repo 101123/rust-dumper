@@ -532,6 +532,7 @@ void dumper::produce( )
 	DUMP_MEMBER_BY_NEAR_OFFSET( _lookingAtEntity, DUMPER_OFFSET( _lookingAtCollider ) - 0x8 );
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_MULTIPLE( lastSentTickTime, "BasePlayer", "System.Single" );
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( lastSentTick, DUMPER_CLASS( "PlayerTick" ) );
+	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( mounted, entity_ref_class ); 
 
 	DUMPER_SECTION( "EncryptedValue Functions" );
 	DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( lastSentTickTime, DUMPER_OFFSET( lastSentTickTime ) );
@@ -629,6 +630,7 @@ void dumper::produce( )
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( capsule, "UnityEngine.CapsuleCollider" );
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( ladder, DUMPER_CLASS( "TriggerLadder" ) );
 	DUMP_MEMBER_BY_NEAR_OFFSET( groundTime, DUMPER_OFFSET( capsule ) + 0x14 );
+	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( modify, "BaseEntity.MovementModify" );
 	DUMPER_CLASS_END;
 
 
@@ -766,7 +768,9 @@ void dumper::produce( )
 			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			METHOD_ATTRIBUTE_STATIC,
-			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Bounds" ),
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
 			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
 			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
 			DUMPER_TYPE( "BaseEntity" )
