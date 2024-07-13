@@ -850,6 +850,40 @@ namespace il2cpp
 
 		return get_method_from_class( klass, get_method_by_return_type_and_param_types );
 	}
+	inline method_info_t* get_method_by_return_type_and_param_types_str( il2cpp_class_t* klass, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, const char** param_strs, int param_ct ) {
+		void* iter = nullptr;
+
+		const auto get_method_by_return_type_and_param_types = [=]( method_info_t* method ) -> bool {
+			uint32_t count = method->param_count();
+			if ( count != param_ct )
+				return false;
+
+			il2cpp::il2cpp_type_t* ret = method->return_type();
+			if ( !ret || strcmp( ret->name(), ret_type->name() ) != 0 )
+				return false;
+
+			int vis = method->flags() & METHOD_ATTRIBUTE_MEMBER_ACCESS_MASK;
+			if ( wanted_vis && vis != wanted_vis )
+				return false;
+
+			if ( wanted_flags && !( method->flags() & wanted_flags ) )
+				return false;
+
+			int matchedTypes = 0;
+			for ( uint32_t i = 0; i < count; i++ ) {
+				il2cpp_type_t* param = method->get_param( i );
+				if ( !param )
+					continue;
+
+				if ( strcmp( param->name(), param_strs[ i ] ) == 0 )
+					matchedTypes++;
+			}
+
+			return matchedTypes == param_ct;
+		};
+
+		return get_method_from_class( klass, get_method_by_return_type_and_param_types );
+	}
 	inline method_info_t* get_method_by_param_type_name( il2cpp_class_t* klass, const char* name, int param_ct, uint32_t flags )
 	{
 		void* iter = nullptr;

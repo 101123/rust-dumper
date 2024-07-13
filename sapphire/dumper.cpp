@@ -33,6 +33,13 @@ il2cpp::il2cpp_class_t** il2cpp::s_TypeInfoDefinitionTable = nullptr;
 	return il2cpp::get_method_by_return_type_and_param_types( dumper_klass, ret_type, wanted_vis, wanted_flags, param_types, _countof( param_types ) ); \
 } ( )
 
+#define SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_STR( ret_type, wanted_vis, wanted_flags, ... ) \
+[=]( ) -> il2cpp::method_info_t* \
+{ \
+	const char* params[ ] = { __VA_ARGS__ }; \
+	return il2cpp::get_method_by_return_type_and_param_types_str( dumper_klass, ret_type, wanted_vis, wanted_flags, params, _countof( params ) ); \
+} ( )
+
 #define DUMPER_VIS_DONT_CARE 0 
 #define DUMPER_ATTR_DONT_CARE 0
 
@@ -562,6 +569,7 @@ void dumper::produce( )
 
 	DUMP_METHOD_BY_INFO_PTR( SendProjectileAttack, base_player_send_projectile_attack );
 
+	DUMP_METHOD_BY_RETURN_TYPE_STR( get_VisiblePlayerList, "BufferList<BasePlayer>", 0, METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC );
 
 	/*
 		parser.ParseTypeMethods(basePlayer, [](const char* className, const char* methodName, uint32_t rva) {
@@ -789,20 +797,19 @@ void dumper::produce( )
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( currentBobber, "FishingBobber" );
 	DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( clientStrainAmountNormalised, "System.Single", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
 	DUMPER_SECTION( "Functions" );
-	DUMP_METHOD_BY_RETURN_TYPE_ATTRS( UpdateLineRenderer, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( UpdateLineRenderer, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
 
-	/*il2cpp::method_info_t* base_fishing_rod_evaluate_fishing_position = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-		DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
-		METHOD_ATTRIBUTE_PRIVATE,
-		DUMPER_ATTR_DONT_CARE,
-		DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
-		DUMPER_TYPE( "BasePlayer" ),
-		DUMPER_TYPE( "BaseFishingRod/FailReason" ),
-		DUMPER_TYPE( "WaterBody" )
-	);
+		il2cpp::method_info_t* base_fishing_rod_evaluate_fishing_position = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_STR(
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+			METHOD_ATTRIBUTE_PRIVATE,
+			DUMPER_ATTR_DONT_CARE,
+			"UnityEngine.Vector3&",
+			"BasePlayer",
+			"BaseFishingRod.FailReason&",
+			"WaterBody&"
+		);
 
-	DUMP_METHOD_BY_INFO_PTR( EvaluateFishingPosition, base_fishing_rod_evaluate_fishing_position );*/
-
+		DUMP_METHOD_BY_INFO_PTR( EvaluateFishingPosition, base_fishing_rod_evaluate_fishing_position );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "GameManifest" );
