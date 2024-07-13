@@ -54,6 +54,10 @@ namespace il2cpp
 #define TYPE_ATTRIBUTE_NESTED_ASSEMBLY       0x00000005
 #define TYPE_ATTRIBUTE_NESTED_FAM_AND_ASSEM  0x00000006
 #define TYPE_ATTRIBUTE_NESTED_FAM_OR_ASSEM   0x00000007
+#define TYPE_ATTRIBUTE_INTERFACE			 0x00000020
+#define TYPE_ATTRIBUTE_ABSTRACT 			 0x00000080
+#define TYPE_ATTRIBUTE_SEALED 		         0x00000100
+#define TYPE_ATTRIBUTE_SERIALIZABLE		     0x00002000
 
 	struct property_info_t;
 	struct method_info_t;
@@ -730,6 +734,57 @@ namespace il2cpp
 		return search_for_class( search_for_class_by_field_types );
 	}
 
+	inline il2cpp_class_t* search_for_static_class_with_method_with_rettype_param_types( int method_ct, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, il2cpp_type_t** param_types, int param_ct ) {
+		const auto search_for_static_class_with_method_with_rettype_param_types = [=]( il2cpp_class_t* klass ) {
+			il2cpp::il2cpp_type_t* type = klass->type();
+
+			if ( !type )
+				return false;
+
+			uint32_t attrs = type->attributes();
+
+			if ( attrs != 0 )
+				return false;
+
+			void* iter = nullptr;
+			uint32_t count = 0;
+
+			while ( method_info_t* method = klass->methods( &iter ) ) {
+				uint32_t count = method->param_count();
+				if ( count != param_ct )
+					continue;
+
+				il2cpp::il2cpp_type_t* ret = method->return_type();
+				if ( !ret || strcmp( ret->name(), ret_type->name() ) != 0 )
+					continue;
+
+				int vis = method->flags() & METHOD_ATTRIBUTE_MEMBER_ACCESS_MASK;
+				if ( wanted_vis && vis != wanted_vis )
+					continue;
+
+				if ( wanted_flags && !( method->flags() & wanted_flags ) )
+					continue;
+
+				int matchedTypes = 0;
+				for ( uint32_t i = 0; i < count; i++ ) {
+					il2cpp_type_t* param = method->get_param( i );
+					if ( !param )
+						continue;
+
+					if ( strcmp( param->name(), param_types[ i ]->name() ) == 0 )
+						matchedTypes++;
+				}
+
+				if ( matchedTypes == param_ct )
+					return true;
+			}
+
+			if ( count != method_ct )
+				return false;
+		};
+
+		return search_for_class( search_for_static_class_with_method_with_rettype_param_types );
+	}
 	template<typename Comparator>
 	inline method_info_t* get_method_from_class( il2cpp_class_t* klass, Comparator comparator ) {
 		void* iter = nullptr;

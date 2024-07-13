@@ -12,6 +12,13 @@ il2cpp::il2cpp_class_t** il2cpp::s_TypeInfoDefinitionTable = nullptr;
 	return il2cpp::search_for_class_by_field_count( match_klasses, _countof( match_klasses ), field_ct, equality ); \
 } ( ) \
 
+#define SEARCH_FOR_STATIC_CLASS_BY_METHOD_COUNT( method_ct, ret_type, wanted_vis, wanted_flags, ... ) \
+[=]( ) -> il2cpp::il2cpp_class_t* \
+{ \
+	il2cpp::il2cpp_type_t* param_types[ ] = { __VA_ARGS__ }; \
+	return il2cpp::search_for_static_class_with_method_with_rettype_param_types( method_ct, ret_type, wanted_vis, wanted_flags, param_types, _countof( param_types ) ); \
+} ( )
+
 #define SEARCH_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_MULTIPLE( ... ) \
 [=]( ) -> il2cpp::field_info_t* \
 { \
@@ -710,7 +717,54 @@ void dumper::produce( )
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GetInventory, DUMPER_CLASS( "PlayerInventory" ), 0, METHOD_ATTRIBUTE_ASSEM, METHOD_ATTRIBUTE_STATIC );
 	DUMPER_CLASS_END;
 
-	//il2cpp::il2cpp_class_t* water_level_class = il2cpp::search_for_class_by_field_types( con_button_class->type(), 56, FIELD_ATTRIBUTE_STATIC );
+	il2cpp::il2cpp_class_t* water_level_class = SEARCH_FOR_STATIC_CLASS_BY_METHOD_COUNT(
+		14,
+		DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+		METHOD_ATTRIBUTE_PUBLIC,
+		METHOD_ATTRIBUTE_STATIC,
+		DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
+		DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
+		DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+		DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+		DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+		DUMPER_TYPE( "BaseEntity" )
+	);
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "WaterLevel", water_level_class );
+	DUMPER_SECTION( "Functions" );
+		il2cpp::method_info_t* water_level_test = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			METHOD_ATTRIBUTE_STATIC,
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+			DUMPER_TYPE( "BaseEntity" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( Test, water_level_test );
+
+		il2cpp::method_info_t* water_level_get_water_level = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+			METHOD_ATTRIBUTE_PRIVATE,
+			METHOD_ATTRIBUTE_STATIC,
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( GetWaterLevel, water_level_get_water_level );
+
+		il2cpp::method_info_t* water_level_factor = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			METHOD_ATTRIBUTE_STATIC,
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Bounds" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+			DUMPER_TYPE( "BaseEntity" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( Factor, water_level_factor );
+	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* convar_graphics_klass = il2cpp::search_for_class_by_method_return_type_name( "UnityEngine.FullScreenMode", METHOD_ATTRIBUTE_PRIVATE, METHOD_ATTRIBUTE_STATIC );
 
