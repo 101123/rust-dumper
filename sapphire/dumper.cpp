@@ -705,6 +705,9 @@ void dumper::produce( )
 		);
 
 		DUMP_METHOD_BY_INFO_PTR( MoveItem, local_player_move_item );
+
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( get_Entity, DUMPER_CLASS( "BasePlayer" ), 0, METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GetInventory, DUMPER_CLASS( "PlayerInventory" ), 0, METHOD_ATTRIBUTE_ASSEM, METHOD_ATTRIBUTE_STATIC );
 	DUMPER_CLASS_END;
 
 	//il2cpp::il2cpp_class_t* water_level_class = il2cpp::search_for_class_by_field_types( con_button_class->type(), 56, FIELD_ATTRIBUTE_STATIC );
