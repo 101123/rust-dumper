@@ -617,8 +617,6 @@ void dumper::produce( )
 	DUMPER_CLASS_BEGIN_FROM_NAME( "HackableLockedCrate" );
 	DUMPER_SECTION( "Offsets" );
 	DUMP_MEMBER_BY_NAME( timerText );
-	DUMP_MEMBER_BY_NAME( hackProgressBeep );
-	DUMP_MEMBER_BY_NEAR_OFFSET( hackSeconds, DUMPER_OFFSET( hackProgressBeep ) + 0x8 );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ProjectileWeaponMod" );
