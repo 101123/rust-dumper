@@ -221,6 +221,35 @@ void dumper::produce( )
 		}
 	}
 
+	il2cpp::il2cpp_class_t* weapon_rack_class = DUMPER_CLASS( "WeaponRack" );
+	il2cpp::il2cpp_class_t* weapon_rack_slot_class = nullptr;
+	il2cpp::il2cpp_class_t* game_manager_class = nullptr;
+
+	if ( weapon_rack_class ) {
+		il2cpp::method_info_t* weapon_rack_position_and_display_item = il2cpp::get_method_by_return_type_attrs( weapon_rack_class, DUMPER_CLASS_NAMESPACE( "UnityEngine", "Collider" ), 0, 0, 7 );
+
+		if ( weapon_rack_position_and_display_item ) {
+			il2cpp::il2cpp_type_t* param_type = weapon_rack_position_and_display_item->get_param( 0 );
+
+			if ( param_type ) {
+				weapon_rack_slot_class = param_type->klass();
+
+				if ( weapon_rack_slot_class ) {
+					il2cpp::method_info_t* weapon_rack_slot_create_pegs = il2cpp::get_method_by_return_type_attrs( weapon_rack_slot_class, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, 0, 3 );
+
+					if ( weapon_rack_slot_create_pegs ) {
+						param_type = weapon_rack_slot_create_pegs->get_param( 2 );
+
+						if ( param_type ) {
+							game_manager_class = param_type->klass();
+						}
+					}
+				}
+			}
+		}
+	}
+
+
 	/*printf( "get world velocity: %d\n", get_fn_length( ( void* ) ( game_base + 0x62C380 ) ) );
 	printf( "get local velocity: %d\n", get_fn_length( ( void* ) ( game_base + 0x627920 ) ) );
 	printf( "other: %d\n", get_fn_length( ( void* ) ( game_base + 0x0649A20 ) ) );*/
@@ -389,6 +418,8 @@ void dumper::produce( )
 			hit_test_class->type()
 		);
 		DUMP_METHOD_BY_INFO_PTR( ProcessAttack, base_melee_process_attack );
+
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( DoThrow, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_ASSEM, DUMPER_ATTR_DONT_CARE );
 	DUMPER_CLASS_END
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "FlintStrikeWeapon" );
@@ -686,7 +717,19 @@ void dumper::produce( )
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "GameManifest" );
 	DUMPER_SECTION( "Functions" );
-	DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GUIDToObject, DUMPER_CLASS_NAMESPACE( "UnityEngine", "Object" ), 1, METHOD_ATTRIBUTE_ASSEM, DUMPER_ATTR_DONT_CARE );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GUIDToObject, DUMPER_CLASS_NAMESPACE( "UnityEngine", "Object" ), 1, METHOD_ATTRIBUTE_ASSEM, DUMPER_ATTR_DONT_CARE );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "GameManager", game_manager_class );
+	DUMPER_SECTION( "Functions" );
+		il2cpp::method_info_t* game_manager_create_prefab = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "GameObject" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE_NAMESPACE( "System", "String" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" )
+		);
+		DUMP_METHOD_BY_INFO_PTR( CreatePrefab, game_manager_create_prefab ); 
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemModProjectile" );
