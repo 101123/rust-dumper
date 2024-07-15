@@ -351,7 +351,7 @@ void dumper::produce( )
 
 		DUMPER_SECTION( "Offsets" );
 
-		auto interpolator = il2cpp::get_field_from_flags( interpolator_class, FIELD_ATTRIBUTE_PRIVATE | FIELD_ATTRIBUTE_INIT_ONLY );
+		auto interpolator = il2cpp::get_field_from_flags( position_lerp_class, FIELD_ATTRIBUTE_PRIVATE | FIELD_ATTRIBUTE_INIT_ONLY );
 		DUMP_MEMBER_BY_X( interpolator, interpolator->offset( ) );
 
 		interpolator_class = interpolator->type( )->klass( );
