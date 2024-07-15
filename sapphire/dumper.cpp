@@ -123,12 +123,59 @@ char* GetInnerClassFromEncClass( const char* name )
 	return buf;
 }
 
-#define DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( NAME, off ) \
+size_t get_fn_length( void* address, uint32_t limit ) {
+	uint64_t len = 0;
+
+	while ( len < limit ) {
+		uint8_t* inst = ( uint8_t* )address + len;
+
+		// Break on padding or int 3
+		if ( *inst == 0 || *inst == 0xCC ) {
+			break;
+		}
+
+		// Break on return
+		if ( *inst == 0xC3 ) {
+			len++;
+			break;
+		}
+
+		hde64s hs;
+		uint64_t instr_len = hde64_disasm( inst, &hs );
+
+		if ( hs.flags & F_ERROR ) {
+			break;
+		}
+
+		len += instr_len;
+	}
+
+	return len;
+}
+
+void dump_fn_to_file( const char* label, uint8_t* address ) {
+	dumper::write_to_file( "\tconst static uint8_t %s[] = { ", label );
+
+	size_t len = get_fn_length( address, 16384 );
+
+	for ( uint32_t i = 0; i < len - 1; i++ ) {
+		dumper::write_to_file( "0x%02X, ", address[ i ] );
+	}
+
+
+	dumper::write_to_file( "0x%02X };\n", address[ len - 1 ] );
+}
+
+#define DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( NAME, off, TYPE ) \
 	{ il2cpp::il2cpp_type_t* enc_type = il2cpp::get_field_by_offset( dumper_klass, off )->type(); \
 	il2cpp::method_info_t* enc_getter = il2cpp::get_method_by_return_type_str( enc_type->klass( ), GetInnerClassFromEncClass( enc_type->name( ) ), 0 ); \
 	il2cpp::method_info_t* enc_setter = il2cpp::get_method_by_return_type_str( enc_type->klass( ), "System.Void", 1 ); \
 	dumper::write_to_file("\tconstexpr const static size_t " #NAME "_EncryptedValueGetter = 0x%x;\n",  DUMPER_RVA( enc_getter->get_fn_ptr<uint64_t>() ) );\
-	dumper::write_to_file("\tconstexpr const static size_t " #NAME "_EncryptedValueSetter = 0x%x;\n",  DUMPER_RVA( enc_setter->get_fn_ptr<uint64_t>() ) ); }
+	dump_fn_to_file(#NAME "_EncryptedValueGetterFunc", enc_getter->get_fn_ptr<uint8_t*>()); \
+	dumper::write_to_file("\tconst static " #TYPE " ( *" #NAME "_EncryptedValueGet )( " #TYPE "* ) = decltype( " #NAME "_EncryptedValueGet )( &" #NAME "_EncryptedValueGetterFunc );\n"); \
+	dumper::write_to_file("\tconstexpr const static size_t " #NAME "_EncryptedValueSetter = 0x%x;\n",  DUMPER_RVA( enc_setter->get_fn_ptr<uint64_t>() ) ); \
+	dump_fn_to_file(#NAME "_EncryptedValueSetterFunc", enc_setter->get_fn_ptr<uint8_t*>()); \
+	dumper::write_to_file("\tconst static void ( *" #NAME "_EncryptedValueSet )( " #TYPE "*, " #TYPE " ) = decltype( " #NAME "_EncryptedValueSet )( &" #NAME "_EncryptedValueSetterFunc );\n"); } 
 
 #define DUMP_HIDDEN_MEMBER_KEY_GETTER_AND_SETTER( NAME, off ) \
 	{ il2cpp::il2cpp_type_t* hidden_type = il2cpp::get_field_by_offset( dumper_klass, off )->type(); \
@@ -142,7 +189,10 @@ char* GetInnerClassFromEncClass( const char* name )
 	il2cpp::method_info_t* enc_getter = il2cpp::get_method_by_return_type_str( key_type->klass( ), "System.UInt64", 0 );\
 	il2cpp::method_info_t* enc_setter = il2cpp::get_method_by_return_type_str( key_type->klass( ), "System.Void", 1 ); \
 	dumper::write_to_file( "\tconstexpr const static size_t " #NAME "_HiddenValueEncryptedKeyGetter = 0x%x;\n", DUMPER_RVA( enc_getter->get_fn_ptr<uint64_t>( ) ) ); \
-	dumper::write_to_file( "\tconstexpr const static size_t " #NAME "_HiddenValueEncryptedKeySetter = 0x%x;\n", DUMPER_RVA( enc_setter->get_fn_ptr<uint64_t>( ) ) ); }
+	dump_fn_to_file(#NAME "_HiddenValueEncryptedKeyGetterFunc", enc_getter->get_fn_ptr<uint8_t*>()); \
+	dumper::write_to_file("\tconst static int64_t ( *" #NAME "_HiddenValueEncryptedKeyGet )( int64_t* ) = decltype( " #NAME "_HiddenValueEncryptedKeyGet )( &" #NAME "_HiddenValueEncryptedKeyGetterFunc );\n"); \
+	dumper::write_to_file( "\tconstexpr const static size_t " #NAME "_HiddenValueEncryptedKeySetter = 0x%x;\n", DUMPER_RVA( enc_setter->get_fn_ptr<uint64_t>( ) ) ); \
+	dump_fn_to_file(#NAME "_HiddenValueEncryptedKeySetterFunc", enc_setter->get_fn_ptr<uint8_t*>()); }
 
 #define DUMPER_OFFSET( NAME ) NAME##_Offset
 
@@ -186,28 +236,6 @@ void write_pe_checksum( uint8_t* image ) {
 	dumper::write_to_file( "namespace GameAssembly {\n" );
 	dumper::write_to_file( "\tconstexpr const static size_t Checksum = 0x%x;\n", dos_header->e_csum );
 	dumper::write_to_file( "}\n\n" );
-}
-
-size_t get_fn_length( void* address ) {
-	size_t len = 0;
-
-	while ( true ) {
-		uint8_t* inst = ( uint8_t* ) address + len;
-		if ( *inst == 0 || *inst == 0xCC )
-			break;
-
-		hde64s hs;
-		uint32_t inst_len = hde64_disasm( inst, &hs );
-		if ( hs.flags & F_ERROR )
-			break;
-
-		if ( hs.opcode == 0xC3 )
-			return len;
-
-		len += inst_len;
-	}
-
-	return len;
 }
 
 void dumper::produce( )
@@ -268,11 +296,6 @@ void dumper::produce( )
 			}
 		}
 	}
-
-
-	/*printf( "get world velocity: %d\n", get_fn_length( ( void* ) ( game_base + 0x62C380 ) ) );
-	printf( "get local velocity: %d\n", get_fn_length( ( void* ) ( game_base + 0x627920 ) ) );
-	printf( "other: %d\n", get_fn_length( ( void* ) ( game_base + 0x0649A20 ) ) );*/
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseNetworkable" );
 	DUMPER_SECTION( "Offsets" );
@@ -540,8 +563,8 @@ void dumper::produce( )
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( mounted, entity_ref_class ); 
 
 	DUMPER_SECTION( "EncryptedValue Functions" );
-	DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( lastSentTickTime, DUMPER_OFFSET( lastSentTickTime ) );
-	DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( clActiveItem, DUMPER_OFFSET( clActiveItem ) );
+	DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( lastSentTickTime, DUMPER_OFFSET( lastSentTickTime ), float );
+	DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( clActiveItem, DUMPER_OFFSET( clActiveItem ), uint64_t );
 
 	DUMPER_SECTION( "Functions" );
 	DUMP_METHOD_BY_PARAM_CLASS( ClientInput, input_state_class, 1, DUMPER_VIS_DONT_CARE, METHOD_ATTRIBUTE_VIRTUAL );
@@ -790,7 +813,7 @@ void dumper::produce( )
 	DUMPER_SECTION( "Offsets" );
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( _fov, convar_graphics_klass->name( ), FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_STATIC );
 	DUMPER_SECTION( "EncryptedValue Functions" );
-	DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( _fov, DUMPER_OFFSET( _fov ) );
+	DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( _fov, DUMPER_OFFSET( _fov ), float );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseFishingRod" );
