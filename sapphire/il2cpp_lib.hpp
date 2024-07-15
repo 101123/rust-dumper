@@ -735,13 +735,13 @@ namespace il2cpp
 	}
 
 	inline il2cpp_class_t* search_for_static_class_with_method_with_rettype_param_types( int method_ct, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, il2cpp_type_t** param_types, int param_ct ) {
-		const auto search_for_static_class_with_method_with_rettype_param_types = [=]( il2cpp_class_t* klass ) {
-			il2cpp::il2cpp_type_t* type = klass->type();
+		const auto search_for_static_class_with_method_with_rettype_param_types = [ = ] ( il2cpp_class_t* klass ) {
+			il2cpp::il2cpp_type_t* type = klass->type( );
 
 			if ( !type )
 				return false;
 
-			uint32_t attrs = type->attributes();
+			uint32_t attrs = type->attributes( );
 
 			if ( attrs != 0 )
 				return false;
@@ -750,19 +750,19 @@ namespace il2cpp
 			uint32_t count = 0;
 
 			while ( method_info_t* method = klass->methods( &iter ) ) {
-				uint32_t count = method->param_count();
+				uint32_t count = method->param_count( );
 				if ( count != param_ct )
 					continue;
 
-				il2cpp::il2cpp_type_t* ret = method->return_type();
-				if ( !ret || strcmp( ret->name(), ret_type->name() ) != 0 )
+				il2cpp::il2cpp_type_t* ret = method->return_type( );
+				if ( !ret || strcmp( ret->name( ), ret_type->name( ) ) != 0 )
 					continue;
 
-				int vis = method->flags() & METHOD_ATTRIBUTE_MEMBER_ACCESS_MASK;
+				int vis = method->flags( ) & METHOD_ATTRIBUTE_MEMBER_ACCESS_MASK;
 				if ( wanted_vis && vis != wanted_vis )
 					continue;
 
-				if ( wanted_flags && !( method->flags() & wanted_flags ) )
+				if ( wanted_flags && !( method->flags( ) & wanted_flags ) )
 					continue;
 
 				int matchedTypes = 0;
@@ -771,7 +771,7 @@ namespace il2cpp
 					if ( !param )
 						continue;
 
-					if ( strcmp( param->name(), param_types[ i ]->name() ) == 0 )
+					if ( strcmp( param->name( ), param_types[ i ]->name( ) ) == 0 )
 						matchedTypes++;
 				}
 
@@ -781,6 +781,8 @@ namespace il2cpp
 
 			if ( count != method_ct )
 				return false;
+
+			return false;
 		};
 
 		return search_for_class( search_for_static_class_with_method_with_rettype_param_types );

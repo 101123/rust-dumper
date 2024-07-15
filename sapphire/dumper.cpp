@@ -131,13 +131,18 @@ char* GetInnerClassFromEncClass( const char* name )
 	dumper::write_to_file("\tconstexpr const static size_t " #NAME "_EncryptedValueSetter = 0x%x;\n",  DUMPER_RVA( enc_setter->get_fn_ptr<uint64_t>() ) ); }
 
 #define DUMP_HIDDEN_MEMBER_KEY_GETTER_AND_SETTER( NAME, off ) \
-	{ il2cpp::il2cpp_type_t* enc_type = il2cpp::get_field_by_offset( dumper_klass, off )->type(); \
-	il2cpp::method_info_t* enc_getter = il2cpp::get_method_by_return_type_str( enc_type->klass( ), GetInnerClassFromEncClass( enc_type->name( ) ), 0 ); \
-	il2cpp::method_info_t* enc_setter = il2cpp::get_method_by_return_type_str( enc_type->klass( ), "System.Void", 1 ); \
-	il2cpp::field_info_t* key = il2cpp::get_field_if_type_contains(enc_type->klass( ), "System.UInt64", DUMPER_VIS_DONT_CARE, DUMPER_ATTR_DONT_CARE );\
+	{ il2cpp::il2cpp_type_t* hidden_type = il2cpp::get_field_by_offset( dumper_klass, off )->type(); \
+	il2cpp::method_info_t* hidden_getter = il2cpp::get_method_by_return_type_str( hidden_type->klass( ), GetInnerClassFromEncClass( hidden_type->name( ) ), 0 ); \
+	il2cpp::method_info_t* hidden_setter = il2cpp::get_method_by_return_type_str( hidden_type->klass( ), "System.Void", 1 ); \
+	il2cpp::field_info_t* key = il2cpp::get_field_if_type_contains(hidden_type->klass( ), "System.UInt64", DUMPER_VIS_DONT_CARE, DUMPER_ATTR_DONT_CARE );\
 	dumper::write_to_file("\tconstexpr const static size_t " #NAME "_HiddenValueKeyPos = 0x%x;\n", key->offset() );\
-	dumper::write_to_file("\tconstexpr const static size_t " #NAME "_HiddenValueGetter = 0x%x;\n",  DUMPER_RVA( enc_getter->get_fn_ptr<uint64_t>() ) );\
-	dumper::write_to_file("\tconstexpr const static size_t " #NAME "_HiddenValueSetter = 0x%x;\n",  DUMPER_RVA( enc_setter->get_fn_ptr<uint64_t>() ) ); }
+	dumper::write_to_file("\tconstexpr const static size_t " #NAME "_HiddenValueGetter = 0x%x;\n",  DUMPER_RVA( hidden_getter->get_fn_ptr<uint64_t>() ) );\
+	dumper::write_to_file("\tconstexpr const static size_t " #NAME "_HiddenValueSetter = 0x%x;\n",  DUMPER_RVA( hidden_setter->get_fn_ptr<uint64_t>() ) );\
+	il2cpp::il2cpp_type_t* key_type = key->type();\
+	il2cpp::method_info_t* enc_getter = il2cpp::get_method_by_return_type_str( key_type->klass( ), "System.UInt64", 0 );\
+	il2cpp::method_info_t* enc_setter = il2cpp::get_method_by_return_type_str( key_type->klass( ), "System.Void", 1 ); \
+	dumper::write_to_file( "\tconstexpr const static size_t " #NAME "_HiddenValueEncryptedKeyGetter = 0x%x;\n", DUMPER_RVA( enc_getter->get_fn_ptr<uint64_t>( ) ) ); \
+	dumper::write_to_file( "\tconstexpr const static size_t " #NAME "_HiddenValueEncryptedKeySetter = 0x%x;\n", DUMPER_RVA( enc_setter->get_fn_ptr<uint64_t>( ) ) ); }
 
 #define DUMPER_OFFSET( NAME ) NAME##_Offset
 
@@ -468,7 +473,7 @@ void dumper::produce( )
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( uid, "ItemContainerId" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( itemList, searchBuf );
 	DUMPER_SECTION( "Functions" );
-		DUMP_METHOD_BY_RETURN_TYPE_STR( FindItemsByItemID, searchBuf, 1, METHOD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+		DUMP_METHOD_BY_RETURN_TYPE_STR( FindItemsByItemID, searchBuf, 1 );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerInventory" );
@@ -476,7 +481,7 @@ void dumper::produce( )
 		DUMP_MEMBER_BY_NAME( crafting );
 		DUMP_MEMBER_BY_NEAR_OFFSET( containerBelt, DUMPER_OFFSET( crafting ) - 0x10 );
 	DUMPER_SECTION( "Functions" );
-		DUMP_METHOD_BY_RETURN_TYPE_STR( FindItemsByItemID, searchBuf, 1, METHOD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+		DUMP_METHOD_BY_RETURN_TYPE_STR( FindItemsByItemID, searchBuf, 1 );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerInput" );
@@ -570,7 +575,7 @@ void dumper::produce( )
 
 	DUMP_METHOD_BY_INFO_PTR( SendProjectileAttack, base_player_send_projectile_attack );
 
-	DUMP_METHOD_BY_RETURN_TYPE_STR( get_VisiblePlayerList, "BufferList<BasePlayer>", 0, METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC );
+	DUMP_METHOD_BY_RETURN_TYPE_STR( get_VisiblePlayerList, "BufferList<BasePlayer>", 0 );
 
 	/*
 		parser.ParseTypeMethods(basePlayer, [](const char* className, const char* methodName, uint32_t rva) {
