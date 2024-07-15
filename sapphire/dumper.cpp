@@ -351,7 +351,7 @@ void dumper::produce( )
 
 		DUMPER_SECTION( "Offsets" );
 
-		auto interpolator = il2cpp::get_field_if_type_contains_without_attrs( dumper_klass, "%", FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_STATIC );
+		auto interpolator = il2cpp::get_field_from_flags( interpolator_class, FIELD_ATTRIBUTE_PRIVATE | FIELD_ATTRIBUTE_INIT_ONLY );
 		DUMP_MEMBER_BY_X( interpolator, interpolator->offset( ) );
 
 		interpolator_class = interpolator->type( )->klass( );
@@ -397,7 +397,7 @@ void dumper::produce( )
 		DUMP_MEMBER_BY_NAME( newRecoilOverride );
 	DUMPER_CLASS_END;
 
-	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Magazine", "ProtoBuf" );
+	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseProjectile/Magazine" );
 	DUMPER_SECTION( "Offsets" );
 	DUMP_MEMBER_BY_NAME( ammoType );
 	DUMPER_CLASS_END;
@@ -657,7 +657,7 @@ void dumper::produce( )
 	DUMPER_SECTION( "Offsets" );
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( capsule, "UnityEngine.CapsuleCollider" );
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( ladder, DUMPER_CLASS( "TriggerLadder" ) );
-	DUMP_MEMBER_BY_NEAR_OFFSET( groundTime, DUMPER_OFFSET( capsule ) + 0x14 );
+	DUMP_MEMBER_BY_NEAR_OFFSET( groundTime, DUMPER_OFFSET( capsule ) + 0x20 );
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( modify, "BaseEntity.MovementModify" );
 	DUMPER_CLASS_END;
 

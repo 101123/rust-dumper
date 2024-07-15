@@ -1055,6 +1055,17 @@ namespace il2cpp
 		return get_field_from_class( klass, get_field_if_type_contains );
 	}
 
+	inline field_info_t* get_field_from_flags( il2cpp_class_t* klass, int flags ) {
+		const auto get_field_from_flags = [=]( field_info_t* field ) -> bool {
+			if ( field->flags() == flags )
+				return true;
+
+			return false;
+		};
+
+		return get_field_from_class( klass, get_field_from_flags );
+	}
+
 	inline field_info_t* get_field_from_field_type_class( il2cpp_class_t* klass, il2cpp_class_t* wanted_klass )
 	{
 		const auto get_field_from_field_type_class = [ = ] ( field_info_t* field ) -> bool {
