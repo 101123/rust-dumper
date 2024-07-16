@@ -106,6 +106,7 @@ il2cpp::il2cpp_class_t** il2cpp::s_TypeInfoDefinitionTable = nullptr;
 
 #define DUMP_METHOD_BY_RETURN_TYPE_STR( NAME, ret_type, param_ct ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_return_type_str( dumper_klass, ret_type, param_ct )->get_fn_ptr<uint64_t>() ) )
 #define DUMP_METHOD_BY_RETURN_TYPE_ATTRS( NAME, ret_type, param_ct, wanted_vis, wanted_attrs ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_return_type_attrs( dumper_klass, ret_type, wanted_attrs, wanted_vis, param_ct )->get_fn_ptr<uint64_t>() ) )
+#define DUMP_METHOD_BY_RETURN_TYPE_SIZE( NAME, ret_type, wanted_vis, wanted_attrs, idx ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_return_type_and_param_types_size( idx, dumper_klass, ret_type, wanted_attrs, wanted_vis, nullptr, 0 )->get_fn_ptr<uint64_t>() ) )
 #define DUMP_METHOD_BY_SIG_REL( NAME, base, sig, off ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( uint64_t( dumper::relative_32( FIND_PATTERN( base, 0x1000, sig ), off ) ) ) )
 #define DUMP_METHOD_BY_INFO_PTR( NAME, ptr ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( ptr->get_fn_ptr<uint64_t>( ) ) )
 #define DUMP_METHOD_BY_PARAM_CLASS( NAME, param_class, param_ct, wanted_vis, wanted_flags ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_param_class( dumper_klass, param_class, param_ct, wanted_vis, wanted_flags )->get_fn_ptr<uint64_t>( ) ) )
@@ -300,26 +301,26 @@ void dumper::produce( )
 	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* position_lerp_class = nullptr;
-	il2cpp::method_info_t* zipline_audio_update = il2cpp::get_method_by_name( DUMPER_CLASS( "ZiplineAudio" ), "Update" );
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseEntity" );
 	DUMPER_SECTION( "Offsets" );
-	DUMP_MEMBER_BY_NAME( flags );
-	DUMP_MEMBER_BY_NAME( model );
+		DUMP_MEMBER_BY_NAME( flags );
+		DUMP_MEMBER_BY_NAME( model );
 
-	auto position_lerp = il2cpp::get_field_if_type_contains( dumper_klass, "%", FIELD_ATTRIBUTE_ASSEMBLY, DUMPER_ATTR_DONT_CARE );
-	DUMP_MEMBER_BY_X( positionLerp, position_lerp->offset( ) );
-	position_lerp_class = position_lerp->type( )->klass( );
+		auto position_lerp = il2cpp::get_field_if_type_contains( dumper_klass, "%", FIELD_ATTRIBUTE_ASSEMBLY, DUMPER_ATTR_DONT_CARE );
+		DUMP_MEMBER_BY_X( positionLerp, position_lerp->offset( ) );
+		position_lerp_class = position_lerp->type( )->klass( );
 
 	DUMPER_SECTION( "Functions" );
 
-	DUMP_METHOD_BY_INFO_PTR( FindBone, SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-		DUMPER_TYPE_NAMESPACE( "UnityEngine", "Transform" ),
-		DUMPER_VIS_DONT_CARE,
-		METHOD_ATTRIBUTE_VIRTUAL,
-		DUMPER_TYPE_NAMESPACE( "System", "String" ) ) );
+		DUMP_METHOD_BY_INFO_PTR( FindBone, SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Transform" ),
+			DUMPER_VIS_DONT_CARE,
+			METHOD_ATTRIBUTE_VIRTUAL,
+			DUMPER_TYPE_NAMESPACE( "System", "String" ) ) );
 
-	DUMP_METHOD_BY_SIG_REL( GetWorldVelocity, zipline_audio_update->get_fn_ptr<uint8_t*>( ), "\x45\x33\xC0\x48\x8D\x48\x88\xE8\xCC\xCC\xCC\xCC\x33\xD2", 8 );
+		DUMP_METHOD_BY_RETURN_TYPE_SIZE( GetWorldVelocity, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, 0 );
+		DUMP_METHOD_BY_RETURN_TYPE_SIZE( GetParentVelocity, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, 1 );
 	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* interpolator_class = nullptr;
@@ -870,6 +871,19 @@ void dumper::produce( )
 		);
 
 		DUMP_METHOD_BY_INFO_PTR( DoHit, projectile_do_hit );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "ProjectileShoot", "ProtoBuf" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( projectiles );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "ProjectileShoot/Projectile", "ProtoBuf" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( projectileID );
+		DUMP_MEMBER_BY_NAME( startPos );
+		DUMP_MEMBER_BY_NAME( startVel );
+		DUMP_MEMBER_BY_NAME( seed );
 	DUMPER_CLASS_END
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "CraftingQueue" );
