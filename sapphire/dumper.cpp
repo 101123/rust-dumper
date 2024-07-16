@@ -1,5 +1,5 @@
 #include "dumper.hpp"
-#include "hde/hde64.h"
+#include "util.hpp"
 
 // il2cpp::global_metadata_header_t* il2cpp::s_GlobalMetadata = nullptr;
 
@@ -38,6 +38,13 @@ il2cpp::il2cpp_class_t** il2cpp::s_TypeInfoDefinitionTable = nullptr;
 { \
 	const char* params[ ] = { __VA_ARGS__ }; \
 	return il2cpp::get_method_by_return_type_and_param_types_str( dumper_klass, ret_type, wanted_vis, wanted_flags, params, _countof( params ) ); \
+} ( )
+
+#define SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_SIZE( idx, ret_type, wanted_vis, wanted_flags, ... ) \
+[=]( ) -> il2cpp::method_info_t* \
+{ \
+	il2cpp::il2cpp_type_t* param_types[ ] = { __VA_ARGS__ }; \
+	return il2cpp::get_method_by_return_type_and_param_types_size( idx, dumper_klass, ret_type, wanted_vis, wanted_flags, param_types, _countof( param_types ) ); \
 } ( )
 
 #define DUMPER_VIS_DONT_CARE 0 
@@ -121,36 +128,6 @@ char* GetInnerClassFromEncClass( const char* name )
 	strncpy( buf, start, end - start );
 
 	return buf;
-}
-
-size_t get_fn_length( void* address, uint32_t limit ) {
-	uint64_t len = 0;
-
-	while ( len < limit ) {
-		uint8_t* inst = ( uint8_t* )address + len;
-
-		// Break on padding or int 3
-		if ( *inst == 0 || *inst == 0xCC ) {
-			break;
-		}
-
-		// Break on return
-		if ( *inst == 0xC3 ) {
-			len++;
-			break;
-		}
-
-		hde64s hs;
-		uint64_t instr_len = hde64_disasm( inst, &hs );
-
-		if ( hs.flags & F_ERROR ) {
-			break;
-		}
-
-		len += instr_len;
-	}
-
-	return len;
 }
 
 void dump_fn_to_file( const char* label, uint8_t* address ) {
@@ -580,6 +557,16 @@ void dumper::produce( )
 
 	DUMP_METHOD_BY_INFO_PTR( GetSpeed, base_player_get_speed );
 
+	il2cpp::method_info_t* base_player_force_position_to = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_SIZE(
+		0,
+		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+		METHOD_ATTRIBUTE_PRIVATE,
+		DUMPER_ATTR_DONT_CARE,
+		DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
+	);
+
+	DUMP_METHOD_BY_INFO_PTR( ForcePositionTo, base_player_force_position_to );
+
 	il2cpp::method_info_t* base_player_send_projectile_update = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 		METHOD_ATTRIBUTE_PUBLIC,
@@ -633,14 +620,6 @@ void dumper::produce( )
 	DUMPER_SECTION( "Offsets" );
 	DUMP_MEMBER_BY_NAME( allowPickup );
 	DUMP_MEMBER_BY_NEAR_OFFSET( item, DUMPER_OFFSET( allowPickup ) + 0x8 );
-	/*
-		parser.ParseTypeMethods(worldItem, [](const char* className, const char* methodName, uint32_t rva) {
-			uint64_t hash = CoreSDK_Hash(methodName);
-
-			if (hash == H("<GetMenuItems>b__11_1"))
-				Offsets::WorldItem__Pickup = rva;
-		});
-	*/
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "HackableLockedCrate" );
@@ -880,14 +859,17 @@ void dumper::produce( )
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( owner, DUMPER_CLASS( "BasePlayer" ) );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( sourceProjectilePrefab, DUMPER_CLASS( "Projectile" ) );
 	DUMPER_SECTION( "Functions" );
-		//il2cpp::method_info_t* projectile_do_hit = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-		//	DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
-		//	METHOD_ATTRIBUTE_PRIVATE,
-		//	DUMPER_ATTR_DONT_CARE,
-		//	hit_test_class->type(),
-		//	DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
-		//	DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" )
-		//);
+		il2cpp::method_info_t* projectile_do_hit = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_SIZE(
+			0,
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+			METHOD_ATTRIBUTE_PRIVATE,
+			DUMPER_ATTR_DONT_CARE,
+			hit_test_class->type(),
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( DoHit, projectile_do_hit );
 	DUMPER_CLASS_END
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "CraftingQueue" );
@@ -938,6 +920,19 @@ void dumper::produce( )
 		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( heightMap, "TerrainHeightMap", FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_STATIC ); // <HeightMap>k__BackingField
 	DUMPER_CLASS_END
 
+	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainHeightMap" );
+	DUMPER_SECTION( "Functions" );
+		il2cpp::method_info_t* terrain_height_map_get_height = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_SIZE(
+			2,
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( GetHeight, terrain_height_map_get_height );
+	DUMPER_CLASS_END
+
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainCollision" );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* terrain_collision_get_ignore = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
@@ -963,21 +958,6 @@ void dumper::produce( )
 		DUMP_METHOD_BY_INFO_PTR( SetTimedLootAction, item_icon_set_timed_loot_action );
 	DUMPER_CLASS_END
 
-
-	/*
-	DUMPER_CLASS_BEGIN_FROM_NAME( "Projecitle" );
-	il2cpp::il2cpp_type_t* hit_test_class_type = il2cpp::get_class_from_field_type_by_type_contains( dumper_klass, "%" )->type( );
-	il2cpp::method_info_t* do_hit_method = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-		DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
-		METHOD_ATTRIBUTE_PRIVATE,
-		DUMPER_ATTR_DONT_CARE,
-		hit_test_class_type,
-		DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
-		DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" )
-	);
-	DUMP_METHOD_BY_INFO_PTR( DoHit, do_hit_method );
-	DUMPER_CLASS_END;*/
-
 	il2cpp::il2cpp_class_t* con_button_class = il2cpp::search_for_class_by_interfaces_contain( "IConsoleButton" );
 	il2cpp::il2cpp_class_t* buttons_class = il2cpp::search_for_class_by_field_types( con_button_class->type( ), 56, FIELD_ATTRIBUTE_STATIC );
 	DUMPER_CLASS_BEGIN_FROM_PTR( "Buttons", buttons_class );
@@ -992,14 +972,13 @@ void dumper::produce( )
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "Effect", effect_class );
 	DUMPER_SECTION( "Offsets" );
-
 	DUMP_ALL_MEMBERS_OF_TYPE( "UnkVector", DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), DUMPER_VIS_DONT_CARE, DUMPER_ATTR_DONT_CARE );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BuildingBlock" );
 	DUMPER_SECTION( "Functions" );
 
-	il2cpp::method_info_t* upgrade_to_grade = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+	il2cpp::method_info_t* building_block_upgrade_to_grade = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 		METHOD_ATTRIBUTE_PRIVATE,
 		DUMPER_ATTR_DONT_CARE,
@@ -1008,49 +987,22 @@ void dumper::produce( )
 		DUMPER_TYPE( "BasePlayer" )
 	);
 
-	DUMP_METHOD_BY_INFO_PTR( UpgradeToGrade, upgrade_to_grade );
-	DUMPER_CLASS_END;
+	DUMP_METHOD_BY_INFO_PTR( UpgradeToGrade, building_block_upgrade_to_grade );
 
-	// Class name doesnt exist...
-	/*DUMPER_CLASS_BEGIN_FROM_NAME( "WaterLevel" );
-	il2cpp::method_info_t* test = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+	il2cpp::method_info_t* building_block_has_upgrade_privilege = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_SIZE(
+		1,
 		DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
 		METHOD_ATTRIBUTE_PRIVATE,
-		METHOD_ATTRIBUTE_STATIC,
-		DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
-		DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
-		DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
-		DUMPER_TYPE( "BaseEntity" )
-	);
-
-	DUMP_METHOD_BY_INFO_PTR( Test, test );
-
-	// WaterLevel.GetWaterLevel - private static float GetWaterLevel(Vector3 pos)
-	il2cpp::method_info_t* get_water_level = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-		DUMPER_TYPE_NAMESPACE( "System", "Single" ),
-		METHOD_ATTRIBUTE_PRIVATE,
-		METHOD_ATTRIBUTE_STATIC,
-		DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" )
-	);
-
-	DUMP_METHOD_BY_INFO_PTR( GetWaterLevel, get_water_level );
-	DUMPER_CLASS_END;
-	*/
-
-	/*
-		DUMP_METHOD_BY_RETURN_TYPE_METHOD_ATTRIBUTE( get_Rotation,
-		DUMPER_CLASS_NAMESPACE( "UnityEngine", "Quaternion" ),
-		DUMPER_CLASS_NAMESPACE( "System.Runtime.CompilerServices", "CompilerGeneratedAttribute" ),
 		DUMPER_ATTR_DONT_CARE,
-		METHOD_ATTRIBUTE_PUBLIC,
-		0,
-		il2cpp::attr_search_ignore
+		DUMPER_TYPE( "BuildingGrade/Enum" ),
+		DUMPER_TYPE_NAMESPACE( "System", "UInt64" ),
+		DUMPER_TYPE( "BasePlayer" )
 	);
 
-	*/
+	DUMP_METHOD_BY_INFO_PTR( HasUpgradePrivilege, building_block_has_upgrade_privilege );
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerWalkMovement" );
-
 	il2cpp::method_info_t* client_input = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 		METHOD_ATTRIBUTE_PUBLIC,
@@ -1061,7 +1013,6 @@ void dumper::produce( )
 
 	DUMP_METHOD_BY_INFO_PTR( ClientInput, client_input );
 	DUMPER_CLASS_END;
-
 
 	fclose( outfile_handle );
 }

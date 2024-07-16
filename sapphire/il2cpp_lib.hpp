@@ -2,6 +2,9 @@
 #include <windows.h>
 #include <cstdio>
 #include <vector>
+#include <algorithm>
+
+#include "util.hpp"
 
 #define STR( x ) #x
 #define CREATE_TYPE( name, args ) using il2cpp_##name = args; inline il2cpp_##name name;
@@ -886,6 +889,59 @@ namespace il2cpp
 
 		return get_method_from_class( klass, get_method_by_return_type_and_param_types );
 	}
+
+	inline method_info_t* get_method_by_return_type_and_param_types_size( int idx, il2cpp_class_t* klass, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, il2cpp_type_t** param_types, int param_ct ) {
+		struct method_info_match_t {
+			method_info_t* method;
+			size_t length;
+		};
+
+		std::vector<method_info_match_t> matches;
+
+		void* iter = nullptr;
+		while ( method_info_t* method = klass->methods( &iter ) ) {
+			uint32_t count = method->param_count();
+			if ( count != param_ct )
+				continue;
+
+			il2cpp::il2cpp_type_t* ret = method->return_type();
+			if ( !ret || strcmp( ret->name(), ret_type->name() ) != 0 )
+				continue;
+
+			int vis = method->flags() & METHOD_ATTRIBUTE_MEMBER_ACCESS_MASK;
+			if ( wanted_vis && vis != wanted_vis )
+				continue;
+
+			if ( wanted_flags && !( method->flags() & wanted_flags ) )
+				continue;
+
+			int matchedTypes = 0;
+			for ( uint32_t i = 0; i < count; i++ ) {
+				il2cpp_type_t* param = method->get_param( i );
+				if ( !param )
+					continue;
+
+				if ( strcmp( param->name(), param_types[ i ]->name() ) == 0 )
+					matchedTypes++;
+			}
+
+			if ( matchedTypes == param_ct ) {
+				method_info_match_t buffer;
+				buffer.method = method;
+				buffer.length = get_fn_length( method->get_fn_ptr<void*>(), 16384 );
+				matches.push_back( std::move( buffer ) );
+			}
+		}
+
+		std::sort( matches.begin(), matches.end(), 
+			[]( const method_info_match_t& r1, const method_info_match_t& r2 ) -> bool { return r1.length > r2.length; } );
+
+		if ( idx > matches.size() - 1 )
+			return nullptr;
+
+		return matches.at( idx ).method;
+	}
+
 	inline method_info_t* get_method_by_param_type_name( il2cpp_class_t* klass, const char* name, int param_ct, uint32_t flags )
 	{
 		void* iter = nullptr;

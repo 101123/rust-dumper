@@ -16,6 +16,9 @@
     <ClCompile Include="hde\hde64.cpp">
       <Filter>hde</Filter>
     </ClCompile>
+    <ClCompile Include="util.cpp">
+      <Filter>impl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="il2cpp_lib.hpp">
@@ -29,6 +32,9 @@
     </ClInclude>
     <ClInclude Include="hde\table64.h">
       <Filter>hde</Filter>
+    </ClInclude>
+    <ClInclude Include="util.hpp">
+      <Filter>impl</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
