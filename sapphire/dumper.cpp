@@ -44,7 +44,7 @@ il2cpp::il2cpp_class_t** il2cpp::s_TypeInfoDefinitionTable = nullptr;
 [=]( ) -> il2cpp::method_info_t* \
 { \
 	il2cpp::il2cpp_type_t* param_types[ ] = { __VA_ARGS__ }; \
-	return il2cpp::get_method_by_return_type_and_param_types_size( idx, dumper_klass, ret_type, wanted_vis, wanted_flags, param_types, _countof( param_types ) ); \
+	return il2cpp::get_method_by_return_type_and_param_types_size( idx, dumper_klass, ret_type, wanted_vis, wanted_flags, param_types, _countof( param_types ), nullptr, false ); \
 } ( )
 
 #define DUMPER_VIS_DONT_CARE 0 
@@ -106,13 +106,13 @@ il2cpp::il2cpp_class_t** il2cpp::s_TypeInfoDefinitionTable = nullptr;
 
 #define DUMP_METHOD_BY_RETURN_TYPE_STR( NAME, ret_type, param_ct ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_return_type_str( dumper_klass, ret_type, param_ct )->get_fn_ptr<uint64_t>() ) )
 #define DUMP_METHOD_BY_RETURN_TYPE_ATTRS( NAME, ret_type, param_ct, wanted_vis, wanted_attrs ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_return_type_attrs( dumper_klass, ret_type, wanted_attrs, wanted_vis, param_ct )->get_fn_ptr<uint64_t>() ) )
-#define DUMP_METHOD_BY_RETURN_TYPE_SIZE( NAME, ret_type, wanted_vis, wanted_attrs, idx ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_return_type_and_param_types_size( idx, dumper_klass, ret_type, wanted_attrs, wanted_vis, nullptr, 0 )->get_fn_ptr<uint64_t>() ) )
+#define DUMP_METHOD_BY_RETURN_TYPE_SIZE( NAME, ret_type, wanted_vis, wanted_attrs, idx ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_return_type_and_param_types_size( idx, dumper_klass, ret_type, wanted_attrs, wanted_vis, nullptr, 0, nullptr, false )->get_fn_ptr<uint64_t>() ) )
 #define DUMP_METHOD_BY_SIG_REL( NAME, base, sig, off ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( uint64_t( dumper::relative_32( FIND_PATTERN( base, 0x1000, sig ), off ) ) ) )
 #define DUMP_METHOD_BY_INFO_PTR( NAME, ptr ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( ptr->get_fn_ptr<uint64_t>( ) ) )
 #define DUMP_METHOD_BY_PARAM_CLASS( NAME, param_class, param_ct, wanted_vis, wanted_flags ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_param_class( dumper_klass, param_class, param_ct, wanted_vis, wanted_flags )->get_fn_ptr<uint64_t>( ) ) )
 
 #define DUMP_METHOD_BY_RETURN_TYPE_METHOD_ATTRIBUTE(NAME, ret_type, method_attr, param_ct, wanted_vis, wanted_attrs, want_or_ignore ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_return_type_attrs_method_attr( dumper_klass, ret_type, method_attr, wanted_attrs, wanted_vis, param_ct, want_or_ignore )->get_fn_ptr<uint64_t>() ) )
-
+#define DUMP_METHOD_BY_RETURN_TYPE_METHOD_ATTRIBUTE_SIZE(NAME, ret_type, method_attr, wanted_vis, wanted_attrs, want_or_ignore, idx ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_return_type_and_param_types_size( idx, dumper_klass, ret_type, wanted_vis, wanted_attrs, nullptr, 0, method_attr, want_or_ignore )->get_fn_ptr<uint64_t>() ) )
 
 char* GetInnerClassFromEncClass( const char* name )
 {
@@ -319,8 +319,8 @@ void dumper::produce( )
 			METHOD_ATTRIBUTE_VIRTUAL,
 			DUMPER_TYPE_NAMESPACE( "System", "String" ) ) );
 
-		DUMP_METHOD_BY_RETURN_TYPE_SIZE( GetWorldVelocity, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, 0 );
-		DUMP_METHOD_BY_RETURN_TYPE_SIZE( GetParentVelocity, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, 1 );
+		DUMP_METHOD_BY_RETURN_TYPE_SIZE( GetWorldVelocity, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), METHOD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, 0 );
+		DUMP_METHOD_BY_RETURN_TYPE_SIZE( GetParentVelocity, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), METHOD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, 1 );
 	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* interpolator_class = nullptr;
@@ -884,6 +884,18 @@ void dumper::produce( )
 		DUMP_MEMBER_BY_NAME( startPos );
 		DUMP_MEMBER_BY_NAME( startVel );
 		DUMP_MEMBER_BY_NAME( seed );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "GrowableEntity" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_RETURN_TYPE_METHOD_ATTRIBUTE_SIZE( CanPick, 
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ), 
+			DUMPER_CLASS_NAMESPACE( "System.Runtime.CompilerServices", "CompilerGeneratedAttribute" ), 
+			METHOD_ATTRIBUTE_PUBLIC, 
+			DUMPER_ATTR_DONT_CARE, 
+			il2cpp::attr_search_ignore, 
+			4 
+		);
 	DUMPER_CLASS_END
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "CraftingQueue" );

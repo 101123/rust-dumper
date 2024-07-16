@@ -890,7 +890,7 @@ namespace il2cpp
 		return get_method_from_class( klass, get_method_by_return_type_and_param_types );
 	}
 
-	inline method_info_t* get_method_by_return_type_and_param_types_size( int idx, il2cpp_class_t* klass, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, il2cpp_type_t** param_types, int param_ct ) {
+	inline method_info_t* get_method_by_return_type_and_param_types_size( int idx, il2cpp_class_t* klass, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, il2cpp_type_t** param_types, int param_ct, il2cpp_class_t* method_attr_klass, bool want_or_ignore ) {
 		struct method_info_match_t {
 			method_info_t* method;
 			size_t length;
@@ -908,10 +908,17 @@ namespace il2cpp
 			if ( !ret || strcmp( ret->name(), ret_type->name() ) != 0 )
 				continue;
 
+			if ( method_attr_klass ) {
+				bool has_attr = method_has_attribute( method, method_attr_klass );
+				if ( has_attr && want_or_ignore == e_attr_search::attr_search_ignore )
+					continue;
+				if ( !has_attr && want_or_ignore == e_attr_search::attr_search_want )
+					continue;
+			}
+
 			int vis = method->flags() & METHOD_ATTRIBUTE_MEMBER_ACCESS_MASK;
 			if ( wanted_vis && vis != wanted_vis )
 				continue;
-
 			if ( wanted_flags && !( method->flags() & wanted_flags ) )
 				continue;
 
