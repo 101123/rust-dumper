@@ -152,6 +152,44 @@ namespace il2cpp
 
 	struct method_info_t
 	{
+		bool is_fake()
+		{
+			uint64_t address = this->get_fn_ptr<uint64_t>();
+
+			DWORD64 imageBase = 0;
+			PRUNTIME_FUNCTION runtimeFunction = RtlLookupFunctionEntry( address, &imageBase, nullptr );
+
+			if ( !runtimeFunction ) {
+				return true;
+			}
+
+			uint32_t exportCount = 0;
+
+			uint32_t functionLen = runtimeFunction->EndAddress - runtimeFunction->BeginAddress;
+
+			for ( uint32_t i = 0; i < functionLen; i++ ) {
+
+				uint64_t instruction = address + i;
+				uint8_t opcode = *( uint8_t* )( instruction );
+
+				if ( opcode == 0xE8 ) {
+					uint32_t relative = ( uint64_t )class_get_static_field_data - ( instruction ) - 5;
+
+					if ( *( uint32_t* )( instruction + 0x1 ) == relative ) {
+						exportCount++;
+					}
+				}
+			}
+
+			bool isLastByteCC = *( uint8_t* )( address + functionLen - 1 ) == 0xCC;
+
+			if ( exportCount == 2 && isLastByteCC ) {
+				return true;
+			}
+
+			return false;
+		}
+
 		const char* name( )
 		{
 			if ( !this )
@@ -817,6 +855,9 @@ namespace il2cpp
 	inline method_info_t* get_method_by_return_type_str( il2cpp_class_t* klass, const char* ret_type_name, int param_ct = -1 )
 	{
 		const auto get_method_by_return_type_name = [ = ] ( method_info_t* method ) -> bool {
+			if ( method->is_fake() )
+				return false;
+
 			const char* name = method->return_type( )->name( );
 			if ( param_ct != -1 && ( param_ct != method->param_count( ) ) )
 				return false;
@@ -830,6 +871,9 @@ namespace il2cpp
 		void* iter = nullptr;
 
 		const auto get_method_by_return_type_and_param_types = [ = ] ( method_info_t* method ) -> bool {
+			if ( method->is_fake() )
+				return false;
+
 			uint32_t count = method->param_count( );
 			if ( count != param_ct )
 				return false;
@@ -864,6 +908,9 @@ namespace il2cpp
 		void* iter = nullptr;
 
 		const auto get_method_by_return_type_and_param_types = [=]( method_info_t* method ) -> bool {
+			if ( method->is_fake() )
+				return false;
+
 			uint32_t count = method->param_count();
 			if ( count != param_ct )
 				return false;
@@ -905,6 +952,9 @@ namespace il2cpp
 
 		void* iter = nullptr;
 		while ( method_info_t* method = klass->methods( &iter ) ) {
+			if ( method->is_fake() )
+				continue;
+
 			uint32_t count = method->param_count();
 			if ( count != param_ct )
 				continue;
@@ -987,6 +1037,9 @@ namespace il2cpp
 		void* iter = nullptr;
 
 		const auto get_method_by_return_type_attrs = [ = ] ( method_info_t* method ) -> bool {
+			if ( method->is_fake() )
+				return false;
+
 			uint32_t count = method->param_count( );
 			if ( param_ct != -1 && count != param_ct )
 				return false;
@@ -1013,6 +1066,9 @@ namespace il2cpp
 	inline method_info_t* get_method_by_param_class( il2cpp_class_t* klass, il2cpp_class_t* param_klass, int param_ct, int wanted_vis, int wanted_flags )
 	{
 		const auto get_method_by_param_class = [ = ] ( method_info_t* method ) -> bool {
+			if ( method->is_fake() )
+				return false;
+
 			uint32_t count = method->param_count( );
 			if ( count != param_ct )
 				return false;
@@ -1046,6 +1102,9 @@ namespace il2cpp
 		void* iter = nullptr;
 
 		const auto get_method_by_return_type_attrs = [ = ] ( method_info_t* method ) -> bool {
+			if ( method->is_fake() )
+				return false;
+
 			uint32_t count = method->param_count( );
 			if ( param_ct != -1 && count != param_ct )
 				return false;

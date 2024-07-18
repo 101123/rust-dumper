@@ -282,18 +282,18 @@ void dumper::produce( )
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( parentEntity, entity_ref_class ); // Search for EntityRef class.
 	DUMP_MEMBER_BY_NEAR_OFFSET( children, DUMPER_OFFSET( parentEntity ) + 0x10 ); // Dump a member by an offset from another member of the class.
 
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( ClientEntities, "BaseNetworkable" );
-	DUMP_HIDDEN_MEMBER_KEY_GETTER_AND_SETTER( ClientEntities, DUMPER_OFFSET( ClientEntities ) );
+	//DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( ClientEntities, "BaseNetworkable" );
+	//DUMP_HIDDEN_MEMBER_KEY_GETTER_AND_SETTER( ClientEntities, DUMPER_OFFSET( ClientEntities ) );
 
-	hidden_value_base_class = il2cpp::get_field_by_offset( dumper_klass, DUMPER_OFFSET( ClientEntities ) )->type( )->klass( )->parent( );
+	//hidden_value_base_class = il2cpp::get_field_by_offset( dumper_klass, DUMPER_OFFSET( ClientEntities ) )->type( )->klass( )->parent( );
 	DUMPER_CLASS_END;
 
-	if ( hidden_value_base_class ) {
+	/*if ( hidden_value_base_class ) {
 		DUMPER_CLASS_BEGIN_FROM_PTR( "HiddenValueBase", hidden_value_base_class );
 		DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( _values, "Dictionary" );
 		DUMPER_CLASS_END;
-	}
+	}*/
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "Model" );
 	DUMPER_SECTION( "Offsets" );
@@ -522,9 +522,9 @@ void dumper::produce( )
 
 	DUMPER_CLASS_END;
 
-	il2cpp::il2cpp_class_t* base_raidable_animal_class = DUMPER_CLASS( "BaseRidableAnimal" );
-	uint64_t is_lootable_offset = il2cpp::get_field_by_name( base_raidable_animal_class, "isLootable" )->offset( );
-	il2cpp::il2cpp_class_t* item_container_class = il2cpp::get_field_by_offset( base_raidable_animal_class, is_lootable_offset + 0x7 )->type( )->klass( );
+	//il2cpp::il2cpp_class_t* base_raidable_animal_class = DUMPER_CLASS( "BaseRidableAnimal" );
+	//uint64_t is_lootable_offset = il2cpp::get_field_by_name( base_raidable_animal_class, "isLootable" )->offset( );
+	il2cpp::il2cpp_class_t* item_container_class = DUMPER_CLASS( "%8e36b934bfd0cf94f5b5b55feef3f25aef3609b4" );
 
 	char searchBuf[ 128 ] = { 0 };
 	sprintf_s( searchBuf, "System.Collections.Generic.List<%s>", item_class->name( ) );
@@ -600,9 +600,9 @@ void dumper::produce( )
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( lastSentTick, DUMPER_CLASS( "PlayerTick" ) );
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( mounted, entity_ref_class ); 
 
-	DUMPER_SECTION( "EncryptedValue Functions" );
-	DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( lastSentTickTime, DUMPER_OFFSET( lastSentTickTime ), float );
-	DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( clActiveItem, DUMPER_OFFSET( clActiveItem ), uint64_t );
+	//DUMPER_SECTION( "EncryptedValue Functions" );
+	//DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( lastSentTickTime, DUMPER_OFFSET( lastSentTickTime ), float );
+	//DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( clActiveItem, DUMPER_OFFSET( clActiveItem ), uint64_t );
 
 	DUMPER_SECTION( "Functions" );
 	DUMP_METHOD_BY_PARAM_CLASS( ClientInput, input_state_class, 1, DUMPER_VIS_DONT_CARE, METHOD_ATTRIBUTE_VIRTUAL );
@@ -679,8 +679,8 @@ void dumper::produce( )
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "WorldItem" );
 	DUMPER_SECTION( "Offsets" );
-	DUMP_MEMBER_BY_NAME( allowPickup );
-	DUMP_MEMBER_BY_NEAR_OFFSET( item, DUMPER_OFFSET( allowPickup ) + 0x8 );
+		DUMP_MEMBER_BY_NAME( allowPickup );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( item, item_class );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "HackableLockedCrate" );
