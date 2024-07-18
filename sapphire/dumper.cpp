@@ -852,8 +852,8 @@ void dumper::produce( )
 	DUMPER_CLASS_BEGIN_FROM_PTR( "Convar_Graphics", convar_graphics_klass );
 	DUMPER_SECTION( "Offsets" );
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( _fov, convar_graphics_klass->name( ), FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_STATIC );
-	DUMPER_SECTION( "EncryptedValue Functions" );
-	DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( _fov, DUMPER_OFFSET( _fov ), float );
+	//DUMPER_SECTION( "EncryptedValue Functions" );
+	//DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( _fov, DUMPER_OFFSET( _fov ), float );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseFishingRod" );
