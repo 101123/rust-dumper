@@ -455,11 +455,71 @@ void dumper::produce( )
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "Item", item_class );
 	DUMPER_SECTION( "Offsets" );
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( uid, DUMPER_CLASS( "ItemId" ) );
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( info, DUMPER_CLASS( "ItemDefinition" ) );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( uid, DUMPER_CLASS( "ItemId" ) );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( info, DUMPER_CLASS( "ItemDefinition" ) );
 
-	DUMP_ALL_MEMBERS_OF_TYPE( "UnkInt", DUMPER_TYPE_NAMESPACE( "System", "Int32" ), DUMPER_VIS_DONT_CARE, DUMPER_ATTR_DONT_CARE );
-	DUMP_ALL_MEMBERS_OF_TYPE( "UnkEntityRef", entity_ref_class->type( ), TYPE_ATTRIBUTE_NOT_PUBLIC, DUMPER_ATTR_DONT_CARE );
+		il2cpp::il2cpp_class_t* item_manager_class = il2cpp::search_for_class_by_method_return_type_name( "System.Collections.Generic.List<ItemBlueprint>", METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC );
+
+		if ( item_manager_class ) {
+			il2cpp::il2cpp_type_t* param_types[] = { 
+				DUMPER_TYPE_NAMESPACE( "ProtoBuf", "Item" ), 
+				item_class->type(), 
+				DUMPER_TYPE_NAMESPACE( "System", "Boolean" ) 
+			}; 
+
+			il2cpp::method_info_t* item_manager_load_method = il2cpp::get_method_by_return_type_and_param_types(
+				item_manager_class,
+				item_class->type(),
+				METHOD_ATTRIBUTE_PUBLIC,
+				METHOD_ATTRIBUTE_STATIC,
+				param_types,
+				_countof( param_types )
+			);
+			
+			if ( item_manager_load_method ) {
+				uint64_t* ( *item_manager_load )( uint8_t*, void*, bool ) = ( decltype( item_manager_load ) )item_manager_load_method->get_fn_ptr<void*>();
+
+				if ( item_manager_load ) {
+					il2cpp::il2cpp_class_t* protobuf_item_class = DUMPER_CLASS_NAMESPACE( "ProtoBuf", "Item" );
+
+					if ( protobuf_item_class ) {
+						uint8_t protobuf_item[ 256 ]{};
+
+						*( int* )( protobuf_item + il2cpp::get_field_by_name( protobuf_item_class, "itemid" )->offset() ) = 1588298435;
+						*( int* )( protobuf_item + il2cpp::get_field_by_name( protobuf_item_class, "slot" )->offset() ) = 1337;
+						*( int* )( protobuf_item + il2cpp::get_field_by_name( protobuf_item_class, "amount" )->offset() ) = 1338;
+						*( uint64_t* )( protobuf_item + il2cpp::get_field_by_name( protobuf_item_class, "worldEntity" )->offset() ) = 1339;
+						*( uint64_t* )( protobuf_item + il2cpp::get_field_by_name( protobuf_item_class, "heldEntity" )->offset() ) = 1340;
+
+						uint64_t* created_item = item_manager_load( protobuf_item, nullptr, true );
+
+						if ( created_item ) {
+							for ( int i = 0; i < ( sizeof( protobuf_item ) / sizeof( uint64_t ) ); i++ ) {
+								switch ( created_item[ i ] ) {
+									case 1337: {
+										DUMP_MEMBER_BY_X( position, i * sizeof( uint64_t ) );
+										break;
+									}
+									case 1338: {
+										DUMP_MEMBER_BY_X( amount, i * sizeof( uint64_t ) );
+										break;
+									}
+									case 1339: {
+										DUMP_MEMBER_BY_X( worldEntity, i * sizeof( uint64_t ) - 8 );
+										break;
+									}
+									case 1340: {
+										DUMP_MEMBER_BY_X( heldEntity, i * sizeof( uint64_t ) - 8 );
+										break;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
 	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* base_raidable_animal_class = DUMPER_CLASS( "BaseRidableAnimal" );
@@ -969,6 +1029,17 @@ void dumper::produce( )
 			DUMPER_TYPE_NAMESPACE( "System", "Single" )
 		);
 		DUMP_METHOD_BY_INFO_PTR( GetIgnore, terrain_collision_get_ignore );
+	DUMPER_CLASS_END
+
+	il2cpp::il2cpp_class_t* world_class = il2cpp::search_for_class_by_field_types( DUMPER_TYPE( "WorldSerialization" ), 1, FIELD_ATTRIBUTE_STATIC );
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "World", world_class );
+		DUMP_MEMBER_BY_TYPE_METHOD_ATTRIBUTE( _size,
+			DUMPER_CLASS_NAMESPACE( "System", "UInt32" ),
+			DUMPER_CLASS_NAMESPACE( "System.Runtime.CompilerServices", "CompilerGeneratedAttribute" ),
+			FIELD_ATTRIBUTE_PRIVATE,
+			FIELD_ATTRIBUTE_STATIC,
+			il2cpp::attr_search_ignore );
 	DUMPER_CLASS_END
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemIcon" );

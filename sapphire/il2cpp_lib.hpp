@@ -749,12 +749,15 @@ namespace il2cpp
 			if ( attrs != 0 )
 				return false;
 
+			bool matched = false;
 			void* iter = nullptr;
-			uint32_t count = 0;
+			uint32_t method_count = 0;
 
 			while ( method_info_t* method = klass->methods( &iter ) ) {
-				uint32_t count = method->param_count( );
-				if ( count != param_ct )
+				method_count++;
+
+				uint32_t param_count = method->param_count( );
+				if ( param_count != param_ct )
 					continue;
 
 				il2cpp::il2cpp_type_t* ret = method->return_type( );
@@ -769,7 +772,7 @@ namespace il2cpp
 					continue;
 
 				int matchedTypes = 0;
-				for ( uint32_t i = 0; i < count; i++ ) {
+				for ( uint32_t i = 0; i < param_count; i++ ) {
 					il2cpp_type_t* param = method->get_param( i );
 					if ( !param )
 						continue;
@@ -779,13 +782,15 @@ namespace il2cpp
 				}
 
 				if ( matchedTypes == param_ct )
-					return true;
+					matched = true;
 			}
 
-			if ( count != method_ct )
+			if ( method_count != method_ct )
+				return false;
+			if ( !matched )
 				return false;
 
-			return false;
+			return true;
 		};
 
 		return search_for_class( search_for_static_class_with_method_with_rettype_param_types );
