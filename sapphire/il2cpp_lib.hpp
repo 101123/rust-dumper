@@ -121,6 +121,7 @@ namespace il2cpp
 
 	// Object.
 	CREATE_TYPE( object_get_class, il2cpp_class_t* ( * )( void* ) );
+	CREATE_TYPE( object_new, uint64_t( * )( il2cpp_class_t* ) );
 
 	CREATE_TYPE( resolve_icall, std::uintptr_t( * )( const char* ) );
 
@@ -1284,6 +1285,26 @@ namespace il2cpp
 		return get_field_from_class( klass, get_field_by_type_attrs_method_attrs );
 	}
 
+	inline std::vector<field_info_t*> get_fields_of_type( il2cpp_class_t* klass, il2cpp_type_t* wanted_type, int wanted_vis, int wanted_attrs ) {
+		std::vector<field_info_t*> fields;
+
+		void* iter = nullptr;
+		while ( il2cpp::field_info_t* field = klass->fields( &iter ) ) {
+			if ( strcmp( field->type()->name(), wanted_type->name() ) )
+				continue;
+
+			int attrs = field->type()->attributes();
+			int vis = attrs & TYPE_ATTRIBUTE_VISIBILITY_MASK;
+
+			if ( ( wanted_vis && ( vis != wanted_vis ) ) || ( wanted_attrs && !( wanted_attrs & attrs ) ) ) 
+				continue;
+
+			fields.push_back( field );
+		}
+
+		return fields;
+	}
+
 	inline void init( )
 	{
 		ASSIGN_TYPE( domain_get );
@@ -1336,6 +1357,7 @@ namespace il2cpp
 
 		// Object.
 		ASSIGN_TYPE( object_get_class );
+		ASSIGN_TYPE( object_new );
 
 		ASSIGN_TYPE( resolve_icall );
 	}

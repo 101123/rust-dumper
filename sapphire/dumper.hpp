@@ -1,5 +1,8 @@
 #pragma once
+
 #include "il2cpp_lib.hpp"
+#include "unity_lib.hpp"
+#include "rust_lib.hpp"
 
 #include <windows.h>
 

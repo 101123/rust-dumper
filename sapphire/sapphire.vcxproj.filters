@@ -36,5 +36,11 @@
     <ClInclude Include="util.hpp">
       <Filter>impl</Filter>
     </ClInclude>
+    <ClInclude Include="unity_lib.hpp">
+      <Filter>impl</Filter>
+    </ClInclude>
+    <ClInclude Include="rust_lib.hpp">
+      <Filter>impl</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

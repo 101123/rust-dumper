@@ -151,6 +151,8 @@
     <ClInclude Include="hde\hde64.h" />
     <ClInclude Include="hde\table64.h" />
     <ClInclude Include="il2cpp_lib.hpp" />
+    <ClInclude Include="rust_lib.hpp" />
+    <ClInclude Include="unity_lib.hpp" />
     <ClInclude Include="util.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

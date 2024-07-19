@@ -539,9 +539,52 @@ void dumper::produce( )
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerInventory" );
 	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_NAME( crafting );
-		DUMP_MEMBER_BY_NEAR_OFFSET( containerBelt, DUMPER_OFFSET( crafting ) - 0x10 );
+		il2cpp::method_info_t* player_inventory_initialize_method = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_FAMILY,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE( "BasePlayer" )
+		);
+
+		sprintf_s( searchBuf, "%s.Flag", item_container_class->name() );
+		il2cpp::field_info_t* flag = il2cpp::get_field_if_type_contains( item_container_class, searchBuf, FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+
+		if ( player_inventory_initialize_method && flag ) {
+			void( *player_inventory_initialize )( uint64_t, void* ) = ( decltype( player_inventory_initialize ) )player_inventory_initialize_method->get_fn_ptr<void*>();
+
+			if ( player_inventory_initialize ) {
+				unity::game_object_t* game_object = unity::game_object_t::create( L"" );
+				game_object->add_component( dumper_klass->type() );
+
+				if ( uint64_t player_inventory = game_object->get_component( dumper_klass->type() ) ) {
+					player_inventory_initialize( player_inventory, nullptr );
+
+					std::vector<il2cpp::field_info_t*> fields = il2cpp::get_fields_of_type( dumper_klass, item_container_class->type(), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+
+					for ( il2cpp::field_info_t* field : fields ) {
+						uint64_t item_container = *( uint64_t* )( player_inventory + field->offset() );
+
+						if ( item_container ) {
+							int item_container_flags = *( int* )( item_container + flag->offset() );
+
+							if ( item_container_flags & rust::item_container::e_item_container_flag::belt ) {
+								DUMP_MEMBER_BY_X( containerBelt, field->offset() );
+							}
+
+							else if ( item_container_flags & rust::item_container::e_item_container_flag::clothing ) {
+								DUMP_MEMBER_BY_X( containerWear, field->offset() );
+							}
+
+							else {
+								DUMP_MEMBER_BY_X( containerMain, field->offset() );
+							}
+						}
+					}
+				}
+			}
+		}
 	DUMPER_SECTION( "Functions" );
+		sprintf_s( searchBuf, "System.Collections.Generic.List<%s>", item_class->name() );
 		DUMP_METHOD_BY_RETURN_TYPE_STR( FindItemsByItemID, searchBuf, 1 );
 	DUMPER_CLASS_END;
 
@@ -796,18 +839,7 @@ void dumper::produce( )
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GetInventory, DUMPER_CLASS( "PlayerInventory" ), 0, METHOD_ATTRIBUTE_ASSEM, METHOD_ATTRIBUTE_STATIC );
 	DUMPER_CLASS_END;
 
-	il2cpp::il2cpp_class_t* water_level_class = SEARCH_FOR_STATIC_CLASS_BY_METHOD_COUNT(
-		14,
-		DUMPER_TYPE_NAMESPACE( "System", "Single" ),
-		METHOD_ATTRIBUTE_PUBLIC,
-		METHOD_ATTRIBUTE_STATIC,
-		DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
-		DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
-		DUMPER_TYPE_NAMESPACE( "System", "Single" ),
-		DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
-		DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
-		DUMPER_TYPE( "BaseEntity" )
-	);
+	il2cpp::il2cpp_class_t* water_level_class = DUMPER_CLASS( "%cdb9aec126984be25b2deb17e347ce2365513cd8" );
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "WaterLevel", water_level_class );
 	DUMPER_SECTION( "Functions" );
