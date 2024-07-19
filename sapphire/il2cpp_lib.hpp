@@ -383,6 +383,39 @@ namespace il2cpp
 
 			return class_get_image( this );
 		}
+
+		il2cpp_class_t* get_generic_argument_at( uint32_t index )
+		{
+			if ( !this )
+				return nullptr;
+
+			uint64_t generic_class = *( uint64_t* )( ( uint64_t )this + 0x60 );
+
+			if ( !generic_class )
+				return nullptr;
+
+			uint64_t generic_class_inst = *( uint64_t* )( generic_class + 0x8 );
+
+			if ( !generic_class_inst )
+				return nullptr;
+
+			uint32_t argc = *( uint32_t* )( generic_class_inst + 0x0 );
+
+			if ( index > argc )
+				return nullptr;
+
+			uint64_t argv = *( uint64_t* )( generic_class_inst + 0x8 );
+
+			if ( !argv )
+				return nullptr;
+
+			il2cpp::il2cpp_type_t* generic_arg = *( il2cpp::il2cpp_type_t** )( argv + ( index * 0x8llu ) );
+
+			if ( !generic_arg )
+				return nullptr;
+
+			return class_from_il2cpp_type( generic_arg );
+		}
 	};
 
 	struct image_global_metadata_t {

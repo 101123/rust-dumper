@@ -519,12 +519,10 @@ void dumper::produce( )
 				}
 			}
 		}
-
 	DUMPER_CLASS_END;
 
-	//il2cpp::il2cpp_class_t* base_raidable_animal_class = DUMPER_CLASS( "BaseRidableAnimal" );
-	//uint64_t is_lootable_offset = il2cpp::get_field_by_name( base_raidable_animal_class, "isLootable" )->offset( );
-	il2cpp::il2cpp_class_t* item_container_class = DUMPER_CLASS( "%8e36b934bfd0cf94f5b5b55feef3f25aef3609b4" );
+	il2cpp::il2cpp_class_t* templated_item_container_class = il2cpp::get_field_by_name( player_loot_class, "containers" )->type()->klass();
+	il2cpp::il2cpp_class_t* item_container_class = templated_item_container_class->get_generic_argument_at( 0 );
 
 	char searchBuf[ 128 ] = { 0 };
 	sprintf_s( searchBuf, "System.Collections.Generic.List<%s>", item_class->name( ) );
