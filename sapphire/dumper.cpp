@@ -265,7 +265,6 @@ void dumper::produce( )
 
 					if ( weapon_rack_slot_create_pegs ) {
 						param_type = weapon_rack_slot_create_pegs->get_param( 2 );
-
 						if ( param_type ) {
 							game_manager_class = param_type->klass();
 						}
@@ -273,7 +272,9 @@ void dumper::produce( )
 				}
 			}
 		}
-	}
+	}	
+
+	il2cpp::il2cpp_class_t* base_networkable_entity_realm_class = nullptr;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseNetworkable" );
 	DUMPER_SECTION( "Offsets" );
@@ -282,18 +283,23 @@ void dumper::produce( )
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( parentEntity, entity_ref_class ); // Search for EntityRef class.
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( children, "System.Collections.Generic.List<BaseEntity>", FIELD_ATTRIBUTE_PUBLIC, FIELD_ATTRIBUTE_INIT_ONLY );
 
-	//DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( ClientEntities, "BaseNetworkable" );
-	//DUMP_HIDDEN_MEMBER_KEY_GETTER_AND_SETTER( ClientEntities, DUMPER_OFFSET( ClientEntities ) );
+		il2cpp::field_info_t* client_entities = il2cpp::get_field_if_type_contains( dumper_klass, "BaseNetworkable", FIELD_ATTRIBUTE_PUBLIC, FIELD_ATTRIBUTE_STATIC );
 
-	//hidden_value_base_class = il2cpp::get_field_by_offset( dumper_klass, DUMPER_OFFSET( ClientEntities ) )->type( )->klass( )->parent( );
+		DUMP_MEMBER_BY_X( clientEntities, client_entities->offset() );
+
+		base_networkable_entity_realm_class = client_entities->type()->klass()->get_generic_argument_at( 0 );
 	DUMPER_CLASS_END;
 
-	/*if ( hidden_value_base_class ) {
-		DUMPER_CLASS_BEGIN_FROM_PTR( "HiddenValueBase", hidden_value_base_class );
-		DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( _values, "Dictionary" );
-		DUMPER_CLASS_END;
-	}*/
+	DUMPER_CLASS_BEGIN_FROM_PTR("BaseNetworkable_EntityRealm", base_networkable_entity_realm_class)
+	DUMPER_SECTION( "Functions" );
+		il2cpp::method_info_t* base_networkable_entity_realm_find = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			DUMPER_TYPE( "BaseNetworkable" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE( "NetworkableId" )
+		);
+		DUMP_METHOD_BY_INFO_PTR( Find, base_networkable_entity_realm_find );
+	DUMPER_CLASS_END
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "Model" );
 	DUMPER_SECTION( "Offsets" );
@@ -477,7 +483,7 @@ void dumper::produce( )
 			);
 			
 			if ( item_manager_load_method ) {
-				uint64_t* ( *item_manager_load )( uint8_t*, void*, bool ) = ( decltype( item_manager_load ) )item_manager_load_method->get_fn_ptr<void*>();
+				uint32_t* ( *item_manager_load )( uint8_t*, void*, bool ) = ( decltype( item_manager_load ) )item_manager_load_method->get_fn_ptr<void*>();
 
 				if ( item_manager_load ) {
 					il2cpp::il2cpp_class_t* protobuf_item_class = DUMPER_CLASS_NAMESPACE( "ProtoBuf", "Item" );
@@ -491,25 +497,25 @@ void dumper::produce( )
 						*( uint64_t* )( protobuf_item + il2cpp::get_field_by_name( protobuf_item_class, "worldEntity" )->offset() ) = 1339;
 						*( uint64_t* )( protobuf_item + il2cpp::get_field_by_name( protobuf_item_class, "heldEntity" )->offset() ) = 1340;
 
-						uint64_t* created_item = item_manager_load( protobuf_item, nullptr, true );
+						uint32_t* created_item = item_manager_load( protobuf_item, nullptr, true );
 
 						if ( created_item ) {
-							for ( int i = 0; i < ( sizeof( protobuf_item ) / sizeof( uint64_t ) ); i++ ) {
+							for ( int i = 0; i < ( sizeof( protobuf_item ) / sizeof( uint32_t ) ); i++ ) {
 								switch ( created_item[ i ] ) {
 									case 1337: {
-										DUMP_MEMBER_BY_X( position, i * sizeof( uint64_t ) );
+										DUMP_MEMBER_BY_X( position, i * sizeof( uint32_t ) );
 										break;
 									}
 									case 1338: {
-										DUMP_MEMBER_BY_X( amount, i * sizeof( uint64_t ) );
+										DUMP_MEMBER_BY_X( amount, i * sizeof( uint32_t ) );
 										break;
 									}
 									case 1339: {
-										DUMP_MEMBER_BY_X( worldEntity, i * sizeof( uint64_t ) - 8 );
+										DUMP_MEMBER_BY_X( worldEntity, i * sizeof( uint32_t ) - 8 );
 										break;
 									}
 									case 1340: {
-										DUMP_MEMBER_BY_X( heldEntity, i * sizeof( uint64_t ) - 8 );
+										DUMP_MEMBER_BY_X( heldEntity, i * sizeof( uint32_t ) - 8 );
 										break;
 									}
 								}
@@ -623,80 +629,65 @@ void dumper::produce( )
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BasePlayer" );
 	DUMPER_SECTION( "Offsets" );
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( playerModel, DUMPER_CLASS( "PlayerModel" ) );
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( input, DUMPER_CLASS( "PlayerInput" ) );
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( movement, DUMPER_CLASS( "BaseMovement" ) );
-	DUMP_MEMBER_BY_NAME( currentTeam );
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( clActiveItem, "ItemId" );
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( modelState, DUMPER_CLASS( "ModelState" ) );
-	DUMP_MEMBER_BY_NAME( playerFlags );
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( eyes, "PlayerEyes" );
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( playerRigidbody, "UnityEngine.Rigidbody" );
-	DUMP_MEMBER_BY_NEAR_OFFSET( userID, DUMPER_OFFSET( playerRigidbody ) + 0x8 );
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( inventory, "PlayerInventory" );
-	DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( _displayName, "System.String", TYPE_ATTRIBUTE_NESTED_FAMILY, 0 );
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( _lookingAtCollider, "UnityEngine.Collider" );
-	DUMP_MEMBER_BY_NEAR_OFFSET( _lookingAtEntity, DUMPER_OFFSET( _lookingAtCollider ) - 0x8 );
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_MULTIPLE( lastSentTickTime, "BasePlayer", "System.Single" );
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( lastSentTick, DUMPER_CLASS( "PlayerTick" ) );
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( mounted, entity_ref_class ); 
-
-	//DUMPER_SECTION( "EncryptedValue Functions" );
-	//DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( lastSentTickTime, DUMPER_OFFSET( lastSentTickTime ), float );
-	//DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( clActiveItem, DUMPER_OFFSET( clActiveItem ), uint64_t );
-
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( playerModel, DUMPER_CLASS( "PlayerModel" ) );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( input, DUMPER_CLASS( "PlayerInput" ) );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( movement, DUMPER_CLASS( "BaseMovement" ) );
+		DUMP_MEMBER_BY_NAME( currentTeam );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( clActiveItem, "ItemId" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( modelState, DUMPER_CLASS( "ModelState" ) );
+		DUMP_MEMBER_BY_NAME( playerFlags );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( eyes, "PlayerEyes" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( playerRigidbody, "UnityEngine.Rigidbody" );
+		DUMP_MEMBER_BY_NEAR_OFFSET( userID, DUMPER_OFFSET( playerRigidbody ) + 0x8 );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( inventory, "PlayerInventory" );
+		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( _displayName, "System.String", TYPE_ATTRIBUTE_NESTED_FAMILY, DUMPER_ATTR_DONT_CARE );
+		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( _lookingAt, "UnityEngine.GameObject", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_MULTIPLE( lastSentTickTime, "BasePlayer", "System.Single" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( lastSentTick, DUMPER_CLASS( "PlayerTick" ) );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( mounted, entity_ref_class ); 
 	DUMPER_SECTION( "Functions" );
-	DUMP_METHOD_BY_PARAM_CLASS( ClientInput, input_state_class, 1, DUMPER_VIS_DONT_CARE, METHOD_ATTRIBUTE_VIRTUAL );
+		DUMP_METHOD_BY_PARAM_CLASS( ClientInput, input_state_class, 1, DUMPER_VIS_DONT_CARE, METHOD_ATTRIBUTE_VIRTUAL );
 
-	il2cpp::method_info_t* base_player_get_speed = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-		DUMPER_TYPE_NAMESPACE( "System", "Single" ),
-		METHOD_ATTRIBUTE_PUBLIC,
-		DUMPER_ATTR_DONT_CARE,
-		DUMPER_TYPE_NAMESPACE( "System", "Single" ),	
-		DUMPER_TYPE_NAMESPACE( "System", "Single" ), 
-		DUMPER_TYPE_NAMESPACE( "System", "Single" ) 
-	);
+		il2cpp::method_info_t* base_player_get_speed = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ),	
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ), 
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ) 
+		);
 
-	DUMP_METHOD_BY_INFO_PTR( GetSpeed, base_player_get_speed );
+		DUMP_METHOD_BY_INFO_PTR( GetSpeed, base_player_get_speed );
 
-	il2cpp::method_info_t* base_player_force_position_to = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_SIZE(
-		0,
-		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-		METHOD_ATTRIBUTE_PRIVATE,
-		DUMPER_ATTR_DONT_CARE,
-		DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
-	);
+		il2cpp::method_info_t* base_player_force_position_to = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_SIZE(
+			0,
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_PRIVATE,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
+		);
 
-	DUMP_METHOD_BY_INFO_PTR( ForcePositionTo, base_player_force_position_to );
+		DUMP_METHOD_BY_INFO_PTR( ForcePositionTo, base_player_force_position_to );
 
-	il2cpp::method_info_t* base_player_send_projectile_update = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-		METHOD_ATTRIBUTE_PUBLIC,
-		DUMPER_ATTR_DONT_CARE,
-		DUMPER_TYPE_NAMESPACE( "ProtoBuf", "PlayerProjectileUpdate" )
-	);
+		il2cpp::method_info_t* base_player_send_projectile_update = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE_NAMESPACE( "ProtoBuf", "PlayerProjectileUpdate" )
+		);
 
-	DUMP_METHOD_BY_INFO_PTR( SendProjectileUpdate, base_player_send_projectile_update );
+		DUMP_METHOD_BY_INFO_PTR( SendProjectileUpdate, base_player_send_projectile_update );
 
-	il2cpp::method_info_t* base_player_send_projectile_attack = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-		METHOD_ATTRIBUTE_PUBLIC,
-		DUMPER_ATTR_DONT_CARE,
-		DUMPER_TYPE_NAMESPACE( "ProtoBuf", "PlayerProjectileAttack" )
-	);
+		il2cpp::method_info_t* base_player_send_projectile_attack = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE_NAMESPACE( "ProtoBuf", "PlayerProjectileAttack" )
+		);
 
-	DUMP_METHOD_BY_INFO_PTR( SendProjectileAttack, base_player_send_projectile_attack );
+		DUMP_METHOD_BY_INFO_PTR( SendProjectileAttack, base_player_send_projectile_attack );
 
-	DUMP_METHOD_BY_RETURN_TYPE_STR( get_VisiblePlayerList, "BufferList<BasePlayer>", 0 );
-
-	/*
-		parser.ParseTypeMethods(basePlayer, [](const char* className, const char* methodName, uint32_t rva) {
-			uint64_t hash = CoreSDK_Hash(methodName);
-
-			if (hash == H("OnViewModeChanged"))
-				Offsets::BasePlayer__OnViewModeChanged = rva;
-		});
-	*/
+		DUMP_METHOD_BY_RETURN_TYPE_STR( get_VisiblePlayerList, "BufferList<BasePlayer>", 0 );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseMovement" );
