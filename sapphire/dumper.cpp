@@ -277,10 +277,10 @@ void dumper::produce( )
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseNetworkable" );
 	DUMPER_SECTION( "Offsets" );
-	DUMP_MEMBER_BY_NAME( prefabID ); // Dump a member by it's name.
-	DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( net, "Network.Networkable", DUMPER_VIS_DONT_CARE, DUMPER_ATTR_DONT_CARE );
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( parentEntity, entity_ref_class ); // Search for EntityRef class.
-	DUMP_MEMBER_BY_NEAR_OFFSET( children, DUMPER_OFFSET( parentEntity ) + 0x10 ); // Dump a member by an offset from another member of the class.
+		DUMP_MEMBER_BY_NAME( prefabID ); // Dump a member by it's name.
+		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( net, "Network.Networkable", DUMPER_VIS_DONT_CARE, DUMPER_ATTR_DONT_CARE );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( parentEntity, entity_ref_class ); // Search for EntityRef class.
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( children, "System.Collections.Generic.List<BaseEntity>", FIELD_ATTRIBUTE_PUBLIC, FIELD_ATTRIBUTE_INIT_ONLY );
 
 	//DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( ClientEntities, "BaseNetworkable" );
 	//DUMP_HIDDEN_MEMBER_KEY_GETTER_AND_SETTER( ClientEntities, DUMPER_OFFSET( ClientEntities ) );
