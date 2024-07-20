@@ -501,6 +501,16 @@ namespace il2cpp
 		}
 	};
 
+	struct method_search_flags_t {
+		il2cpp_type_t* m_ret_type{};
+
+		int m_wanted_vis{};
+		int m_wanted_attrs{};
+		int m_param_ct{};
+
+		std::vector<const char*> m_params_strs{};
+	};
+
 	extern il2cpp_class_t** s_TypeInfoDefinitionTable;
 
 	inline int32_t get_typedef_idx_for_class( il2cpp_class_t* klass ) {
@@ -863,6 +873,47 @@ namespace il2cpp
 				return false;
 
 			return true;
+		};
+
+		return search_for_class( search_for_static_class_with_method_with_rettype_param_types );
+	}
+	inline method_info_t* get_method_by_return_type_and_param_types_str( il2cpp_class_t* klass, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, const char** param_strs, int param_ct );
+	inline il2cpp_class_t* search_for_class_containing_method_prototypes( const std::vector<method_search_flags_t>& search_params ) {
+		const auto search_for_static_class_with_method_with_rettype_param_types = [=]( il2cpp_class_t* klass ) {
+			int matching_methods = 0;
+			void* iter = nullptr;
+
+			bool is_water_level = !strcmp( klass->name(), "%08e4170171f9c6bf42261fa14a0c169c9cbea335" );
+
+			if ( is_water_level ) {
+				while ( il2cpp::method_info_t* meth = klass->methods( &iter ) )
+				{
+					il2cpp_type_t* param = meth->get_param( 0 );
+					if ( !param )
+						continue;
+
+					std::cout << param->name() << '\n';
+				}
+			}
+
+			for ( const method_search_flags_t& param : search_params ) {
+				method_info_t* method = get_method_by_return_type_and_param_types_str( klass,
+					param.m_ret_type,
+					param.m_wanted_vis,
+					param.m_wanted_attrs,
+					( const char** )&param.m_params_strs[ 0 ],
+					param.m_param_ct );
+
+				if ( method ) {
+					matching_methods++;
+				}
+			}
+
+			if ( is_water_level ) {
+				std::cout << "WaterLevel: " << matching_methods << '\n';
+			}
+
+			return matching_methods == search_params.size();
 		};
 
 		return search_for_class( search_for_static_class_with_method_with_rettype_param_types );

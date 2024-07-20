@@ -844,7 +844,13 @@ void dumper::produce( )
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GetInventory, DUMPER_CLASS( "PlayerInventory" ), 0, METHOD_ATTRIBUTE_ASSEM, METHOD_ATTRIBUTE_STATIC );
 	DUMPER_CLASS_END;
 
-	il2cpp::il2cpp_class_t* water_level_class = DUMPER_CLASS( "%08e4170171f9c6bf42261fa14a0c169c9cbea335" );
+	auto water_level_search_types = std::vector<il2cpp::method_search_flags_t>{
+		il2cpp::method_search_flags_t {  DUMPER_TYPE_NAMESPACE( "System", "Single" ), METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC, 6, { "UnityEngine.Vector3", "UnityEngine.Vector3", "System.Single", "System.Boolean", "System.Boolean", "BaseEntity" }},
+		il2cpp::method_search_flags_t {  DUMPER_TYPE_NAMESPACE( "System", "Single" ), METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC, 4, { "UnityEngine.Bounds", "System.Boolean", "System.Boolean", "BaseEntity" } },
+		il2cpp::method_search_flags_t {  DUMPER_TYPE_NAMESPACE( "System", "Boolean" ), METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC, 4, { "UnityEngine.Vector3", "System.Boolean", "System.Boolean", "BaseEntity" } },
+	};
+
+	auto water_level_class = il2cpp::search_for_class_containing_method_prototypes( water_level_search_types );
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "WaterLevel", water_level_class );
 	DUMPER_SECTION( "Functions" );
