@@ -9,6 +9,7 @@
 namespace dumper
 {
 	void produce( );
+	void write_game_assembly();
 
 	extern FILE* outfile_handle;
 	extern uint64_t game_base;
@@ -76,7 +77,7 @@ namespace dumper
 
 		return nullptr;
 	}
-
-#define FIND_PATTERN( base, size, sig ) find_pattern( ( uint8_t* ) base, size, ( uint8_t* ) sig, sizeof( sig ) - 1 )
-#define FIND_PATTERN_IMAGE( base, sig ) find_pattern_image( ( uint8_t* ) base, ( uint8_t* ) sig, sizeof( sig ) - 1 )
 }
+
+#define FIND_PATTERN( base, size, sig ) dumper::find_pattern( ( uint8_t* ) base, size, ( uint8_t* ) sig, sizeof( sig ) - 1 )
+#define FIND_PATTERN_IMAGE( base, sig ) dumper::find_pattern_image( ( uint8_t* ) base, ( uint8_t* ) sig, sizeof( sig ) - 1 )

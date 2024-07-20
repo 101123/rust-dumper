@@ -207,12 +207,28 @@ char* dumper::clean_klass_name( const char* klass_name )
 	return buffer;
 }
 
-void write_pe_checksum( uint8_t* image ) {
-	PIMAGE_DOS_HEADER dos_header = ( PIMAGE_DOS_HEADER ) ( image );
-	PIMAGE_NT_HEADERS nt_headers = ( PIMAGE_NT_HEADERS ) ( image + dos_header->e_lfanew );
+void dumper::write_game_assembly() {
+	PIMAGE_DOS_HEADER dos_header = ( PIMAGE_DOS_HEADER ) ( game_base );
+	PIMAGE_NT_HEADERS nt_headers = ( PIMAGE_NT_HEADERS ) ( game_base + dos_header->e_lfanew );
+
+	uint64_t gc_handles = 0;
+	uint8_t* sig = FIND_PATTERN_IMAGE( game_base, "\x48\x8D\x05\xCC\xCC\xCC\xCC\x83\xE1\x07\xC1\xEF\x03" );
+
+	if ( sig ) {
+		gc_handles = DUMPER_RVA( ( uint64_t )dumper::relative_32( sig, 3 ) );
+	}
+
+	uint64_t convar_server_typeinfo = 0;
+	sig = FIND_PATTERN_IMAGE( game_base, "\x33\xD2\xE8\xCC\xCC\xCC\xCC\xF3\x0F\x10\x0D\xCC\xCC\xCC\xCC\x0F\x2F\xC8\x0F\x86" );
+
+	if ( sig ) {
+		convar_server_typeinfo = DUMPER_RVA( ( uint64_t )dumper::relative_32( sig + 24, 3 ) );
+	}
 
 	dumper::write_to_file( "namespace GameAssembly {\n" );
-	dumper::write_to_file( "\tconstexpr const static size_t Checksum = 0x%x;\n", dos_header->e_csum );
+	dumper::write_to_file( "\tconstexpr const static size_t timestamp = 0x%x;\n", nt_headers->FileHeader.TimeDateStamp );
+	dumper::write_to_file( "\tconstexpr const static size_t gc_handles = 0x%x;\n", gc_handles );
+	dumper::write_to_file( "\tconstexpr const static size_t ConVar_Server_TypeInfo = 0x%x;\n", convar_server_typeinfo );
 	dumper::write_to_file( "}\n\n" );
 }
 
@@ -224,8 +240,7 @@ void dumper::produce( )
 		return;
 
 	dumper::write_to_file( "#include <cstdint>\n\n" );
-
-	write_pe_checksum( ( uint8_t* ) game_base );
+	dumper::write_game_assembly();
 
 	il2cpp::s_TypeInfoDefinitionTable = *( il2cpp::il2cpp_class_t*** ) ( game_base + 0x3E1D058 );
 
@@ -741,23 +756,24 @@ void dumper::produce( )
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "LootableCorpse" );
 	DUMPER_SECTION( "Offsets" );
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( playerSteamID, "System.UInt64" );
-	DUMP_MEMBER_BY_NEAR_OFFSET( _playerName, DUMPER_OFFSET( playerSteamID ) + 0x8 );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( playerSteamID, "System.UInt64" );
+
+		il2cpp::field_info_t* player_name = il2cpp::get_field_if_name_contains( dumper_klass, DUMPER_TYPE_NAMESPACE( "System", "String" ), "%", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+		DUMP_MEMBER_BY_X( _playerName, player_name->offset() );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "DroppedItemContainer" )
-		DUMPER_SECTION( "Offsets" );
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( playerSteamID, "System.UInt64" );
-	DUMP_MEMBER_BY_NEAR_OFFSET( _playerName, DUMPER_OFFSET( playerSteamID ) + 0x8 );
-	/*
-	parser.ParseTypeMethods(droppedItemContainer, [](const char* className, const char* methodName, uint32_t rva) {
-		uint64_t hash = CoreSDK_Hash(methodName);
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( playerSteamID, "System.UInt64" );
 
-		if (hash == H("Menu_Open"))
-			Offsets::DroppedItemContainer__Menu_Open = rva;
-	});
-	*/
+		il2cpp::field_info_t* player_name = il2cpp::get_field_if_name_contains( dumper_klass, DUMPER_TYPE_NAMESPACE( "System", "String" ), "%", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+		DUMP_MEMBER_BY_X( _playerName, player_name->offset() );
 	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "MainCamera" )
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( mainCamera, "UnityEngine.Camera", FIELD_ATTRIBUTE_PUBLIC, FIELD_ATTRIBUTE_STATIC );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( mainCameraTransform, "UnityEngine.Transform", FIELD_ATTRIBUTE_PUBLIC, FIELD_ATTRIBUTE_STATIC );
+	DUMPER_CLASS_END
 
 	/*
 	uint32_t gameManager = parser.FindType(S("GameManager"));
@@ -828,7 +844,7 @@ void dumper::produce( )
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GetInventory, DUMPER_CLASS( "PlayerInventory" ), 0, METHOD_ATTRIBUTE_ASSEM, METHOD_ATTRIBUTE_STATIC );
 	DUMPER_CLASS_END;
 
-	il2cpp::il2cpp_class_t* water_level_class = DUMPER_CLASS( "%cdb9aec126984be25b2deb17e347ce2365513cd8" );
+	il2cpp::il2cpp_class_t* water_level_class = DUMPER_CLASS( "%08e4170171f9c6bf42261fa14a0c169c9cbea335" );
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "WaterLevel", water_level_class );
 	DUMPER_SECTION( "Functions" );
