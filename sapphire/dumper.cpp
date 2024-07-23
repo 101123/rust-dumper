@@ -1154,5 +1154,23 @@ void dumper::produce( )
 	DUMP_METHOD_BY_INFO_PTR( ClientInput, client_input );
 	DUMPER_CLASS_END;
 
+	auto game_object_ex_search_types = std::vector<il2cpp::method_search_flags_t>{
+		il2cpp::method_search_flags_t {  DUMPER_TYPE( "BaseEntity" ), METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC, 1, { "UnityEngine.Collider" } },
+		il2cpp::method_search_flags_t {  DUMPER_TYPE_NAMESPACE( "System", "Boolean" ), METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC, 2, { "UnityEngine.GameObject", "Rust.Layer" } },
+	};
+
+	auto game_object_ex_class = il2cpp::search_for_class_containing_method_prototypes( game_object_ex_search_types );
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "GameObjectEx", game_object_ex_class );
+	DUMPER_SECTION( "Functions" );
+		il2cpp::method_info_t* game_object_ex_to_base_entity = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			DUMPER_TYPE( "BaseEntity" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			METHOD_ATTRIBUTE_STATIC,
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "GameObject" )
+		);
+		DUMP_METHOD_BY_INFO_PTR( ToBaseEntity, game_object_ex_to_base_entity );
+	DUMPER_CLASS_END;
+
 	fclose( outfile_handle );
 }

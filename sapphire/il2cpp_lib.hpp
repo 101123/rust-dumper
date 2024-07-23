@@ -883,19 +883,6 @@ namespace il2cpp
 			int matching_methods = 0;
 			void* iter = nullptr;
 
-			bool is_water_level = !strcmp( klass->name(), "%08e4170171f9c6bf42261fa14a0c169c9cbea335" );
-
-			if ( is_water_level ) {
-				while ( il2cpp::method_info_t* meth = klass->methods( &iter ) )
-				{
-					il2cpp_type_t* param = meth->get_param( 0 );
-					if ( !param )
-						continue;
-
-					std::cout << param->name() << '\n';
-				}
-			}
-
 			for ( const method_search_flags_t& param : search_params ) {
 				method_info_t* method = get_method_by_return_type_and_param_types_str( klass,
 					param.m_ret_type,
@@ -907,10 +894,6 @@ namespace il2cpp
 				if ( method ) {
 					matching_methods++;
 				}
-			}
-
-			if ( is_water_level ) {
-				std::cout << "WaterLevel: " << matching_methods << '\n';
 			}
 
 			return matching_methods == search_params.size();
