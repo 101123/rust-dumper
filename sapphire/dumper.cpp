@@ -501,9 +501,15 @@ void dumper::produce( )
 				uint32_t* ( *item_manager_load )( uint8_t*, void*, bool ) = ( decltype( item_manager_load ) )item_manager_load_method->get_fn_ptr<void*>();
 
 				if ( item_manager_load ) {
+					il2cpp::il2cpp_class_t* protobuf_item_condition_data_class = DUMPER_CLASS_NAMESPACE( "ProtoBuf", "Item/ConditionData" );
 					il2cpp::il2cpp_class_t* protobuf_item_class = DUMPER_CLASS_NAMESPACE( "ProtoBuf", "Item" );
 
-					if ( protobuf_item_class ) {
+					if ( protobuf_item_condition_data_class && protobuf_item_class ) {
+						uint8_t protobuf_item_condition_data[ 64 ]{};
+
+						*( int* )( protobuf_item_condition_data + il2cpp::get_field_by_name( protobuf_item_condition_data_class, "condition" )->offset() ) = 1335;
+						*( int* )( protobuf_item_condition_data + il2cpp::get_field_by_name( protobuf_item_condition_data_class, "maxCondition" )->offset() ) = 1336;
+
 						uint8_t protobuf_item[ 256 ]{};
 
 						*( int* )( protobuf_item + il2cpp::get_field_by_name( protobuf_item_class, "itemid" )->offset() ) = 1588298435;
@@ -511,12 +517,21 @@ void dumper::produce( )
 						*( int* )( protobuf_item + il2cpp::get_field_by_name( protobuf_item_class, "amount" )->offset() ) = 1338;
 						*( uint64_t* )( protobuf_item + il2cpp::get_field_by_name( protobuf_item_class, "worldEntity" )->offset() ) = 1339;
 						*( uint64_t* )( protobuf_item + il2cpp::get_field_by_name( protobuf_item_class, "heldEntity" )->offset() ) = 1340;
+						*( uint64_t* )( protobuf_item + il2cpp::get_field_by_name( protobuf_item_class, "conditionData" )->offset() ) = ( uint64_t )&protobuf_item_condition_data;
 
 						uint32_t* created_item = item_manager_load( protobuf_item, nullptr, true );
 
 						if ( created_item ) {
 							for ( int i = 0; i < ( sizeof( protobuf_item ) / sizeof( uint32_t ) ); i++ ) {
 								switch ( created_item[ i ] ) {
+									case 1335: {
+										DUMP_MEMBER_BY_X( condition, i * sizeof( uint32_t ) );
+										break;
+									}
+									case 1336: {
+										DUMP_MEMBER_BY_X( maxCondition, i * sizeof( uint32_t ) );
+										break;
+									}
 									case 1337: {
 										DUMP_MEMBER_BY_X( position, i * sizeof( uint32_t ) );
 										break;
