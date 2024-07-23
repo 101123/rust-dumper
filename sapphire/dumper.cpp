@@ -622,27 +622,75 @@ void dumper::produce( )
 		DUMP_METHOD_BY_RETURN_TYPE_STR( FindItemsByItemID, searchBuf, 1 );
 	DUMPER_CLASS_END;
 
+	il2cpp::il2cpp_class_t* input_message_class = DUMPER_CLASS( "InputMessage" );
+	il2cpp::il2cpp_class_t* input_state_class = SEARCH_FOR_CLASS_BY_FIELD_COUNT( 3, 0, input_message_class, input_message_class );
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "InputState", input_state_class );
+	DUMPER_SECTION( "Offsets" );
+		il2cpp::method_info_t* input_state_flip_method = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			input_message_class->type()
+		);
+
+		if ( input_state_flip_method ) {
+			void( *input_state_flip )( uint8_t*, uint8_t* ) = ( decltype( input_state_flip ) )input_state_flip_method->get_fn_ptr<void*>();
+
+			if ( input_state_flip ) {
+				std::vector<il2cpp::field_info_t*> fields = il2cpp::get_fields_of_type( dumper_klass, input_message_class->type(), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+
+				if ( fields.size() == 2 ) {
+					uint8_t input_message_a[ 128 ]{};
+					uint8_t input_message_b[ 128 ]{};
+
+					uint8_t input_state[ 256 ]{};
+
+					*( uint64_t* )( input_state + fields.at( 0 )->offset() ) = ( uint64_t )&input_message_a;
+					*( uint64_t* )( input_state + fields.at( 1 )->offset() ) = ( uint64_t )&input_message_b;
+
+					uint8_t input_message_c[ 128 ]{};
+
+					*( uint32_t* )( input_message_c + il2cpp::get_field_by_name( input_message_class, "buttons" )->offset() ) = 1337;
+
+					input_state_flip( input_state, input_message_c );
+
+					for ( int i = 0; i < 2; i++ ) {
+						uint64_t input_message = *( uint64_t* )( input_state + fields.at( i )->offset() );
+
+						if ( input_message ) {
+							uint32_t buttons = *( uint32_t* )( input_message + il2cpp::get_field_by_name( input_message_class, "buttons" )->offset() );
+
+							if ( buttons == 1337 ) {
+								DUMP_MEMBER_BY_X( current, fields.at( i )->offset() );
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+	DUMPER_CLASS_END;
+
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerInput" );
 	DUMPER_SECTION( "Offsets" );
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( state, SEARCH_FOR_CLASS_BY_FIELD_COUNT( 3, 0, DUMPER_CLASS( "InputMessage" ), DUMPER_CLASS( "InputMessage" ) ) ); // Search for InputState class.
-	DUMP_MEMBER_BY_NEAR_OFFSET( bodyAngles, DUMPER_OFFSET( state ) + 0x1C );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( state, input_state_class );
+		DUMP_MEMBER_BY_NEAR_OFFSET( bodyAngles, DUMPER_OFFSET( state ) + 0x1C );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerEyes" );
 	DUMPER_SECTION( "Offsets" );
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( viewOffset, "PlayerEyes" ); // Contains PlayerEyes.EncryptedValue<Vector3>
-	DUMP_MEMBER_BY_NEAR_OFFSET( bodyRotation, DUMPER_OFFSET( viewOffset ) + 0xC ); // <bodyRotation>k__BackingField
-
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( viewOffset, "PlayerEyes" ); // Contains PlayerEyes.EncryptedValue<Vector3>
+		DUMP_MEMBER_BY_NEAR_OFFSET( bodyRotation, DUMPER_OFFSET( viewOffset ) + 0xC ); // <bodyRotation>k__BackingField
 	DUMPER_SECTION( "Functions" );
-
-	DUMP_METHOD_BY_RETURN_TYPE_METHOD_ATTRIBUTE( get_Rotation,
-		DUMPER_CLASS_NAMESPACE( "UnityEngine", "Quaternion" ),
-		DUMPER_CLASS_NAMESPACE( "System.Runtime.CompilerServices", "CompilerGeneratedAttribute" ),
-		DUMPER_ATTR_DONT_CARE,
-		METHOD_ATTRIBUTE_PUBLIC,
-		0,
-		il2cpp::attr_search_ignore
-	);
+		DUMP_METHOD_BY_RETURN_TYPE_METHOD_ATTRIBUTE( get_Rotation,
+			DUMPER_CLASS_NAMESPACE( "UnityEngine", "Quaternion" ),
+			DUMPER_CLASS_NAMESPACE( "System.Runtime.CompilerServices", "CompilerGeneratedAttribute" ),
+			DUMPER_ATTR_DONT_CARE,
+			METHOD_ATTRIBUTE_PUBLIC,
+			0,
+			il2cpp::attr_search_ignore
+		);
 	DUMPER_CLASS_END
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerTick" );
@@ -654,8 +702,6 @@ void dumper::produce( )
 		DUMP_MEMBER_BY_NAME( eyePos );
 		DUMP_MEMBER_BY_NAME( parentID );
 	DUMPER_CLASS_END;
-
-	il2cpp::il2cpp_class_t* input_state_class = SEARCH_FOR_CLASS_BY_FIELD_COUNT( 3, 0, DUMPER_CLASS( "InputMessage" ), DUMPER_CLASS( "InputMessage" ) );
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BasePlayer" );
 	DUMPER_SECTION( "Offsets" );
