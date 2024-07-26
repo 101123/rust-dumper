@@ -415,8 +415,8 @@ void dumper::produce( )
 		DUMP_MEMBER_BY_NAME( aimSwaySpeed );
 		DUMP_MEMBER_BY_NAME( recoil );
 		DUMP_MEMBER_BY_NAME( aimconeCurve );
-		DUMP_MEMBER_BY_NAME( aimCone );
-
+		DUMP_MEMBER_BY_NAME( aimCone );		
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( cachedModHash, "System.UInt32" );
 		// timeSinceReloadFinished is used to get the 4 floats near it.
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( timeSinceReloadFinished, DUMPER_CLASS( "TimeSince" ) );
 		DUMP_MEMBER_BY_NEAR_OFFSET( hipAimConeOffset, DUMPER_OFFSET( timeSinceReloadFinished ) - 0x8 ); // Ideally if they stay together you would just update this one and the rest should be fine.
@@ -447,6 +447,7 @@ void dumper::produce( )
 
 	DUMP_METHOD_BY_INFO_PTR( ScaleRepeatDelay, base_projectile_scale_repeat_delay );
 
+	DUMP_METHOD_BY_RETURN_TYPE_SIZE( GetAimCone, DUMPER_TYPE_NAMESPACE( "System", "Single" ), METHOD_ATTRIBUTE_FAMILY, DUMPER_ATTR_DONT_CARE, 0 );
 	DUMP_METHOD_BY_RETURN_TYPE_ATTRS( UpdateAmmoDisplay, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_FAMILY, METHOD_ATTRIBUTE_VIRTUAL );
 
 	DUMPER_CLASS_END;
