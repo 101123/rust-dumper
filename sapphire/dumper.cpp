@@ -1139,12 +1139,8 @@ void dumper::produce( )
 	il2cpp::il2cpp_class_t* world_class = il2cpp::search_for_class_by_field_types( DUMPER_TYPE( "WorldSerialization" ), 1, FIELD_ATTRIBUTE_STATIC );
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "World", world_class );
-		DUMP_MEMBER_BY_TYPE_METHOD_ATTRIBUTE( _size,
-			DUMPER_CLASS_NAMESPACE( "System", "UInt32" ),
-			DUMPER_CLASS_NAMESPACE( "System.Runtime.CompilerServices", "CompilerGeneratedAttribute" ),
-			FIELD_ATTRIBUTE_PRIVATE,
-			FIELD_ATTRIBUTE_STATIC,
-			il2cpp::attr_search_ignore );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_ALL_MEMBERS_OF_TYPE( "UnkUInt32", DUMPER_TYPE_NAMESPACE( "System", "UInt32" ), FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_STATIC );
 	DUMPER_CLASS_END
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemIcon" );
