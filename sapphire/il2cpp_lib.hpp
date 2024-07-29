@@ -1058,7 +1058,7 @@ namespace il2cpp
 			if ( matchedTypes == param_ct ) {
 				method_info_match_t buffer;
 				buffer.method = method;
-				buffer.length = get_fn_length( method->get_fn_ptr<void*>(), 16384 );
+				buffer.length = util::get_function_attributes( method->get_fn_ptr<void*>(), 16384 ).length;
 				matches.push_back( std::move( buffer ) );
 			}
 		}
@@ -1130,6 +1130,35 @@ namespace il2cpp
 		};
 
 		return get_method_from_class( klass, get_method_by_return_type_attrs );
+	}
+	inline std::vector<method_info_t*> get_methods_by_return_type_attrs( il2cpp_class_t* klass, il2cpp_class_t* ret_type_klass, int wanted_flags = 0, int wanted_vis = 0, int param_ct = -1 ) {
+		std::vector<method_info_t*> matches;
+
+		void* iter = nullptr;
+		while ( method_info_t* method = klass->methods( &iter ) ) {
+			if ( method->is_fake() )
+				continue;
+
+			uint32_t count = method->param_count();
+			if ( param_ct != -1 && count != param_ct )
+				continue;
+
+			il2cpp_type_t* returnType = method->return_type();
+
+			if ( strcmp( returnType->klass()->name(), ret_type_klass->name() ) == 0 )
+			{
+				uint32_t vis = method->flags() & METHOD_ATTRIBUTE_MEMBER_ACCESS_MASK;
+				if ( wanted_vis && ( vis != wanted_vis ) )
+					continue;
+
+				if ( wanted_flags && !( method->flags() & wanted_flags ) )
+					continue;
+
+				matches.push_back( method );
+			}
+		}
+
+		return matches;
 	}
 	inline method_info_t* get_method_by_param_class( il2cpp_class_t* klass, il2cpp_class_t* param_klass, int param_ct, int wanted_vis, int wanted_flags )
 	{

@@ -134,12 +134,11 @@ char* GetInnerClassFromEncClass( const char* name )
 void dump_fn_to_file( const char* label, uint8_t* address ) {
 	dumper::write_to_file( "\tconst static uint8_t %s[] = { ", label );
 
-	size_t len = get_fn_length( address, 16384 );
+	size_t len = util::get_function_attributes( address, 16384 ).length;
 
 	for ( uint32_t i = 0; i < len - 1; i++ ) {
 		dumper::write_to_file( "0x%02X, ", address[ i ] );
 	}
-
 
 	dumper::write_to_file( "0x%02X };\n", address[ len - 1 ] );
 }
@@ -374,7 +373,7 @@ void dumper::produce( )
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ModelState" );
 	DUMPER_SECTION( "Offsets" );
-	DUMP_MEMBER_BY_NAME( flags );
+		DUMP_MEMBER_BY_NAME( flags );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemDefinition" );
@@ -724,6 +723,8 @@ void dumper::produce( )
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( mounted, entity_ref_class ); 
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_PARAM_CLASS( ClientInput, input_state_class, 1, DUMPER_VIS_DONT_CARE, METHOD_ATTRIBUTE_VIRTUAL );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( IsOnGround, DUMPER_CLASS_NAMESPACE( "System", "Boolean" ), 0, METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_VIRTUAL );
+		DUMP_METHOD_BY_RETURN_TYPE_STR( get_VisiblePlayerList, "BufferList<BasePlayer>", 0 );
 
 		il2cpp::method_info_t* base_player_get_speed = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
@@ -764,7 +765,22 @@ void dumper::produce( )
 
 		DUMP_METHOD_BY_INFO_PTR( SendProjectileAttack, base_player_send_projectile_attack );
 
-		DUMP_METHOD_BY_RETURN_TYPE_STR( get_VisiblePlayerList, "BufferList<BasePlayer>", 0 );
+		il2cpp::il2cpp_class_t* model_state_class = DUMPER_CLASS( "ModelState" );
+		il2cpp::method_info_t* model_state_get_on_ladder = il2cpp::get_method_by_name( model_state_class, "get_onLadder" );
+		il2cpp::method_info_t* model_state_get_on_ground = il2cpp::get_method_by_name( model_state_class, "get_onground" );
+
+		std::vector<il2cpp::method_info_t*> methods = il2cpp::get_methods_by_return_type_attrs( dumper_klass, DUMPER_CLASS_NAMESPACE( "System", "Boolean" ), METHOD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, 0 );
+
+		for ( il2cpp::method_info_t* method : methods ) {
+			util::function_attributes_t function_attributes = util::get_function_attributes( method->get_fn_ptr<void*>(), 0x1000 );
+
+			if ( function_attributes.transfers_control_to( model_state_get_on_ladder->get_fn_ptr<void*>() ) ) {
+				if ( !function_attributes.transfers_control_to( model_state_get_on_ground->get_fn_ptr<void*>() ) ) {
+					DUMP_METHOD_BY_INFO_PTR( OnLadder, method );
+					break;
+				}
+			}
+		}
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseMovement" );
