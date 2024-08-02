@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 
+#include "il2cpp_ext.hpp"
 #include "util.hpp"
 
 #define STR( x ) #x

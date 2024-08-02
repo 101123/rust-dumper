@@ -143,6 +143,14 @@ void dump_fn_to_file( const char* label, uint8_t* address ) {
 	dumper::write_to_file( "0x%02X };\n", address[ len - 1 ] );
 }
 
+#define DUMP_ENCRYPTED_MEMBER( NAME, FIELD ) \
+	{ il2cpp::il2cpp_type_t* type = FIELD->type(); \
+	il2cpp::il2cpp_class_t* klass = type->klass(); \
+	il2cpp::method_info_t* to_string = il2cpp::get_method_by_name(klass, "ToString"); \
+	dumper::write_to_file( "// type name: %s\n", type->name() ); \
+	dumper::write_to_file("\tconstexpr const static size_t " #NAME " = 0x%x;\n", FIELD->offset() ); \
+	dumper::write_to_file("\tconstexpr const static size_t " #NAME "_ToString = 0x%x;\n", DUMPER_RVA( to_string->get_fn_ptr<uint64_t>() ) ); }
+
 #define DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( NAME, off, TYPE ) \
 	{ il2cpp::il2cpp_type_t* enc_type = il2cpp::get_field_by_offset( dumper_klass, off )->type(); \
 	il2cpp::method_info_t* enc_getter = il2cpp::get_method_by_return_type_str( enc_type->klass( ), GetInnerClassFromEncClass( enc_type->name( ) ), 0 ); \
@@ -177,14 +185,14 @@ void dump_fn_to_file( const char* label, uint8_t* address ) {
 FILE* dumper::outfile_handle = nullptr;
 uint64_t dumper::game_base = 0;
 
-void dumper::write_to_file( const char* foramt, ... )
+void dumper::write_to_file( const char* format, ... )
 {
 	char buffer[ 1024 ] = { 0 };
 	memset( buffer, 0, sizeof( buffer ) );
 
 	va_list args;
-	va_start( args, foramt );
-	vsprintf_s( buffer, foramt, args );
+	va_start( args, format );
+	vsprintf_s( buffer, format, args );
 	va_end( args );
 
 	fwrite( buffer, strlen( buffer ), 1, outfile_handle );
@@ -288,6 +296,21 @@ void dumper::produce( )
 		}
 	}	
 
+	il2cpp::il2cpp_class_t* invisible_vending_machine_class = DUMPER_CLASS( "InvisibleVendingMachine" );
+	il2cpp::il2cpp_class_t* base_networkable_load_info_class = nullptr;
+
+	if ( invisible_vending_machine_class ) {
+		il2cpp::method_info_t* invisible_vending_machine_load = il2cpp::get_method_by_return_type_attrs( invisible_vending_machine_class, DUMPER_CLASS_NAMESPACE( "System", "Void" ), METHOD_ATTRIBUTE_VIRTUAL, METHOD_ATTRIBUTE_PUBLIC, 1 );
+
+		if ( invisible_vending_machine_load ) {
+			il2cpp::il2cpp_type_t* param_type = invisible_vending_machine_load->get_param( 0 );
+
+			if ( param_type ) {
+				base_networkable_load_info_class = param_type->klass();
+			}
+		}
+	}
+
 	il2cpp::il2cpp_class_t* base_networkable_entity_realm_class = nullptr;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseNetworkable" );
@@ -304,7 +327,9 @@ void dumper::produce( )
 		base_networkable_entity_realm_class = client_entities->type()->klass()->get_generic_argument_at( 0 );
 	DUMPER_CLASS_END;
 
-	DUMPER_CLASS_BEGIN_FROM_PTR("BaseNetworkable_EntityRealm", base_networkable_entity_realm_class)
+	DUMPER_CLASS_BEGIN_FROM_PTR( "BaseNetworkable_EntityRealm", base_networkable_entity_realm_class )
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( entityList, "ListDictionary" );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* base_networkable_entity_realm_find = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 			DUMPER_TYPE( "BaseNetworkable" ),
@@ -724,6 +749,7 @@ void dumper::produce( )
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_PARAM_CLASS( ClientInput, input_state_class, 1, DUMPER_VIS_DONT_CARE, METHOD_ATTRIBUTE_VIRTUAL );
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( IsOnGround, DUMPER_CLASS_NAMESPACE( "System", "Boolean" ), 0, METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_VIRTUAL );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GetHeldItemID, DUMPER_CLASS( "ItemId" ), 0, METHOD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
 		DUMP_METHOD_BY_RETURN_TYPE_STR( get_VisiblePlayerList, "BufferList<BasePlayer>", 0 );
 
 		il2cpp::method_info_t* base_player_get_speed = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
@@ -849,8 +875,12 @@ void dumper::produce( )
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "MainCamera" )
+	DUMPER_SECTION( "Offsets " );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( mainCamera, "UnityEngine.Camera", FIELD_ATTRIBUTE_PUBLIC, FIELD_ATTRIBUTE_STATIC );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( mainCameraTransform, "UnityEngine.Transform", FIELD_ATTRIBUTE_PUBLIC, FIELD_ATTRIBUTE_STATIC );
+	DUMPER_SECTION( "Functions" );
+		il2cpp::method_info_t* main_camera_update = il2cpp::get_method_by_name( dumper_klass, "Update" );
+		DUMP_METHOD_BY_INFO_PTR( Update, main_camera_update );
 	DUMPER_CLASS_END
 
 	/*
@@ -971,8 +1001,9 @@ void dumper::produce( )
 	il2cpp::il2cpp_class_t* convar_graphics_klass = il2cpp::search_for_class_by_method_return_type_name( "UnityEngine.FullScreenMode", METHOD_ATTRIBUTE_PRIVATE, METHOD_ATTRIBUTE_STATIC );
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "Convar_Graphics", convar_graphics_klass );
-	DUMPER_SECTION( "Offsets" );
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( _fov, convar_graphics_klass->name( ), FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_STATIC );
+	DUMPER_SECTION( "EncryptedValue" );
+		il2cpp::field_info_t* _fov_field = il2cpp::get_field_if_type_contains( dumper_klass, convar_graphics_klass->name(), FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_STATIC );
+		DUMP_ENCRYPTED_MEMBER( _fov, _fov_field );
 	//DUMPER_SECTION( "EncryptedValue Functions" );
 	//DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( _fov, DUMPER_OFFSET( _fov ), float );
 	DUMPER_CLASS_END;
@@ -1228,9 +1259,10 @@ void dumper::produce( )
 	DUMP_METHOD_BY_INFO_PTR( ClientInput, client_input );
 	DUMPER_CLASS_END;
 
-	auto game_object_ex_search_types = std::vector<il2cpp::method_search_flags_t>{
-		il2cpp::method_search_flags_t {  DUMPER_TYPE( "BaseEntity" ), METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC, 1, { "UnityEngine.Collider" } },
-		il2cpp::method_search_flags_t {  DUMPER_TYPE_NAMESPACE( "System", "Boolean" ), METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC, 2, { "UnityEngine.GameObject", "Rust.Layer" } },
+	auto game_object_ex_search_types = std::vector<il2cpp::method_search_flags_t> {
+		il2cpp::method_search_flags_t {  DUMPER_TYPE( "BaseEntity" ), METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC, 2, { "UnityEngine.GameObject", "System.Boolean" } },
+		il2cpp::method_search_flags_t {  DUMPER_TYPE( "BaseEntity" ), METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC, 2, { "UnityEngine.Collider", "System.Boolean" } },
+		il2cpp::method_search_flags_t {  DUMPER_TYPE( "BaseEntity" ), METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC, 2, { "UnityEngine.Transform", "System.Boolean" } }
 	};
 
 	auto game_object_ex_class = il2cpp::search_for_class_containing_method_prototypes( game_object_ex_search_types );
@@ -1241,10 +1273,16 @@ void dumper::produce( )
 			DUMPER_TYPE( "BaseEntity" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			METHOD_ATTRIBUTE_STATIC,
-			DUMPER_TYPE_NAMESPACE( "UnityEngine", "GameObject" )
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "GameObject" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" )
 		);
 		DUMP_METHOD_BY_INFO_PTR( ToBaseEntity, game_object_ex_to_base_entity );
 	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "UIDeathScreen" )
+		il2cpp::method_info_t* ui_death_screen_set_visible = il2cpp::get_method_by_name( dumper_klass, "SetVisible" );
+		DUMP_METHOD_BY_INFO_PTR( SetVisible, ui_death_screen_set_visible );
+	DUMPER_CLASS_END
 
 	fclose( outfile_handle );
 }
