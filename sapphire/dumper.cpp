@@ -352,7 +352,12 @@ void dumper::produce() {
 			METHOD_ATTRIBUTE_VIRTUAL,
 			DUMPER_TYPE_NAMESPACE( "System", "String" ) ) );
 
-		DUMP_METHOD_BY_RETURN_TYPE_SIZE( GetWorldVelocity, NO_FILT, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), METHOD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, 0 );
+		DUMP_METHOD_BY_RETURN_TYPE_SIZE( GetWorldVelocity, 
+		    FILT( DUMPER_METHOD( DUMPER_CLASS( "ZiplineAudio" ), "Update" ) ),
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE, 
+			0 );
 		DUMP_METHOD_BY_RETURN_TYPE_SIZE( GetParentVelocity, NO_FILT, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), METHOD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, 1 );
 	DUMPER_CLASS_END;
 
@@ -441,7 +446,7 @@ void dumper::produce() {
 	DUMPER_SECTION( "Functions" );
 	
 	il2cpp::method_info_t* base_projectile_launch_projectile_clientside = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-		NO_FILT,
+		FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseProjectile" ), "LaunchProjectile" ) ),
 		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 		DUMPER_VIS_DONT_CARE,
 		DUMPER_ATTR_DONT_CARE,
@@ -453,7 +458,7 @@ void dumper::produce() {
 	DUMP_METHOD_BY_INFO_PTR( LaunchProjectileClientSide, base_projectile_launch_projectile_clientside );
 
 	il2cpp::method_info_t* base_projectile_scale_repeat_delay = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-		NO_FILT,
+	    FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseProjectile" ), "BeginCycle" ) ),
 		DUMPER_TYPE_NAMESPACE( "System", "Single" ),
 		METHOD_ATTRIBUTE_PUBLIC,
 		DUMPER_ATTR_DONT_CARE,
@@ -478,7 +483,9 @@ void dumper::produce() {
 		);
 		DUMP_METHOD_BY_INFO_PTR( ProcessAttack, base_melee_process_attack );
 
-		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( DoThrow, NO_FILT, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_ASSEM, DUMPER_ATTR_DONT_CARE );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( DoThrow,
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseMelee" ), "OnViewmodelEvent" ) ),
+		    DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_ASSEM, DUMPER_ATTR_DONT_CARE );
 	DUMPER_CLASS_END
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "FlintStrikeWeapon" );
@@ -708,7 +715,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NEAR_OFFSET( bodyRotation, DUMPER_OFFSET( viewOffset ) + 0xC ); // <bodyRotation>k__BackingField
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_RETURN_TYPE_METHOD_ATTRIBUTE( get_Rotation,
-			NO_FILT,
+		    FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseProjectile" ), "OnDrawGizmos" ) ),
 			DUMPER_CLASS_NAMESPACE( "UnityEngine", "Quaternion" ),
 			DUMPER_CLASS_NAMESPACE( "System.Runtime.CompilerServices", "CompilerGeneratedAttribute" ),
 			DUMPER_ATTR_DONT_CARE,
@@ -753,7 +760,7 @@ void dumper::produce() {
 		DUMP_METHOD_BY_RETURN_TYPE_STR( get_VisiblePlayerList, NO_FILT, "BufferList<BasePlayer>", 0 );
 
 		il2cpp::method_info_t* base_player_get_speed = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			NO_FILT,
+		    FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseProjectile" ), "DoAttack" ) ),
 			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			DUMPER_ATTR_DONT_CARE,
@@ -935,7 +942,7 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_PTR( "LocalPlayer", local_player_class );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* local_player_item_command = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			NO_FILT,
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "FrequencyConfig" ), "Confirm" ) ),
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			METHOD_ATTRIBUTE_STATIC,
@@ -946,7 +953,7 @@ void dumper::produce() {
 		DUMP_METHOD_BY_INFO_PTR( ItemCommand, local_player_item_command );
 
 		il2cpp::method_info_t* local_player_move_item = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			NO_FILT,
+		    FILT( DUMPER_METHOD( DUMPER_CLASS( "ItemIcon" ), "OnDroppedValue" ) ),
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			METHOD_ATTRIBUTE_STATIC,
@@ -973,7 +980,7 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_PTR( "WaterLevel", water_level_class );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* water_level_test = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			NO_FILT,
+		    FILT( DUMPER_METHOD( DUMPER_CLASS( "GroundVehicleAudio" ), "ClientTick" ) ),
 			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			METHOD_ATTRIBUTE_STATIC,
@@ -986,7 +993,7 @@ void dumper::produce() {
 		DUMP_METHOD_BY_INFO_PTR( Test, water_level_test );
 
 		il2cpp::method_info_t* water_level_get_water_level = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			NO_FILT,
+		    FILT_N( DUMPER_METHOD( DUMPER_CLASS( "AmbienceWaveSounds" ), "Update" ), 2 ),
 			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
 			METHOD_ATTRIBUTE_PRIVATE,
 			METHOD_ATTRIBUTE_STATIC,
@@ -1033,7 +1040,7 @@ void dumper::produce() {
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( UpdateLineRenderer, NO_FILT, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
 
 		il2cpp::method_info_t* base_fishing_rod_evaluate_fishing_position = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_STR(
-			NO_FILT,
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseFishingRod" ), "OnInput" ) ),
 			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
 			METHOD_ATTRIBUTE_PRIVATE,
 			DUMPER_ATTR_DONT_CARE,

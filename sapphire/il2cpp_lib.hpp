@@ -90,6 +90,23 @@ namespace il2cpp
 		UNWIND_CODE UnwindCode[ 1 ];
 	} UNWIND_INFO, *PUNWIND_INFO;
 
+	inline PRUNTIME_FUNCTION resolve_runtime_func( uint64_t game_base, PRUNTIME_FUNCTION func ) {
+		// resolve the chained func
+		PUNWIND_INFO unwind_info = ( PUNWIND_INFO ) ( func->UnwindData + game_base );
+
+		if ( ( unwind_info->Flags & UNW_FLAG_CHAININFO ) != 0 ) {
+			uint32_t index = unwind_info->CountOfCodes;
+			if ( ( index & 1 ) != 0 )
+				index += 1;
+
+			PRUNTIME_FUNCTION chain_func = ( PRUNTIME_FUNCTION ) ( &unwind_info->UnwindCode[ index ] );
+
+			return resolve_runtime_func( game_base, chain_func );
+		}
+
+		return func;
+	}
+
 	inline void build_call_cache() {
 		uint64_t game_base = ( uint64_t ) GetModuleHandleA( "GameAssembly.dll" );
 		if ( !game_base )
@@ -110,24 +127,15 @@ namespace il2cpp
 		uint32_t func_count = ( data_dir->Size / sizeof( RUNTIME_FUNCTION ) ) - 1;
 
 		for ( uint32_t i = 0; i < func_count; i++ ) {
-			RUNTIME_FUNCTION func = func_table[ i ];
-			uint32_t length = func.EndAddress - func.BeginAddress;
-			uint64_t start = game_base + func.BeginAddress;
+			PRUNTIME_FUNCTION func = &func_table[ i ];
+			uint32_t length = func->EndAddress - func->BeginAddress;
+			uint64_t start = game_base + func->BeginAddress;
 
 			util::function_attributes_t attrs = util::get_function_attributes( ( void* ) start, length );
 
-			// resolve the chained func
-			PUNWIND_INFO unwind_info = ( PUNWIND_INFO ) ( func.UnwindData + game_base );
-
-			if ( ( unwind_info->Flags & UNW_FLAG_CHAININFO ) != 0 ) {
-				uint32_t index = unwind_info->CountOfCodes;
-				if ( ( index & 1 ) != 0 )
-					index += 1;
-
-				PRUNTIME_FUNCTION chain_func = ( PRUNTIME_FUNCTION ) ( &unwind_info->UnwindCode[ index ] );
-
-				start = game_base + chain_func->BeginAddress;
-			}
+			// resolve all chained functions to final parent
+			PRUNTIME_FUNCTION final_func = resolve_runtime_func( game_base, func );
+			start = game_base + final_func->BeginAddress;
 
 			for ( uint64_t target : attrs.calls ) {
 				// skip self referencing calls
