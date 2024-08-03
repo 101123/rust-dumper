@@ -965,8 +965,19 @@ void dumper::produce() {
 
 		DUMP_METHOD_BY_INFO_PTR( MoveItem, local_player_move_item );
 
-		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( get_Entity, NO_FILT, DUMPER_CLASS( "BasePlayer" ), 0, METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC );
-		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GetInventory, NO_FILT, DUMPER_CLASS( "PlayerInventory" ), 0, METHOD_ATTRIBUTE_ASSEM, METHOD_ATTRIBUTE_STATIC );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( get_Entity, 
+		    FILT( DUMPER_METHOD( DUMPER_CLASS( "LookAtWeaponRack" ), "Update" ) ),
+			DUMPER_CLASS( "BasePlayer" ),
+			0,
+			METHOD_ATTRIBUTE_PUBLIC,
+			METHOD_ATTRIBUTE_STATIC );
+
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GetInventory,
+			FILT_N( DUMPER_METHOD( DUMPER_CLASS( "WearableFeedbackItemIcon" ), "Update" ), 2 ),
+		    DUMPER_CLASS( "PlayerInventory" ),
+			0,
+			METHOD_ATTRIBUTE_ASSEM,
+			METHOD_ATTRIBUTE_STATIC );
 	DUMPER_CLASS_END;
 
 	auto water_level_search_types = std::vector<il2cpp::method_search_flags_t>{
