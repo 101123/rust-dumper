@@ -318,7 +318,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( entityList, "ListDictionary" );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* base_networkable_entity_realm_find = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			NO_FILT,
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "DemoShotPlayback" ), "Update" ) ),
 			DUMPER_TYPE( "BaseNetworkable" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			DUMPER_ATTR_DONT_CARE,
