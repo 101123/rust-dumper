@@ -7,6 +7,8 @@
 #include "il2cpp_ext.hpp"
 #include "util.hpp"
 
+//#define DUMPING_IN_GAME
+
 #define STR( x ) #x
 #define CREATE_TYPE( name, args ) using il2cpp_##name = args; inline il2cpp_##name name;
 #define ASSIGN_TYPE( name ) name = (decltype(name)) GetProcAddress( GetModuleHandleA( "GameAssembly.dll" ), STR( il2cpp_##name ) );
@@ -241,7 +243,7 @@ namespace il2cpp
 	CREATE_TYPE( class_get_name, const char* ( * )( void* ) );
 	CREATE_TYPE( class_get_namespace, const char* ( * )( void* ) );
 	CREATE_TYPE( class_from_il2cpp_type, il2cpp_class_t* ( * )( il2cpp_type_t* ) );
-	CREATE_TYPE( class_get_static_field_data, uint64_t*( * )( void* ) );
+	CREATE_TYPE( class_get_static_field_data, uint64_t( * )( void* ) );
 	CREATE_TYPE( class_get_parent, il2cpp_class_t* ( * )( il2cpp_class_t* klass ) );
 	CREATE_TYPE( class_get_interfaces, il2cpp_class_t* ( * )( void*, void** ) );
 	CREATE_TYPE( class_get_image, il2cpp_image_t* ( * )( void* ) );
@@ -480,7 +482,7 @@ namespace il2cpp
 			return class_get_methods( this, iter );
 		}
 
-		uint64_t* static_field_data( )
+		uint64_t static_field_data( )
 		{
 			if ( !this )
 				return 0;
@@ -1538,6 +1540,38 @@ namespace il2cpp
 		}
 
 		return fields;
+	}
+
+	template <typename T, typename C>
+	inline field_info_t* get_static_field_if_value_is( il2cpp_class_t* klass, const char* search, int wanted_vis, int flags, C compare )
+	{
+#ifndef DUMPING_IN_GAME
+		return nullptr;
+#endif
+		flags |= FIELD_ATTRIBUTE_STATIC;
+
+		if ( !klass->static_field_data() )
+			return nullptr;
+
+		void* iter = nullptr;
+		while ( field_info_t* field = klass->fields( &iter ) ) {
+			const char* name = field->type()->name();
+			if ( !name )
+				continue;
+
+			int fl = field->flags();
+			int vis = fl & FIELD_ATTRIBUTE_FIELD_ACCESS_MASK;
+			if ( ( wanted_vis && ( vis != wanted_vis ) ) || ( flags && !( fl & flags ) ) )
+				continue;
+
+			if ( !strstr( name, search ) )
+				continue;
+
+			uint64_t value = field->static_get_value();
+
+			if ( compare( *( T* )&value ) )
+				return field;
+		}
 	}
 
 	inline void init( )

@@ -307,8 +307,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( parentEntity, entity_ref_class ); // Search for EntityRef class.
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( children, "System.Collections.Generic.List<BaseEntity>", FIELD_ATTRIBUTE_PUBLIC, FIELD_ATTRIBUTE_INIT_ONLY );
 
-		il2cpp::field_info_t* client_entities = il2cpp::get_field_if_type_contains( dumper_klass, "BaseNetworkable", FIELD_ATTRIBUTE_PUBLIC, FIELD_ATTRIBUTE_STATIC );
-
+		il2cpp::field_info_t* client_entities = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "BaseNetworkable", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* client_entities ) { return client_entities != nullptr; } );
 		DUMP_MEMBER_BY_X( clientEntities, client_entities->offset() );
 
 		base_networkable_entity_realm_class = client_entities->type()->klass()->get_generic_argument_at( 0 );
@@ -437,7 +436,8 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NEAR_OFFSET( sightAimConeOffset, DUMPER_OFFSET( hipAimConeScale ) - 0x4 );
 		DUMP_MEMBER_BY_NEAR_OFFSET( sightAimConeScale, DUMPER_OFFSET( sightAimConeOffset ) - 0x4 );
 
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( createdProjectiles, "Projectile", FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_INIT_ONLY | FIELD_ATTRIBUTE_STATIC );
+		il2cpp::field_info_t* created_projectiles = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "Projectile", FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_INIT_ONLY, []( void* value ) { return value != nullptr; } );
+		DUMP_MEMBER_BY_X( createdProjectiles, created_projectiles->offset() );
 	DUMPER_SECTION( "Functions" );
 	
 	il2cpp::method_info_t* base_projectile_launch_projectile_clientside = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
@@ -881,8 +881,11 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "MainCamera" )
 	DUMPER_SECTION( "Offsets " );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( mainCamera, "UnityEngine.Camera", FIELD_ATTRIBUTE_PUBLIC, FIELD_ATTRIBUTE_STATIC );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( mainCameraTransform, "UnityEngine.Transform", FIELD_ATTRIBUTE_PUBLIC, FIELD_ATTRIBUTE_STATIC );
+		il2cpp::field_info_t* main_camera = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "UnityEngine.Camera", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( unity::component_t* camera ) { return camera != nullptr; } );
+		DUMP_MEMBER_BY_X( mainCamera, main_camera->offset() );
+
+		il2cpp::field_info_t* main_camera_transform = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "UnityEngine.Transform", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( unity::component_t* transform ) { return transform != nullptr; } );
+		DUMP_MEMBER_BY_X( mainCameraTransform, main_camera_transform->offset() );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* main_camera_update = il2cpp::get_method_by_name( dumper_klass, "Update" );
 		DUMP_METHOD_BY_INFO_PTR( Update, main_camera_update );
@@ -1012,8 +1015,8 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "Convar_Graphics", convar_graphics_klass );
 	DUMPER_SECTION( "EncryptedValue" );
-		il2cpp::field_info_t* _fov_field = il2cpp::get_field_if_type_contains( dumper_klass, convar_graphics_klass->name(), FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_STATIC );
-		DUMP_ENCRYPTED_MEMBER( _fov, _fov_field );
+		il2cpp::field_info_t* fov = il2cpp::get_static_field_if_value_is<uint32_t>( dumper_klass, convar_graphics_klass->name(), FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( uint32_t value ) { return value != 0; } );
+		DUMP_MEMBER_BY_X( _fov, fov->offset() );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseFishingRod" );
@@ -1166,8 +1169,11 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainMeta" );
 	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( collision, "TerrainCollision", FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_STATIC ); // <Collision>k__BackingField
-		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( heightMap, "TerrainHeightMap", FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_STATIC ); // <HeightMap>k__BackingField
+		il2cpp::field_info_t* terrain_collision = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "TerrainCollision", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain_collision ) { return terrain_collision != nullptr; } );
+		DUMP_MEMBER_BY_X( collision, terrain_collision->offset() );
+
+		il2cpp::field_info_t* terrain_height_map = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "TerrainHeightMap", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain_collision ) { return terrain_collision != nullptr; } );
+		DUMP_MEMBER_BY_X( heightMap, terrain_height_map->offset() );
 	DUMPER_CLASS_END
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainHeightMap" );
@@ -1201,7 +1207,8 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "World", world_class );
 	DUMPER_SECTION( "Offsets" );
-		DUMP_ALL_MEMBERS_OF_TYPE( "UnkUInt32", DUMPER_TYPE_NAMESPACE( "System", "UInt32" ), FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_STATIC );
+		il2cpp::field_info_t* size = il2cpp::get_static_field_if_value_is<uint32_t>( dumper_klass, "System.UInt32", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( uint32_t size ) { return size == 4000; } );
+		DUMP_MEMBER_BY_X( _size, size->offset() );
 	DUMPER_CLASS_END
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemIcon" );
