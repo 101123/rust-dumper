@@ -219,17 +219,17 @@ void dumper::write_game_assembly() {
 	PIMAGE_NT_HEADERS nt_headers = ( PIMAGE_NT_HEADERS ) ( game_base + dos_header->e_lfanew );
 
 	uint64_t gc_handles = 0;
-	uint8_t* sig = FIND_PATTERN_IMAGE( game_base, "\x48\x8D\x05\xCC\xCC\xCC\xCC\x83\xE1\x07\xC1\xEF\x03" );
+	uint8_t* sig = FIND_PATTERN_IMAGE( game_base, "\x48\x8D\x05\xCC\xCC\xCC\xCC\x83\xE1\x07\xC1\xCC\x03" );
 
 	if ( sig ) {
 		gc_handles = DUMPER_RVA( ( uint64_t )dumper::relative_32( sig, 3 ) );
 	}
 
 	uint64_t convar_server_typeinfo = 0;
-	sig = FIND_PATTERN_IMAGE( game_base, "\x33\xD2\xE8\xCC\xCC\xCC\xCC\xF3\x0F\x10\x0D\xCC\xCC\xCC\xCC\x0F\x2F\xC8\x0F\x86" );
+	sig = FIND_PATTERN_IMAGE( game_base, "\x0F\x2F\xC8\x0F\x86\xCC\xCC\xCC\xCC\x48\x8B\x05\xCC\xCC\xCC\xCC\x44" );
 
 	if ( sig ) {
-		convar_server_typeinfo = DUMPER_RVA( ( uint64_t )dumper::relative_32( sig + 24, 3 ) );
+		convar_server_typeinfo = DUMPER_RVA( ( uint64_t )dumper::relative_32( sig + 0x9, 3 ) );
 	}
 
 	dumper::write_to_file( "namespace GameAssembly {\n" );
@@ -597,6 +597,9 @@ void dumper::produce( )
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerInventory" );
+	/*
+	// TODO: Fix this
+
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::method_info_t* player_inventory_initialize_method = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
@@ -642,6 +645,7 @@ void dumper::produce( )
 				}
 			}
 		}
+	*/
 	DUMPER_SECTION( "Functions" );
 		sprintf_s( searchBuf, "System.Collections.Generic.List<%s>", item_class->name() );
 		DUMP_METHOD_BY_RETURN_TYPE_STR( FindItemsByItemID, searchBuf, 1 );
@@ -922,7 +926,7 @@ void dumper::produce( )
 	*/
 
 	il2cpp::il2cpp_class_t* pet_command_desc_class = DUMPER_CLASS( "PetCommandList/PetCommandDesc" );
-	il2cpp::il2cpp_class_t* local_player_class = il2cpp::search_for_class_by_field_types( pet_command_desc_class->type(), 1, FIELD_ATTRIBUTE_STATIC );
+	il2cpp::il2cpp_class_t* local_player_class = il2cpp::search_for_class_by_field_types( pet_command_desc_class->type(), 0, FIELD_ATTRIBUTE_STATIC );
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "LocalPlayer", local_player_class );
 	DUMPER_SECTION( "Functions" );
@@ -1183,7 +1187,7 @@ void dumper::produce( )
 		DUMP_METHOD_BY_INFO_PTR( GetIgnore, terrain_collision_get_ignore );
 	DUMPER_CLASS_END
 
-	il2cpp::il2cpp_class_t* world_class = il2cpp::search_for_class_by_field_types( DUMPER_TYPE( "WorldSerialization" ), 1, FIELD_ATTRIBUTE_STATIC );
+	il2cpp::il2cpp_class_t* world_class = il2cpp::search_for_class_by_field_types( DUMPER_TYPE( "WorldSerialization" ), 0, FIELD_ATTRIBUTE_STATIC );
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "World", world_class );
 	DUMPER_SECTION( "Offsets" );
@@ -1203,10 +1207,14 @@ void dumper::produce( )
 		DUMP_METHOD_BY_INFO_PTR( SetTimedLootAction, item_icon_set_timed_loot_action );
 	DUMPER_CLASS_END
 
+	/*
+	// TODO: Fix this
+
 	il2cpp::il2cpp_class_t* con_button_class = il2cpp::search_for_class_by_interfaces_contain( "IConsoleButton" );
 	il2cpp::il2cpp_class_t* buttons_class = il2cpp::search_for_class_by_field_types( con_button_class->type( ), 56, FIELD_ATTRIBUTE_STATIC );
 	DUMPER_CLASS_BEGIN_FROM_PTR( "Buttons", buttons_class );
 	DUMPER_CLASS_END;
+	*/
 
 	DUMPER_CLASS_BEGIN_FROM_NAME("EffectData")
 	DUMPER_SECTION( "Offsets" );

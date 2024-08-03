@@ -341,8 +341,12 @@ namespace il2cpp
 
 			uint32_t count{};
 			void* iter = nullptr;
-			while ( field_info_t* field = fields( &iter ) )
-				count++;
+			while ( field_info_t* field = fields( &iter ) ) {
+				// ignore static fields
+				if ( !( field->flags() & FIELD_ATTRIBUTE_STATIC ) ) {
+					count++;
+				}
+			}
 
 			return count;
 		}
@@ -814,7 +818,11 @@ namespace il2cpp
 					matchingFields++;
 			}
 
-			return matchingFields == field_type_ct;
+			if ( field_type_ct ) {
+				return matchingFields == field_type_ct;
+			} else {
+				return matchingFields >= 1;
+			}
 		};
 
 		return search_for_class( search_for_class_by_field_types );
