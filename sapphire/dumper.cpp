@@ -1188,9 +1188,8 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainHeightMap" );
 	DUMPER_SECTION( "Functions" );
-		il2cpp::method_info_t* terrain_height_map_get_height = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_SIZE(
-			NO_FILT,
-			2,
+		il2cpp::method_info_t* terrain_height_map_get_height = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		    FILT( DUMPER_METHOD( DUMPER_CLASS( "TerrainAnchor" ), "Apply" ) ),
 			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			DUMPER_ATTR_DONT_CARE,
@@ -1203,7 +1202,7 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainCollision" );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* terrain_collision_get_ignore = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			NO_FILT,
+		    FILT_N( DUMPER_METHOD( DUMPER_CLASS( "SocketMod_TerrainCheck" ), "OnDrawGizmos" ), 2 ),
 			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			DUMPER_ATTR_DONT_CARE,
@@ -1224,7 +1223,7 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemIcon" );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* item_icon_set_timed_loot_action = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			NO_FILT,
+		    FILT( DUMPER_METHOD( DUMPER_CLASS( "ItemIcon" ), "TryToMove" ) ),
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			DUMPER_ATTR_DONT_CARE,
