@@ -30,11 +30,13 @@ namespace util {
                 break;
             }
 
+            /*
             // Break on return
             if ( *inst == 0xC3 ) {
                 len++;
                 break;
             }
+            */
 
             hde64s hs;
             uint64_t instr_len = hde64_disasm( inst, &hs );
@@ -44,12 +46,12 @@ namespace util {
             }
 
             else if ( hs.opcode == 0xE8 ) {
-                uint64_t target = ( uint64_t )inst + instr_len + hs.imm.imm32;
+                uint64_t target = ( uint64_t )inst + instr_len + (int32_t)hs.imm.imm32;
                 attr.calls.push_back( target );
             }
 
             else if ( hs.opcode == 0xE9 ) {
-                uint64_t target = ( uint64_t )inst + instr_len + hs.imm.imm32;
+                uint64_t target = ( uint64_t )inst + instr_len + (int32_t)hs.imm.imm32;
                 attr.jmps.push_back( target );
             }   
 

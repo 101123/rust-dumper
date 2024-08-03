@@ -11,6 +11,8 @@ namespace dumper
 	void produce( );
 	void write_game_assembly();
 
+	void dump_call( uint64_t function, uint32_t limit, uint32_t depth = 0 );
+
 	extern FILE* outfile_handle;
 	extern uint64_t game_base;
 

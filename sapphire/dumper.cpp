@@ -1,10 +1,6 @@
 #include "dumper.hpp"
 #include "util.hpp"
 
-// il2cpp::global_metadata_header_t* il2cpp::s_GlobalMetadata = nullptr;
-
-il2cpp::il2cpp_class_t** il2cpp::s_TypeInfoDefinitionTable = nullptr;
-
 #define SEARCH_FOR_CLASS_BY_FIELD_COUNT( field_ct, equality, ... ) \
 [=]( ) -> il2cpp::il2cpp_class_t* \
 { \
@@ -26,25 +22,26 @@ il2cpp::il2cpp_class_t** il2cpp::s_TypeInfoDefinitionTable = nullptr;
 	return il2cpp::get_field_if_type_contains_terms( dumper_klass, search_terms, _countof( search_terms ) ); \
 } ( )
 
-#define SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES( ret_type, wanted_vis, wanted_flags, ... ) \
+#define SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES( filter, ret_type, wanted_vis, wanted_flags, ... ) \
 [=]( ) -> il2cpp::method_info_t* \
 { \
 	il2cpp::il2cpp_type_t* param_types[ ] = { __VA_ARGS__ }; \
-	return il2cpp::get_method_by_return_type_and_param_types( dumper_klass, ret_type, wanted_vis, wanted_flags, param_types, _countof( param_types ) ); \
+	return il2cpp::get_method_by_return_type_and_param_types( filter, dumper_klass, ret_type, wanted_vis, wanted_flags, param_types, _countof( param_types ) ); \
 } ( )
 
-#define SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_STR( ret_type, wanted_vis, wanted_flags, ... ) \
+#define SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_STR( filter, ret_type, wanted_vis, wanted_flags, ... ) \
 [=]( ) -> il2cpp::method_info_t* \
 { \
 	const char* params[ ] = { __VA_ARGS__ }; \
-	return il2cpp::get_method_by_return_type_and_param_types_str( dumper_klass, ret_type, wanted_vis, wanted_flags, params, _countof( params ) ); \
-} ( )
+	return il2cpp::get_method_by_return_type_and_param_types_str(                                          \
+		    filter, dumper_klass, ret_type, wanted_vis, wanted_flags, params, _countof( params ) );            \
+	} ( )
 
-#define SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_SIZE( idx, ret_type, wanted_vis, wanted_flags, ... ) \
-[=]( ) -> il2cpp::method_info_t* \
+#define SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_SIZE( filter, idx, ret_type, wanted_vis, wanted_flags, ... )        \
+	[=]( ) -> il2cpp::method_info_t* \
 { \
 	il2cpp::il2cpp_type_t* param_types[ ] = { __VA_ARGS__ }; \
-	return il2cpp::get_method_by_return_type_and_param_types_size( idx, dumper_klass, ret_type, wanted_vis, wanted_flags, param_types, _countof( param_types ), nullptr, false ); \
+	return il2cpp::get_method_by_return_type_and_param_types_size( filter, idx, dumper_klass, ret_type, wanted_vis, wanted_flags, param_types, _countof( param_types ), nullptr, false ); \
 } ( )
 
 #define DUMPER_VIS_DONT_CARE 0 
@@ -53,6 +50,7 @@ il2cpp::il2cpp_class_t** il2cpp::s_TypeInfoDefinitionTable = nullptr;
 #define DUMPER_RVA( X ) X - dumper::game_base
 #define DUMPER_CLASS( name ) il2cpp::get_class_by_name( name )
 #define DUMPER_CLASS_NAMESPACE( namespaze, name ) il2cpp::get_class_by_name( name, namespaze )
+#define DUMPER_METHOD( klass, name ) il2cpp::get_method_by_name( klass, name )->get_fn_ptr< uint64_t >()
 
 #define DUMPER_TYPE( name ) DUMPER_CLASS( name )->type()
 #define DUMPER_TYPE_NAMESPACE( namespaze, name ) DUMPER_CLASS_NAMESPACE( namespaze, name )->type()
@@ -104,15 +102,15 @@ il2cpp::il2cpp_class_t** il2cpp::s_TypeInfoDefinitionTable = nullptr;
 	} \
 } ( )
 
-#define DUMP_METHOD_BY_RETURN_TYPE_STR( NAME, ret_type, param_ct ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_return_type_str( dumper_klass, ret_type, param_ct )->get_fn_ptr<uint64_t>() ) )
-#define DUMP_METHOD_BY_RETURN_TYPE_ATTRS( NAME, ret_type, param_ct, wanted_vis, wanted_attrs ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_return_type_attrs( dumper_klass, ret_type, wanted_attrs, wanted_vis, param_ct )->get_fn_ptr<uint64_t>() ) )
-#define DUMP_METHOD_BY_RETURN_TYPE_SIZE( NAME, ret_type, wanted_vis, wanted_attrs, idx ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_return_type_and_param_types_size( idx, dumper_klass, ret_type, wanted_attrs, wanted_vis, nullptr, 0, nullptr, false )->get_fn_ptr<uint64_t>() ) )
+#define DUMP_METHOD_BY_RETURN_TYPE_STR( NAME, filter, ret_type, param_ct ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_return_type_str( filter, dumper_klass, ret_type, param_ct )->get_fn_ptr<uint64_t>() ) )
+#define DUMP_METHOD_BY_RETURN_TYPE_ATTRS( NAME, filter, ret_type, param_ct, wanted_vis, wanted_attrs ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_return_type_attrs( filter, dumper_klass, ret_type, wanted_attrs, wanted_vis, param_ct )->get_fn_ptr<uint64_t>() ) )
+#define DUMP_METHOD_BY_RETURN_TYPE_SIZE( NAME, filter, ret_type, wanted_vis, wanted_attrs, idx ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_return_type_and_param_types_size( filter, idx, dumper_klass, ret_type, wanted_attrs, wanted_vis, nullptr, 0, nullptr, false )->get_fn_ptr<uint64_t>() ) )
 #define DUMP_METHOD_BY_SIG_REL( NAME, base, sig, off ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( uint64_t( dumper::relative_32( FIND_PATTERN( base, 0x1000, sig ), off ) ) ) )
 #define DUMP_METHOD_BY_INFO_PTR( NAME, ptr ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( ptr->get_fn_ptr<uint64_t>( ) ) )
-#define DUMP_METHOD_BY_PARAM_CLASS( NAME, param_class, param_ct, wanted_vis, wanted_flags ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_param_class( dumper_klass, param_class, param_ct, wanted_vis, wanted_flags )->get_fn_ptr<uint64_t>( ) ) )
+#define DUMP_METHOD_BY_PARAM_CLASS( NAME, filter, param_class, param_ct, wanted_vis, wanted_flags ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_param_class( filter, dumper_klass, param_class, param_ct, wanted_vis, wanted_flags )->get_fn_ptr<uint64_t>( ) ) )
 
-#define DUMP_METHOD_BY_RETURN_TYPE_METHOD_ATTRIBUTE(NAME, ret_type, method_attr, param_ct, wanted_vis, wanted_attrs, want_or_ignore ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_return_type_attrs_method_attr( dumper_klass, ret_type, method_attr, wanted_attrs, wanted_vis, param_ct, want_or_ignore )->get_fn_ptr<uint64_t>() ) )
-#define DUMP_METHOD_BY_RETURN_TYPE_METHOD_ATTRIBUTE_SIZE(NAME, ret_type, method_attr, wanted_vis, wanted_attrs, want_or_ignore, idx ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_return_type_and_param_types_size( idx, dumper_klass, ret_type, wanted_vis, wanted_attrs, nullptr, 0, method_attr, want_or_ignore )->get_fn_ptr<uint64_t>() ) )
+#define DUMP_METHOD_BY_RETURN_TYPE_METHOD_ATTRIBUTE(NAME, filter, ret_type, method_attr, param_ct, wanted_vis, wanted_attrs, want_or_ignore ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_return_type_attrs_method_attr( filter, dumper_klass, ret_type, method_attr, wanted_attrs, wanted_vis, param_ct, want_or_ignore )->get_fn_ptr<uint64_t>() ) )
+#define DUMP_METHOD_BY_RETURN_TYPE_METHOD_ATTRIBUTE_SIZE(NAME, filter, ret_type, method_attr, wanted_vis, wanted_attrs, want_or_ignore, idx ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_return_type_and_param_types_size( filter, idx, dumper_klass, ret_type, wanted_vis, wanted_attrs, nullptr, 0, method_attr, want_or_ignore )->get_fn_ptr<uint64_t>() ) )
 
 char* GetInnerClassFromEncClass( const char* name )
 {
@@ -151,34 +149,6 @@ void dump_fn_to_file( const char* label, uint8_t* address ) {
 	dumper::write_to_file("\tconstexpr const static size_t " #NAME " = 0x%x;\n", FIELD->offset() ); \
 	dumper::write_to_file("\tconstexpr const static size_t " #NAME "_ToString = 0x%x;\n", DUMPER_RVA( to_string->get_fn_ptr<uint64_t>() ) ); }
 
-#define DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( NAME, off, TYPE ) \
-	{ il2cpp::il2cpp_type_t* enc_type = il2cpp::get_field_by_offset( dumper_klass, off )->type(); \
-	il2cpp::method_info_t* enc_getter = il2cpp::get_method_by_return_type_str( enc_type->klass( ), GetInnerClassFromEncClass( enc_type->name( ) ), 0 ); \
-	il2cpp::method_info_t* enc_setter = il2cpp::get_method_by_return_type_str( enc_type->klass( ), "System.Void", 1 ); \
-	dumper::write_to_file("\tconstexpr const static size_t " #NAME "_EncryptedValueGetter = 0x%x;\n",  DUMPER_RVA( enc_getter->get_fn_ptr<uint64_t>() ) );\
-	dump_fn_to_file(#NAME "_EncryptedValueGetterFunc", enc_getter->get_fn_ptr<uint8_t*>()); \
-	dumper::write_to_file("\tconst static " #TYPE " ( *" #NAME "_EncryptedValueGet )( " #TYPE "* ) = decltype( " #NAME "_EncryptedValueGet )( &" #NAME "_EncryptedValueGetterFunc );\n"); \
-	dumper::write_to_file("\tconstexpr const static size_t " #NAME "_EncryptedValueSetter = 0x%x;\n",  DUMPER_RVA( enc_setter->get_fn_ptr<uint64_t>() ) ); \
-	dump_fn_to_file(#NAME "_EncryptedValueSetterFunc", enc_setter->get_fn_ptr<uint8_t*>()); \
-	dumper::write_to_file("\tconst static void ( *" #NAME "_EncryptedValueSet )( " #TYPE "*, " #TYPE " ) = decltype( " #NAME "_EncryptedValueSet )( &" #NAME "_EncryptedValueSetterFunc );\n"); } 
-
-#define DUMP_HIDDEN_MEMBER_KEY_GETTER_AND_SETTER( NAME, off ) \
-	{ il2cpp::il2cpp_type_t* hidden_type = il2cpp::get_field_by_offset( dumper_klass, off )->type(); \
-	il2cpp::method_info_t* hidden_getter = il2cpp::get_method_by_return_type_str( hidden_type->klass( ), GetInnerClassFromEncClass( hidden_type->name( ) ), 0 ); \
-	il2cpp::method_info_t* hidden_setter = il2cpp::get_method_by_return_type_str( hidden_type->klass( ), "System.Void", 1 ); \
-	il2cpp::field_info_t* key = il2cpp::get_field_if_type_contains(hidden_type->klass( ), "System.UInt64", DUMPER_VIS_DONT_CARE, DUMPER_ATTR_DONT_CARE );\
-	dumper::write_to_file("\tconstexpr const static size_t " #NAME "_HiddenValueKeyPos = 0x%x;\n", key->offset() );\
-	dumper::write_to_file("\tconstexpr const static size_t " #NAME "_HiddenValueGetter = 0x%x;\n",  DUMPER_RVA( hidden_getter->get_fn_ptr<uint64_t>() ) );\
-	dumper::write_to_file("\tconstexpr const static size_t " #NAME "_HiddenValueSetter = 0x%x;\n",  DUMPER_RVA( hidden_setter->get_fn_ptr<uint64_t>() ) );\
-	il2cpp::il2cpp_type_t* key_type = key->type();\
-	il2cpp::method_info_t* enc_getter = il2cpp::get_method_by_return_type_str( key_type->klass( ), "System.UInt64", 0 );\
-	il2cpp::method_info_t* enc_setter = il2cpp::get_method_by_return_type_str( key_type->klass( ), "System.Void", 1 ); \
-	dumper::write_to_file( "\tconstexpr const static size_t " #NAME "_HiddenValueEncryptedKeyGetter = 0x%x;\n", DUMPER_RVA( enc_getter->get_fn_ptr<uint64_t>( ) ) ); \
-	dump_fn_to_file(#NAME "_HiddenValueEncryptedKeyGetterFunc", enc_getter->get_fn_ptr<uint8_t*>()); \
-	dumper::write_to_file("\tconst static int64_t ( *" #NAME "_HiddenValueEncryptedKeyGet )( int64_t* ) = decltype( " #NAME "_HiddenValueEncryptedKeyGet )( &" #NAME "_HiddenValueEncryptedKeyGetterFunc );\n"); \
-	dumper::write_to_file( "\tconstexpr const static size_t " #NAME "_HiddenValueEncryptedKeySetter = 0x%x;\n", DUMPER_RVA( enc_setter->get_fn_ptr<uint64_t>( ) ) ); \
-	dump_fn_to_file(#NAME "_HiddenValueEncryptedKeySetterFunc", enc_setter->get_fn_ptr<uint8_t*>()); }
-
 #define DUMPER_OFFSET( NAME ) NAME##_Offset
 
 
@@ -214,6 +184,26 @@ char* dumper::clean_klass_name( const char* klass_name )
 	return buffer;
 }
 
+void dumper::dump_call( uint64_t function, uint32_t limit, uint32_t depth ) {
+	if ( limit == 0 )
+		return;
+
+	il2cpp::call_set_t* calls = il2cpp::get_inverse_calls( function );
+
+	if ( calls ) {
+		uint32_t idx = 0;
+
+		for ( auto call : *calls ) {
+			for ( uint32_t i = 0; i < depth; i++ )
+				write_to_file( "\t" );
+
+			write_to_file( "%02i %p\n", idx++, call - game_base );
+
+			dump_call( call, limit - 1, depth + 1 );
+		}
+	}
+}
+
 void dumper::write_game_assembly() {
 	PIMAGE_DOS_HEADER dos_header = ( PIMAGE_DOS_HEADER ) ( game_base );
 	PIMAGE_NT_HEADERS nt_headers = ( PIMAGE_NT_HEADERS ) ( game_base + dos_header->e_lfanew );
@@ -239,8 +229,7 @@ void dumper::write_game_assembly() {
 	dumper::write_to_file( "}\n\n" );
 }
 
-void dumper::produce( )
-{
+void dumper::produce() {
 	game_base = ( uint64_t ) ( GetModuleHandleA( "GameAssembly.dll" ) );
 	outfile_handle = fopen( "C:\\dumps\\output.h", "w" );
 	if ( !outfile_handle )
@@ -249,8 +238,6 @@ void dumper::produce( )
 	dumper::write_to_file( "#include <cstdint>\n\n" );
 	dumper::write_game_assembly();
 
-	il2cpp::s_TypeInfoDefinitionTable = *( il2cpp::il2cpp_class_t*** ) ( game_base + 0x3E1D058 );
-
 	il2cpp::il2cpp_class_t* entity_ref_class = SEARCH_FOR_CLASS_BY_FIELD_COUNT( 2, 0, DUMPER_CLASS( "BaseEntity" ), DUMPER_CLASS( "NetworkableId" ) );
 	il2cpp::il2cpp_class_t* hidden_value_base_class = nullptr;
 
@@ -258,7 +245,7 @@ void dumper::produce( )
 	il2cpp::il2cpp_class_t* hit_test_class = nullptr;
 
 	if ( hitbox_collision_class ) {
-		il2cpp::method_info_t* hitbox_collision_trace_test = il2cpp::get_method_by_return_type_attrs( hitbox_collision_class, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, 0, 2 );
+		il2cpp::method_info_t* hitbox_collision_trace_test = il2cpp::get_method_by_return_type_attrs( NO_FILT, hitbox_collision_class, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, 0, 2 );
 
 		if ( hitbox_collision_trace_test ) {
 			il2cpp::il2cpp_type_t* param_type = hitbox_collision_trace_test->get_param( 0 );
@@ -274,7 +261,7 @@ void dumper::produce( )
 	il2cpp::il2cpp_class_t* game_manager_class = nullptr;
 
 	if ( weapon_rack_class ) {
-		il2cpp::method_info_t* weapon_rack_position_and_display_item = il2cpp::get_method_by_return_type_attrs( weapon_rack_class, DUMPER_CLASS_NAMESPACE( "UnityEngine", "Collider" ), 0, 0, 7 );
+		il2cpp::method_info_t* weapon_rack_position_and_display_item = il2cpp::get_method_by_return_type_attrs( NO_FILT, weapon_rack_class, DUMPER_CLASS_NAMESPACE( "UnityEngine", "Collider" ), 0, 0, 7 );
 
 		if ( weapon_rack_position_and_display_item ) {
 			il2cpp::il2cpp_type_t* param_type = weapon_rack_position_and_display_item->get_param( 0 );
@@ -283,7 +270,7 @@ void dumper::produce( )
 				weapon_rack_slot_class = param_type->klass();
 
 				if ( weapon_rack_slot_class ) {
-					il2cpp::method_info_t* weapon_rack_slot_create_pegs = il2cpp::get_method_by_return_type_attrs( weapon_rack_slot_class, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, 0, 3 );
+					il2cpp::method_info_t* weapon_rack_slot_create_pegs = il2cpp::get_method_by_return_type_attrs( NO_FILT, weapon_rack_slot_class, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, 0, 3 );
 
 					if ( weapon_rack_slot_create_pegs ) {
 						param_type = weapon_rack_slot_create_pegs->get_param( 2 );
@@ -300,7 +287,7 @@ void dumper::produce( )
 	il2cpp::il2cpp_class_t* base_networkable_load_info_class = nullptr;
 
 	if ( invisible_vending_machine_class ) {
-		il2cpp::method_info_t* invisible_vending_machine_load = il2cpp::get_method_by_return_type_attrs( invisible_vending_machine_class, DUMPER_CLASS_NAMESPACE( "System", "Void" ), METHOD_ATTRIBUTE_VIRTUAL, METHOD_ATTRIBUTE_PUBLIC, 1 );
+		il2cpp::method_info_t* invisible_vending_machine_load = il2cpp::get_method_by_return_type_attrs( NO_FILT, invisible_vending_machine_class, DUMPER_CLASS_NAMESPACE( "System", "Void" ), METHOD_ATTRIBUTE_VIRTUAL, METHOD_ATTRIBUTE_PUBLIC, 1 );
 
 		if ( invisible_vending_machine_load ) {
 			il2cpp::il2cpp_type_t* param_type = invisible_vending_machine_load->get_param( 0 );
@@ -332,6 +319,7 @@ void dumper::produce( )
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( entityList, "ListDictionary" );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* base_networkable_entity_realm_find = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			NO_FILT,
 			DUMPER_TYPE( "BaseNetworkable" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			DUMPER_ATTR_DONT_CARE,
@@ -359,13 +347,14 @@ void dumper::produce( )
 	DUMPER_SECTION( "Functions" );
 
 		DUMP_METHOD_BY_INFO_PTR( FindBone, SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			NO_FILT, 
 			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Transform" ),
 			DUMPER_VIS_DONT_CARE,
 			METHOD_ATTRIBUTE_VIRTUAL,
 			DUMPER_TYPE_NAMESPACE( "System", "String" ) ) );
 
-		DUMP_METHOD_BY_RETURN_TYPE_SIZE( GetWorldVelocity, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), METHOD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, 0 );
-		DUMP_METHOD_BY_RETURN_TYPE_SIZE( GetParentVelocity, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), METHOD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, 1 );
+		DUMP_METHOD_BY_RETURN_TYPE_SIZE( GetWorldVelocity, NO_FILT, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), METHOD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, 0 );
+		DUMP_METHOD_BY_RETURN_TYPE_SIZE( GetParentVelocity, NO_FILT, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), METHOD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, 1 );
 	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* interpolator_class = nullptr;
@@ -452,6 +441,7 @@ void dumper::produce( )
 	DUMPER_SECTION( "Functions" );
 	
 	il2cpp::method_info_t* base_projectile_launch_projectile_clientside = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		NO_FILT,
 		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 		DUMPER_VIS_DONT_CARE,
 		DUMPER_ATTR_DONT_CARE,
@@ -463,6 +453,7 @@ void dumper::produce( )
 	DUMP_METHOD_BY_INFO_PTR( LaunchProjectileClientSide, base_projectile_launch_projectile_clientside );
 
 	il2cpp::method_info_t* base_projectile_scale_repeat_delay = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		NO_FILT,
 		DUMPER_TYPE_NAMESPACE( "System", "Single" ),
 		METHOD_ATTRIBUTE_PUBLIC,
 		DUMPER_ATTR_DONT_CARE,
@@ -471,14 +462,15 @@ void dumper::produce( )
 
 	DUMP_METHOD_BY_INFO_PTR( ScaleRepeatDelay, base_projectile_scale_repeat_delay );
 
-	DUMP_METHOD_BY_RETURN_TYPE_SIZE( GetAimCone, DUMPER_TYPE_NAMESPACE( "System", "Single" ), METHOD_ATTRIBUTE_FAMILY, DUMPER_ATTR_DONT_CARE, 0 );
-	DUMP_METHOD_BY_RETURN_TYPE_ATTRS( UpdateAmmoDisplay, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_FAMILY, METHOD_ATTRIBUTE_VIRTUAL );
+	DUMP_METHOD_BY_RETURN_TYPE_SIZE( GetAimCone, NO_FILT, DUMPER_TYPE_NAMESPACE( "System", "Single" ), METHOD_ATTRIBUTE_FAMILY, DUMPER_ATTR_DONT_CARE, 0 );
+	DUMP_METHOD_BY_RETURN_TYPE_ATTRS( UpdateAmmoDisplay, NO_FILT, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_FAMILY, METHOD_ATTRIBUTE_VIRTUAL );
 
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseMelee" );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* base_melee_process_attack = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			NO_FILT, 
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 			METHOD_ATTRIBUTE_FAMILY,
 			METHOD_ATTRIBUTE_VIRTUAL,
@@ -486,7 +478,7 @@ void dumper::produce( )
 		);
 		DUMP_METHOD_BY_INFO_PTR( ProcessAttack, base_melee_process_attack );
 
-		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( DoThrow, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_ASSEM, DUMPER_ATTR_DONT_CARE );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( DoThrow, NO_FILT, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_ASSEM, DUMPER_ATTR_DONT_CARE );
 	DUMPER_CLASS_END
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "FlintStrikeWeapon" );
@@ -514,6 +506,7 @@ void dumper::produce( )
 			}; 
 
 			il2cpp::method_info_t* item_manager_load_method = il2cpp::get_method_by_return_type_and_param_types(
+				NO_FILT, 
 				item_manager_class,
 				item_class->type(),
 				METHOD_ATTRIBUTE_PUBLIC,
@@ -593,24 +586,25 @@ void dumper::produce( )
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( uid, "ItemContainerId" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( itemList, searchBuf );
 	DUMPER_SECTION( "Functions" );
-		DUMP_METHOD_BY_RETURN_TYPE_STR( FindItemsByItemID, searchBuf, 1 );
+		DUMP_METHOD_BY_RETURN_TYPE_STR( FindItemsByItemID, NO_FILT, searchBuf, 1 );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerInventory" );
-	/*
-	// TODO: Fix this
-
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::method_info_t* player_inventory_initialize_method = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			NO_FILT,
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 			METHOD_ATTRIBUTE_FAMILY,
 			DUMPER_ATTR_DONT_CARE,
 			DUMPER_TYPE( "BasePlayer" )
 		);
 
+		DUMP_METHOD_BY_INFO_PTR( Initialize, player_inventory_initialize_method );
+
 		sprintf_s( searchBuf, "%s.Flag", item_container_class->name() );
 		il2cpp::field_info_t* flag = il2cpp::get_field_if_type_contains( item_container_class, searchBuf, FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
 
+		/*
 		if ( player_inventory_initialize_method && flag ) {
 			void( *player_inventory_initialize )( uint64_t, void* ) = ( decltype( player_inventory_initialize ) )player_inventory_initialize_method->get_fn_ptr<void*>();
 
@@ -645,10 +639,10 @@ void dumper::produce( )
 				}
 			}
 		}
-	*/
+		*/
 	DUMPER_SECTION( "Functions" );
 		sprintf_s( searchBuf, "System.Collections.Generic.List<%s>", item_class->name() );
-		DUMP_METHOD_BY_RETURN_TYPE_STR( FindItemsByItemID, searchBuf, 1 );
+		DUMP_METHOD_BY_RETURN_TYPE_STR( FindItemsByItemID, NO_FILT, searchBuf, 1 );
 	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* input_message_class = DUMPER_CLASS( "InputMessage" );
@@ -657,6 +651,7 @@ void dumper::produce( )
 	DUMPER_CLASS_BEGIN_FROM_PTR( "InputState", input_state_class );
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::method_info_t* input_state_flip_method = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			NO_FILT,
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			DUMPER_ATTR_DONT_CARE,
@@ -713,6 +708,7 @@ void dumper::produce( )
 		DUMP_MEMBER_BY_NEAR_OFFSET( bodyRotation, DUMPER_OFFSET( viewOffset ) + 0xC ); // <bodyRotation>k__BackingField
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_RETURN_TYPE_METHOD_ATTRIBUTE( get_Rotation,
+			NO_FILT,
 			DUMPER_CLASS_NAMESPACE( "UnityEngine", "Quaternion" ),
 			DUMPER_CLASS_NAMESPACE( "System.Runtime.CompilerServices", "CompilerGeneratedAttribute" ),
 			DUMPER_ATTR_DONT_CARE,
@@ -751,12 +747,13 @@ void dumper::produce( )
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( lastSentTick, DUMPER_CLASS( "PlayerTick" ) );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( mounted, entity_ref_class ); 
 	DUMPER_SECTION( "Functions" );
-		DUMP_METHOD_BY_PARAM_CLASS( ClientInput, input_state_class, 1, DUMPER_VIS_DONT_CARE, METHOD_ATTRIBUTE_VIRTUAL );
-		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( IsOnGround, DUMPER_CLASS_NAMESPACE( "System", "Boolean" ), 0, METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_VIRTUAL );
-		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GetHeldItemID, DUMPER_CLASS( "ItemId" ), 0, METHOD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
-		DUMP_METHOD_BY_RETURN_TYPE_STR( get_VisiblePlayerList, "BufferList<BasePlayer>", 0 );
+		DUMP_METHOD_BY_PARAM_CLASS( ClientInput, NO_FILT, input_state_class, 1, DUMPER_VIS_DONT_CARE, METHOD_ATTRIBUTE_VIRTUAL );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( IsOnGround, NO_FILT, DUMPER_CLASS_NAMESPACE( "System", "Boolean" ), 0, METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_VIRTUAL );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GetHeldItemID, NO_FILT, DUMPER_CLASS( "ItemId" ), 0, METHOD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+		DUMP_METHOD_BY_RETURN_TYPE_STR( get_VisiblePlayerList, NO_FILT, "BufferList<BasePlayer>", 0 );
 
 		il2cpp::method_info_t* base_player_get_speed = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			NO_FILT,
 			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			DUMPER_ATTR_DONT_CARE,
@@ -768,6 +765,7 @@ void dumper::produce( )
 		DUMP_METHOD_BY_INFO_PTR( GetSpeed, base_player_get_speed );
 
 		il2cpp::method_info_t* base_player_force_position_to = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_SIZE(
+		    NO_FILT,
 			0,
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 			METHOD_ATTRIBUTE_PRIVATE,
@@ -778,6 +776,7 @@ void dumper::produce( )
 		DUMP_METHOD_BY_INFO_PTR( ForcePositionTo, base_player_force_position_to );
 
 		il2cpp::method_info_t* base_player_send_projectile_update = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		    FILT( DUMPER_METHOD( DUMPER_CLASS( "Projectile" ), "AdjustVelocity" ) ),
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			DUMPER_ATTR_DONT_CARE,
@@ -787,6 +786,7 @@ void dumper::produce( )
 		DUMP_METHOD_BY_INFO_PTR( SendProjectileUpdate, base_player_send_projectile_update );
 
 		il2cpp::method_info_t* base_player_send_projectile_attack = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		    FILT_N( DUMPER_METHOD( DUMPER_CLASS( "Projectile" ), "Update" ), 4 ),
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			DUMPER_ATTR_DONT_CARE,
@@ -799,7 +799,7 @@ void dumper::produce( )
 		il2cpp::method_info_t* model_state_get_on_ladder = il2cpp::get_method_by_name( model_state_class, "get_onLadder" );
 		il2cpp::method_info_t* model_state_get_on_ground = il2cpp::get_method_by_name( model_state_class, "get_onground" );
 
-		std::vector<il2cpp::method_info_t*> methods = il2cpp::get_methods_by_return_type_attrs( dumper_klass, DUMPER_CLASS_NAMESPACE( "System", "Boolean" ), METHOD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, 0 );
+		std::vector<il2cpp::method_info_t*> methods = il2cpp::get_methods_by_return_type_attrs( NO_FILT, dumper_klass, DUMPER_CLASS_NAMESPACE( "System", "Boolean" ), METHOD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, 0 );
 
 		for ( il2cpp::method_info_t* method : methods ) {
 			util::function_attributes_t function_attributes = util::get_function_attributes( method->get_fn_ptr<void*>(), 0x1000 );
@@ -816,6 +816,7 @@ void dumper::produce( )
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseMovement" );
 	DUMPER_SECTION( "Functions" );	
 		il2cpp::method_info_t* base_movement_set_target_movement = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			NO_FILT,
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 			METHOD_ATTRIBUTE_FAMILY,
 			DUMPER_ATTR_DONT_CARE,
@@ -931,6 +932,7 @@ void dumper::produce( )
 	DUMPER_CLASS_BEGIN_FROM_PTR( "LocalPlayer", local_player_class );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* local_player_item_command = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			NO_FILT,
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			METHOD_ATTRIBUTE_STATIC,
@@ -941,6 +943,7 @@ void dumper::produce( )
 		DUMP_METHOD_BY_INFO_PTR( ItemCommand, local_player_item_command );
 
 		il2cpp::method_info_t* local_player_move_item = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			NO_FILT,
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			METHOD_ATTRIBUTE_STATIC,
@@ -952,8 +955,8 @@ void dumper::produce( )
 
 		DUMP_METHOD_BY_INFO_PTR( MoveItem, local_player_move_item );
 
-		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( get_Entity, DUMPER_CLASS( "BasePlayer" ), 0, METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC );
-		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GetInventory, DUMPER_CLASS( "PlayerInventory" ), 0, METHOD_ATTRIBUTE_ASSEM, METHOD_ATTRIBUTE_STATIC );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( get_Entity, NO_FILT, DUMPER_CLASS( "BasePlayer" ), 0, METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GetInventory, NO_FILT, DUMPER_CLASS( "PlayerInventory" ), 0, METHOD_ATTRIBUTE_ASSEM, METHOD_ATTRIBUTE_STATIC );
 	DUMPER_CLASS_END;
 
 	auto water_level_search_types = std::vector<il2cpp::method_search_flags_t>{
@@ -967,6 +970,7 @@ void dumper::produce( )
 	DUMPER_CLASS_BEGIN_FROM_PTR( "WaterLevel", water_level_class );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* water_level_test = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			NO_FILT,
 			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			METHOD_ATTRIBUTE_STATIC,
@@ -979,6 +983,7 @@ void dumper::produce( )
 		DUMP_METHOD_BY_INFO_PTR( Test, water_level_test );
 
 		il2cpp::method_info_t* water_level_get_water_level = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			NO_FILT,
 			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
 			METHOD_ATTRIBUTE_PRIVATE,
 			METHOD_ATTRIBUTE_STATIC,
@@ -988,6 +993,7 @@ void dumper::produce( )
 		DUMP_METHOD_BY_INFO_PTR( GetWaterLevel, water_level_get_water_level );
 
 		il2cpp::method_info_t* water_level_factor = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			NO_FILT,
 			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			METHOD_ATTRIBUTE_STATIC,
@@ -1008,8 +1014,6 @@ void dumper::produce( )
 	DUMPER_SECTION( "EncryptedValue" );
 		il2cpp::field_info_t* _fov_field = il2cpp::get_field_if_type_contains( dumper_klass, convar_graphics_klass->name(), FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_STATIC );
 		DUMP_ENCRYPTED_MEMBER( _fov, _fov_field );
-	//DUMPER_SECTION( "EncryptedValue Functions" );
-	//DUMP_ENCRYPTED_MEMBER_GETTER_AND_SETTER( _fov, DUMPER_OFFSET( _fov ), float );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseFishingRod" );
@@ -1023,9 +1027,10 @@ void dumper::produce( )
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( currentBobber, "FishingBobber" );
 	DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( clientStrainAmountNormalised, "System.Single", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
 	DUMPER_SECTION( "Functions" );
-		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( UpdateLineRenderer, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( UpdateLineRenderer, NO_FILT, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
 
 		il2cpp::method_info_t* base_fishing_rod_evaluate_fishing_position = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_STR(
+			NO_FILT,
 			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
 			METHOD_ATTRIBUTE_PRIVATE,
 			DUMPER_ATTR_DONT_CARE,
@@ -1040,12 +1045,13 @@ void dumper::produce( )
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "GameManifest" );
 	DUMPER_SECTION( "Functions" );
-		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GUIDToObject, DUMPER_CLASS_NAMESPACE( "UnityEngine", "Object" ), 1, METHOD_ATTRIBUTE_ASSEM, DUMPER_ATTR_DONT_CARE );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GUIDToObject, NO_FILT, DUMPER_CLASS_NAMESPACE( "UnityEngine", "Object" ), 1, METHOD_ATTRIBUTE_ASSEM, DUMPER_ATTR_DONT_CARE );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "GameManager", game_manager_class );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* game_manager_create_prefab = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			NO_FILT,
 			DUMPER_TYPE_NAMESPACE( "UnityEngine", "GameObject" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			DUMPER_ATTR_DONT_CARE,
@@ -1077,6 +1083,7 @@ void dumper::produce( )
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( sourceProjectilePrefab, DUMPER_CLASS( "Projectile" ) );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* projectile_do_hit = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_SIZE(
+		    NO_FILT,
 			0,
 			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
 			METHOD_ATTRIBUTE_PRIVATE,
@@ -1105,6 +1112,7 @@ void dumper::produce( )
 	DUMPER_CLASS_BEGIN_FROM_NAME( "GrowableEntity" );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_RETURN_TYPE_METHOD_ATTRIBUTE_SIZE( CanPick, 
+			NO_FILT,
 			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ), 
 			DUMPER_CLASS_NAMESPACE( "System.Runtime.CompilerServices", "CompilerGeneratedAttribute" ), 
 			METHOD_ATTRIBUTE_PUBLIC, 
@@ -1148,7 +1156,7 @@ void dumper::produce( )
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "WaterSystem" );
 	DUMPER_SECTION( "Functions" );
-		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( get_Ocean, DUMPER_CLASS( "WaterBody" ), 0, METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( get_Ocean, NO_FILT, DUMPER_CLASS( "WaterBody" ), 0, METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC );
 	DUMPER_CLASS_END
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "WaterBody" );
@@ -1165,6 +1173,7 @@ void dumper::produce( )
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainHeightMap" );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* terrain_height_map_get_height = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_SIZE(
+			NO_FILT,
 			2,
 			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
 			METHOD_ATTRIBUTE_PUBLIC,
@@ -1178,6 +1187,7 @@ void dumper::produce( )
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainCollision" );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* terrain_collision_get_ignore = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			NO_FILT,
 			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			DUMPER_ATTR_DONT_CARE,
@@ -1197,6 +1207,7 @@ void dumper::produce( )
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemIcon" );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* item_icon_set_timed_loot_action = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			NO_FILT,
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			DUMPER_ATTR_DONT_CARE,
@@ -1232,6 +1243,7 @@ void dumper::produce( )
 	DUMPER_SECTION( "Functions" );
 
 	il2cpp::method_info_t* building_block_upgrade_to_grade = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		NO_FILT,
 		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 		METHOD_ATTRIBUTE_PRIVATE,
 		DUMPER_ATTR_DONT_CARE,
@@ -1243,6 +1255,7 @@ void dumper::produce( )
 	DUMP_METHOD_BY_INFO_PTR( UpgradeToGrade, building_block_upgrade_to_grade );
 
 	il2cpp::method_info_t* building_block_has_upgrade_privilege = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_SIZE(
+		NO_FILT,
 		1,
 		DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
 		METHOD_ATTRIBUTE_PRIVATE,
@@ -1257,6 +1270,7 @@ void dumper::produce( )
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerWalkMovement" );
 	il2cpp::method_info_t* client_input = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		NO_FILT,
 		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 		METHOD_ATTRIBUTE_PUBLIC,
 		DUMPER_ATTR_DONT_CARE,
@@ -1278,6 +1292,7 @@ void dumper::produce( )
 	DUMPER_CLASS_BEGIN_FROM_PTR( "GameObjectEx", game_object_ex_class );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* game_object_ex_to_base_entity = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			NO_FILT,
 			DUMPER_TYPE( "BaseEntity" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			METHOD_ATTRIBUTE_STATIC,

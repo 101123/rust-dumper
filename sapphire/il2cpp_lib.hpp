@@ -11,8 +11,152 @@
 #define CREATE_TYPE( name, args ) using il2cpp_##name = args; inline il2cpp_##name name;
 #define ASSIGN_TYPE( name ) name = (decltype(name)) GetProcAddress( GetModuleHandleA( "GameAssembly.dll" ), STR( il2cpp_##name ) );
 
+#include <map>
+#include <set>
+
+#define NO_FILT il2cpp::method_filter_t()
+#define FILT_N( x, n ) il2cpp::method_filter_t( x, n )
+#define FILT( x ) il2cpp::method_filter_t( x, 1 )
+
 namespace il2cpp
 {
+	using call_set_t = std::set< uint64_t >;
+	using call_map_t = std::map< uint64_t, call_set_t >;
+
+	inline call_map_t call_cache;
+	inline call_map_t inverse_call_cache;
+
+	inline call_set_t* get_calls( uint64_t function ) {
+		if ( call_cache.find( function ) != call_cache.end() ) {
+			return &call_cache[ function ];
+		}
+
+		return nullptr;
+	}
+
+	inline call_set_t* get_inverse_calls( uint64_t function ) {
+		if ( inverse_call_cache.find( function ) != inverse_call_cache.end() ) {
+			return &inverse_call_cache[ function ];
+		}
+
+		return nullptr;
+	}
+
+	inline bool has_call_in_tree( uint64_t function, uint64_t target, uint32_t depth ) {
+		// return if the depth is zero
+		if ( depth == 0 )
+			return false;
+
+		// find all calling functions
+		call_set_t* calls = get_calls( function );
+
+		if ( calls ) {
+			// enum each caller and look for target
+			for ( uint64_t call : *calls ) {
+				// if there is a call from our target
+				if ( call == target )
+					return true;
+
+				// continue traversing parents
+				if ( has_call_in_tree( call, target, depth - 1 ) )
+					return true;
+			}
+		}
+
+		return false;
+	}
+
+	typedef struct _UNWIND_CODE {
+		union {
+			struct {
+				BYTE CodeOffset;
+				BYTE UnwindOp : 4;
+				BYTE OpInfo : 4;
+
+			} s;
+
+			WORD FrameOffset;
+			WORD Value;
+		} u;
+	} UNWIND_CODE, *PUNWIND_CODE;
+
+	typedef struct _UNWIND_INFO {
+		BYTE Version : 3;
+		BYTE Flags : 5;
+		BYTE PrologSize;
+		BYTE CountOfCodes;
+		BYTE FrameRegister : 4;
+		BYTE FrameOffset : 4;
+		UNWIND_CODE UnwindCode[ 1 ];
+	} UNWIND_INFO, *PUNWIND_INFO;
+
+	inline void build_call_cache() {
+		uint64_t game_base = ( uint64_t ) GetModuleHandleA( "GameAssembly.dll" );
+		if ( !game_base )
+			return;
+
+		PIMAGE_DOS_HEADER dos_header = ( PIMAGE_DOS_HEADER ) ( game_base );
+		PIMAGE_NT_HEADERS nt_headers = ( PIMAGE_NT_HEADERS ) ( game_base + dos_header->e_lfanew );
+
+		uint32_t game_size = nt_headers->OptionalHeader.SizeOfImage;
+
+		IMAGE_DATA_DIRECTORY* data_dir =
+		    &nt_headers->OptionalHeader.DataDirectory[ IMAGE_DIRECTORY_ENTRY_EXCEPTION ];
+
+		if ( !data_dir->VirtualAddress || !data_dir->Size )
+			return;
+
+		PRUNTIME_FUNCTION func_table = ( PRUNTIME_FUNCTION ) ( game_base + data_dir->VirtualAddress );
+		uint32_t func_count = ( data_dir->Size / sizeof( RUNTIME_FUNCTION ) ) - 1;
+
+		for ( uint32_t i = 0; i < func_count; i++ ) {
+			RUNTIME_FUNCTION func = func_table[ i ];
+			uint32_t length = func.EndAddress - func.BeginAddress;
+			uint64_t start = game_base + func.BeginAddress;
+
+			util::function_attributes_t attrs = util::get_function_attributes( ( void* ) start, length );
+
+			// resolve the chained func
+			PUNWIND_INFO unwind_info = ( PUNWIND_INFO ) ( func.UnwindData + game_base );
+
+			if ( ( unwind_info->Flags & UNW_FLAG_CHAININFO ) != 0 ) {
+				uint32_t index = unwind_info->CountOfCodes;
+				if ( ( index & 1 ) != 0 )
+					index += 1;
+
+				PRUNTIME_FUNCTION chain_func = ( PRUNTIME_FUNCTION ) ( &unwind_info->UnwindCode[ index ] );
+
+				start = game_base + chain_func->BeginAddress;
+			}
+
+			for ( uint64_t target : attrs.calls ) {
+				// skip self referencing calls
+				if ( target == start )
+					continue;
+
+				// insert call into the call cache
+				call_cache[ target ].insert( start );
+				inverse_call_cache[ start ].insert( target );
+			}
+		}
+	}
+
+	struct method_filter_t {
+		inline method_filter_t() : target( 0 ), max_depth( 0 ) {
+		}
+
+		inline method_filter_t( const method_filter_t& filter )
+		    : target( filter.target ), max_depth( filter.max_depth ) {
+		}
+
+		inline method_filter_t( uint64_t _target, uint32_t _max_depth )
+		    : target( _target ), max_depth( _max_depth ) {
+		}
+
+		uint64_t target;
+		uint32_t max_depth;
+	};
+
 	// get_method_by_return_type_attrs_method_attr
 	enum e_attr_search : uint8_t {
 		attr_search_want = 0,
@@ -154,42 +298,19 @@ namespace il2cpp
 
 	struct method_info_t
 	{
-		bool is_fake()
+		bool should_filter( method_filter_t filter )
 		{
-			uint64_t address = this->get_fn_ptr<uint64_t>();
-
-			DWORD64 imageBase = 0;
-			PRUNTIME_FUNCTION runtimeFunction = RtlLookupFunctionEntry( address, &imageBase, nullptr );
-
-			if ( !runtimeFunction ) {
+			if ( !this )
 				return true;
-			}
 
-			uint32_t exportCount = 0;
+			if ( !filter.max_depth )
+				return false;
 
-			uint32_t functionLen = runtimeFunction->EndAddress - runtimeFunction->BeginAddress;
+			uint64_t address = this->get_fn_ptr< uint64_t >();
 
-			for ( uint32_t i = 0; i < functionLen; i++ ) {
+			bool match = has_call_in_tree( address, filter.target, filter.max_depth );
 
-				uint64_t instruction = address + i;
-				uint8_t opcode = *( uint8_t* )( instruction );
-
-				if ( opcode == 0xE8 ) {
-					uint32_t relative = ( uint64_t )class_get_static_field_data - ( instruction ) - 5;
-
-					if ( *( uint32_t* )( instruction + 0x1 ) == relative ) {
-						exportCount++;
-					}
-				}
-			}
-
-			bool isLastByteCC = *( uint8_t* )( address + functionLen - 1 ) == 0xCC;
-
-			if ( exportCount == 2 && isLastByteCC ) {
-				return true;
-			}
-
-			return false;
+			return !match;
 		}
 
 		const char* name( )
@@ -886,14 +1007,16 @@ namespace il2cpp
 
 		return search_for_class( search_for_static_class_with_method_with_rettype_param_types );
 	}
-	inline method_info_t* get_method_by_return_type_and_param_types_str( il2cpp_class_t* klass, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, const char** param_strs, int param_ct );
+	inline method_info_t* get_method_by_return_type_and_param_types_str( method_filter_t filter, il2cpp_class_t* klass, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, const char** param_strs, int param_ct );
 	inline il2cpp_class_t* search_for_class_containing_method_prototypes( const std::vector<method_search_flags_t>& search_params ) {
-		const auto search_for_static_class_with_method_with_rettype_param_types = [=]( il2cpp_class_t* klass ) {
+		const auto search_for_static_class_with_method_with_rettype_param_types = [&]( il2cpp_class_t* klass ) {
 			int matching_methods = 0;
 			void* iter = nullptr;
 
 			for ( const method_search_flags_t& param : search_params ) {
-				method_info_t* method = get_method_by_return_type_and_param_types_str( klass,
+				method_info_t* method = get_method_by_return_type_and_param_types_str(
+				    NO_FILT,
+					klass,
 					param.m_ret_type,
 					param.m_wanted_vis,
 					param.m_wanted_attrs,
@@ -911,9 +1034,12 @@ namespace il2cpp
 		return search_for_class( search_for_static_class_with_method_with_rettype_param_types );
 	}
 	template<typename Comparator>
-	inline method_info_t* get_method_from_class( il2cpp_class_t* klass, Comparator comparator ) {
+	inline method_info_t* get_method_from_class( method_filter_t filter, il2cpp_class_t* klass, Comparator comparator ) {
 		void* iter = nullptr;
 		while ( method_info_t* method = klass->methods( &iter ) ) {
+			if ( method->should_filter( filter ) )
+				continue;
+
 			if ( comparator( method ) )
 				return method;
 		}
@@ -927,14 +1053,12 @@ namespace il2cpp
 			return name && strcmp( name, method_name ) == 0;
 		};
 
-		return get_method_from_class( klass, get_method_by_name );
+		return get_method_from_class( NO_FILT, klass, get_method_by_name );
 	}
-	inline method_info_t* get_method_by_return_type_str( il2cpp_class_t* klass, const char* ret_type_name, int param_ct = -1 )
+
+	inline method_info_t* get_method_by_return_type_str( method_filter_t filter, il2cpp_class_t* klass, const char* ret_type_name, int param_ct )
 	{
 		const auto get_method_by_return_type_name = [ = ] ( method_info_t* method ) -> bool {
-			if ( method->is_fake() )
-				return false;
-
 			const char* name = method->return_type( )->name( );
 			if ( param_ct != -1 && ( param_ct != method->param_count( ) ) )
 				return false;
@@ -942,15 +1066,12 @@ namespace il2cpp
 			return name && strcmp( name, ret_type_name ) == 0;
 		};
 
-		return get_method_from_class( klass, get_method_by_return_type_name );
+		return get_method_from_class( filter, klass, get_method_by_return_type_name );
 	}
-	inline method_info_t* get_method_by_return_type_and_param_types( il2cpp_class_t* klass, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, il2cpp_type_t** param_types, int param_ct ) {
+	inline method_info_t* get_method_by_return_type_and_param_types( method_filter_t filter, il2cpp_class_t* klass, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, il2cpp_type_t** param_types, int param_ct ) {
 		void* iter = nullptr;
 
 		const auto get_method_by_return_type_and_param_types = [ = ] ( method_info_t* method ) -> bool {
-			if ( method->is_fake() )
-				return false;
-
 			uint32_t count = method->param_count( );
 			if ( count != param_ct )
 				return false;
@@ -979,15 +1100,12 @@ namespace il2cpp
 			return matchedTypes == param_ct;
 		};
 
-		return get_method_from_class( klass, get_method_by_return_type_and_param_types );
+		return get_method_from_class( filter, klass, get_method_by_return_type_and_param_types );
 	}
-	inline method_info_t* get_method_by_return_type_and_param_types_str( il2cpp_class_t* klass, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, const char** param_strs, int param_ct ) {
+	inline method_info_t* get_method_by_return_type_and_param_types_str( method_filter_t filter, il2cpp_class_t* klass, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, const char** param_strs, int param_ct ) {
 		void* iter = nullptr;
 
 		const auto get_method_by_return_type_and_param_types = [=]( method_info_t* method ) -> bool {
-			if ( method->is_fake() )
-				return false;
-
 			uint32_t count = method->param_count();
 			if ( count != param_ct )
 				return false;
@@ -1016,10 +1134,10 @@ namespace il2cpp
 			return matchedTypes == param_ct;
 		};
 
-		return get_method_from_class( klass, get_method_by_return_type_and_param_types );
+		return get_method_from_class( filter, klass, get_method_by_return_type_and_param_types );
 	}
 
-	inline method_info_t* get_method_by_return_type_and_param_types_size( int idx, il2cpp_class_t* klass, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, il2cpp_type_t** param_types, int param_ct, il2cpp_class_t* method_attr_klass, bool want_or_ignore ) {
+	inline method_info_t* get_method_by_return_type_and_param_types_size( method_filter_t filter, int idx, il2cpp_class_t* klass, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, il2cpp_type_t** param_types, int param_ct, il2cpp_class_t* method_attr_klass, bool want_or_ignore ) {
 		struct method_info_match_t {
 			method_info_t* method;
 			size_t length;
@@ -1029,7 +1147,7 @@ namespace il2cpp
 
 		void* iter = nullptr;
 		while ( method_info_t* method = klass->methods( &iter ) ) {
-			if ( method->is_fake() )
+			if ( method->should_filter( filter ) )
 				continue;
 
 			uint32_t count = method->param_count();
@@ -1081,7 +1199,7 @@ namespace il2cpp
 		return matches.at( idx ).method;
 	}
 
-	inline method_info_t* get_method_by_param_type_name( il2cpp_class_t* klass, const char* name, int param_ct, uint32_t flags )
+	inline method_info_t* get_method_by_param_type_name( method_filter_t filter, il2cpp_class_t* klass, const char* name, int param_ct, uint32_t flags )
 	{
 		void* iter = nullptr;
 
@@ -1108,15 +1226,12 @@ namespace il2cpp
 			return false;
 		};
 
-		return get_method_from_class( klass, get_method_by_param_type_name );
+		return get_method_from_class( filter, klass, get_method_by_param_type_name );
 	}
-	inline method_info_t* get_method_by_return_type_attrs( il2cpp_class_t* klass, il2cpp_class_t* ret_type_klass, int wanted_flags = 0, int wanted_vis = 0, int param_ct = -1 ) {
+	inline method_info_t* get_method_by_return_type_attrs( method_filter_t filter, il2cpp_class_t* klass, il2cpp_class_t* ret_type_klass, int wanted_flags = 0, int wanted_vis = 0, int param_ct = -1 ) {
 		void* iter = nullptr;
 
 		const auto get_method_by_return_type_attrs = [ = ] ( method_info_t* method ) -> bool {
-			if ( method->is_fake() )
-				return false;
-
 			uint32_t count = method->param_count( );
 			if ( param_ct != -1 && count != param_ct )
 				return false;
@@ -1138,14 +1253,14 @@ namespace il2cpp
 			return false;
 		};
 
-		return get_method_from_class( klass, get_method_by_return_type_attrs );
+		return get_method_from_class( filter, klass, get_method_by_return_type_attrs );
 	}
-	inline std::vector<method_info_t*> get_methods_by_return_type_attrs( il2cpp_class_t* klass, il2cpp_class_t* ret_type_klass, int wanted_flags = 0, int wanted_vis = 0, int param_ct = -1 ) {
+	inline std::vector<method_info_t*> get_methods_by_return_type_attrs( method_filter_t filter, il2cpp_class_t* klass, il2cpp_class_t* ret_type_klass, int wanted_flags = 0, int wanted_vis = 0, int param_ct = -1 ) {
 		std::vector<method_info_t*> matches;
 
 		void* iter = nullptr;
 		while ( method_info_t* method = klass->methods( &iter ) ) {
-			if ( method->is_fake() )
+			if ( method->should_filter( filter ) )
 				continue;
 
 			uint32_t count = method->param_count();
@@ -1169,12 +1284,9 @@ namespace il2cpp
 
 		return matches;
 	}
-	inline method_info_t* get_method_by_param_class( il2cpp_class_t* klass, il2cpp_class_t* param_klass, int param_ct, int wanted_vis, int wanted_flags )
+	inline method_info_t* get_method_by_param_class( method_filter_t filter, il2cpp_class_t* klass, il2cpp_class_t* param_klass, int param_ct, int wanted_vis, int wanted_flags )
 	{
 		const auto get_method_by_param_class = [ = ] ( method_info_t* method ) -> bool {
-			if ( method->is_fake() )
-				return false;
-
 			uint32_t count = method->param_count( );
 			if ( count != param_ct )
 				return false;
@@ -1201,16 +1313,13 @@ namespace il2cpp
 			return false;
 		};
 
-		return get_method_from_class( klass, get_method_by_param_class );
+		return get_method_from_class( filter, klass, get_method_by_param_class );
 	}
 
-	inline method_info_t* get_method_by_return_type_attrs_method_attr( il2cpp_class_t* klass, il2cpp_class_t* ret_type_klass, il2cpp_class_t* method_attr_klass, int wanted_flags = 0, int wanted_vis = 0, int param_ct = -1, bool want_or_ignore = false ) {
+	inline method_info_t* get_method_by_return_type_attrs_method_attr( method_filter_t filter, il2cpp_class_t* klass, il2cpp_class_t* ret_type_klass, il2cpp_class_t* method_attr_klass, int wanted_flags = 0, int wanted_vis = 0, int param_ct = -1, bool want_or_ignore = false ) {
 		void* iter = nullptr;
 
 		const auto get_method_by_return_type_attrs = [ = ] ( method_info_t* method ) -> bool {
-			if ( method->is_fake() )
-				return false;
-
 			uint32_t count = method->param_count( );
 			if ( param_ct != -1 && count != param_ct )
 				return false;
@@ -1237,7 +1346,7 @@ namespace il2cpp
 			return false;
 		};
 
-		return get_method_from_class( klass, get_method_by_return_type_attrs );
+		return get_method_from_class( filter, klass, get_method_by_return_type_attrs );
 	}
 
 	template<typename Comparator>
@@ -1486,5 +1595,8 @@ namespace il2cpp
 		ASSIGN_TYPE( object_new );
 
 		ASSIGN_TYPE( resolve_icall );
+
+		// Build the call cache
+		build_call_cache();
 	}
 }
