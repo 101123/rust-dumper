@@ -7,8 +7,6 @@
 #include "il2cpp_ext.hpp"
 #include "util.hpp"
 
-//#define DUMPING_IN_GAME
-
 #define STR( x ) #x
 #define CREATE_TYPE( name, args ) using il2cpp_##name = args; inline il2cpp_##name name;
 #define ASSIGN_TYPE( name ) name = (decltype(name)) GetProcAddress( GetModuleHandleA( "GameAssembly.dll" ), STR( il2cpp_##name ) );
@@ -1545,9 +1543,6 @@ namespace il2cpp
 	template <typename T, typename C>
 	inline field_info_t* get_static_field_if_value_is( il2cpp_class_t* klass, const char* search, int wanted_vis, int flags, C compare )
 	{
-#ifndef DUMPING_IN_GAME
-		return nullptr;
-#endif
 		flags |= FIELD_ATTRIBUTE_STATIC;
 
 		if ( !klass->static_field_data() )
@@ -1572,6 +1567,8 @@ namespace il2cpp
 			if ( compare( *( T* )&value ) )
 				return field;
 		}
+
+		return nullptr;
 	}
 
 	inline void init( )
