@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include "hde/hde64.h"
+
 namespace util {
 	struct function_attributes_t {
 		std::vector<uint64_t> calls;

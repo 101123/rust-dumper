@@ -1,5 +1,4 @@
 #include "util.hpp"
-#include "hde/hde64.h"
 
 namespace util {
     bool function_attributes_t::transfers_control_to( void* address ) {

@@ -302,6 +302,56 @@ void dumper::produce() {
 		}
 	}
 
+	int64_t on_rpc_message_method_offset = -1;
+
+	il2cpp::il2cpp_type_t* param_types[] = {
+		DUMPER_TYPE_NAMESPACE( "System", "UInt32" ),
+		DUMPER_TYPE_NAMESPACE( "Network", "Message" )
+	};
+
+	il2cpp::method_info_t* base_entity_cl_rpc_message = il2cpp::get_method_by_return_type_and_param_types(
+		FILT_N( DUMPER_METHOD( DUMPER_CLASS( "Client" ), "OnNetworkMessage" ), 2 ),
+		DUMPER_CLASS( "BaseEntity" ),
+		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+		METHOD_ATTRIBUTE_PUBLIC,
+		DUMPER_ATTR_DONT_CARE,
+		param_types,
+		_countof( param_types )
+	);
+
+	if ( base_entity_cl_rpc_message ) {
+		uint64_t address = base_entity_cl_rpc_message->get_fn_ptr<uint64_t>();
+		uint64_t limit = 0x1000;
+		uint64_t len = 0;
+
+		while ( len < limit ) {
+			uint8_t* inst = ( uint8_t* )address + len;
+
+			hde64s hs;
+			uint64_t instr_len = hde64_disasm( inst, &hs );
+
+			if ( hs.flags & F_ERROR ) {
+				break;
+			}
+
+			if ( hs.opcode == 0x8B ) {
+				if ( hs.disp.disp32 > 0x138 ) {
+					on_rpc_message_method_offset = hs.disp.disp32;
+					break;
+				}
+			}
+
+			len += instr_len;
+		}
+	}
+
+	il2cpp::il2cpp_class_t* world_item_class = DUMPER_CLASS( "WorldItem" );
+	uint64_t world_item_on_rpc_message = 0;
+
+	if ( world_item_class && on_rpc_message_method_offset != -1 ) {
+		world_item_on_rpc_message = *( uint64_t* )( ( uint64_t )world_item_class + on_rpc_message_method_offset );
+	}
+
 	il2cpp::il2cpp_class_t* base_networkable_entity_realm_class = nullptr;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseNetworkable" );
@@ -507,10 +557,9 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( uid, DUMPER_CLASS( "ItemId" ) );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( info, DUMPER_CLASS( "ItemDefinition" ) );
 
-		/*
 		il2cpp::il2cpp_class_t* item_manager_class = il2cpp::search_for_class_by_method_return_type_name( "System.Collections.Generic.List<ItemBlueprint>", METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC );
 
-		if ( item_manager_class ) {
+		if ( item_manager_class && world_item_on_rpc_message ) {
 			il2cpp::il2cpp_type_t* param_types[] = { 
 				DUMPER_TYPE_NAMESPACE( "ProtoBuf", "Item" ), 
 				item_class->type(), 
@@ -518,7 +567,7 @@ void dumper::produce() {
 			}; 
 
 			il2cpp::method_info_t* item_manager_load_method = il2cpp::get_method_by_return_type_and_param_types(
-				NO_FILT, 
+				FILT( world_item_on_rpc_message ),
 				item_manager_class,
 				item_class->type(),
 				METHOD_ATTRIBUTE_PUBLIC,
@@ -585,7 +634,6 @@ void dumper::produce() {
 				}
 			}
 		}
-		*/
 	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* templated_item_container_class = il2cpp::get_field_by_name( player_loot_class, "containers" )->type()->klass();
@@ -599,7 +647,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( uid, "ItemContainerId" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( itemList, searchBuf );
 	DUMPER_SECTION( "Functions" );
-		DUMP_METHOD_BY_RETURN_TYPE_STR( FindItemsByItemID, NO_FILT, searchBuf, 1 );
+		DUMP_METHOD_BY_RETURN_TYPE_STR( FindItemsByItemID, FILT_N( DUMPER_METHOD( DUMPER_CLASS( "SellOrderEntry" ), "UpdateNotifications" ), 3 ), searchBuf, 1 );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerInventory" );
@@ -612,7 +660,6 @@ void dumper::produce() {
 			DUMPER_TYPE( "BasePlayer" )
 		);
 
-		/*
 		sprintf_s( searchBuf, "%s.Flag", item_container_class->name() );
 		il2cpp::field_info_t* flag = il2cpp::get_field_if_type_contains( item_container_class, searchBuf, FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
 
@@ -649,9 +696,7 @@ void dumper::produce() {
 					}
 				}
 			}
-		}
-		*/
-		
+		}		
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_INFO_PTR( Initialize, player_inventory_initialize_method );
 
@@ -1031,7 +1076,6 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* fov = il2cpp::get_static_field_if_value_is<uint32_t>( dumper_klass, convar_graphics_klass->name(), FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( uint32_t value ) { return value != 0; } );
 		DUMP_MEMBER_BY_X( _fov, fov->offset() );
-		/*
 	DUMPER_SECTION( "Functions" );
 		il2cpp::il2cpp_class_t* console_system_index_client = DUMPER_CLASS( "ConsoleSystem/Index/Client" );
 		il2cpp::il2cpp_class_t* console_system_command = DUMPER_CLASS( "ConsoleSystem/Command" );
@@ -1056,7 +1100,6 @@ void dumper::produce() {
 				}
 			}
 		}
-		*/
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseFishingRod" );
@@ -1254,6 +1297,9 @@ void dumper::produce() {
 	DUMPER_CLASS_END
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemIcon" );
+	DUMPER_SECTION("Offsets")
+		il2cpp::field_info_t* container_loot_start_times = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "Dictionary", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( void* dictionary ) { return dictionary != nullptr; } );
+		DUMP_MEMBER_BY_X( containerLootStartTimes, container_loot_start_times->offset() );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* item_icon_set_timed_loot_action = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 		    FILT( DUMPER_METHOD( DUMPER_CLASS( "ItemIcon" ), "TryToMove" ) ),
