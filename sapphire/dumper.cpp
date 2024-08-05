@@ -73,7 +73,7 @@
 		DUMPER_PTR_CLASS_NAME( dump_name, klass_ptr );	\
 		DUMPER_CLASS_HEADER( dump_name );
 
-#define DUMPER_CLASS_END dumper::write_to_file( "}\n\n" ); } 
+#define DUMPER_CLASS_END dumper::write_to_file( "}\n\n" ); dumper::flush(); } 
 
 #define DUMP_MEMBER_BY_X( NAME, X ) uint64_t NAME##_Offset = X; dumper::write_to_file("\tconstexpr const static size_t " #NAME " = 0x%x;\n", static_cast<uint32_t>( NAME##_Offset ) )
 
@@ -166,6 +166,10 @@ void dumper::write_to_file( const char* format, ... )
 	va_end( args );
 
 	fwrite( buffer, strlen( buffer ), 1, outfile_handle );
+}
+
+void dumper::flush() {
+	fflush( outfile_handle );
 }
 
 char* dumper::clean_klass_name( const char* klass_name )
@@ -503,6 +507,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( uid, DUMPER_CLASS( "ItemId" ) );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( info, DUMPER_CLASS( "ItemDefinition" ) );
 
+		/*
 		il2cpp::il2cpp_class_t* item_manager_class = il2cpp::search_for_class_by_method_return_type_name( "System.Collections.Generic.List<ItemBlueprint>", METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC );
 
 		if ( item_manager_class ) {
@@ -580,6 +585,7 @@ void dumper::produce() {
 				}
 			}
 		}
+		*/
 	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* templated_item_container_class = il2cpp::get_field_by_name( player_loot_class, "containers" )->type()->klass();
@@ -606,6 +612,7 @@ void dumper::produce() {
 			DUMPER_TYPE( "BasePlayer" )
 		);
 
+		/*
 		sprintf_s( searchBuf, "%s.Flag", item_container_class->name() );
 		il2cpp::field_info_t* flag = il2cpp::get_field_if_type_contains( item_container_class, searchBuf, FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
 
@@ -643,6 +650,7 @@ void dumper::produce() {
 				}
 			}
 		}
+		*/
 		
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_INFO_PTR( Initialize, player_inventory_initialize_method );
@@ -1023,6 +1031,7 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* fov = il2cpp::get_static_field_if_value_is<uint32_t>( dumper_klass, convar_graphics_klass->name(), FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( uint32_t value ) { return value != 0; } );
 		DUMP_MEMBER_BY_X( _fov, fov->offset() );
+		/*
 	DUMPER_SECTION( "Functions" );
 		il2cpp::il2cpp_class_t* console_system_index_client = DUMPER_CLASS( "ConsoleSystem/Index/Client" );
 		il2cpp::il2cpp_class_t* console_system_command = DUMPER_CLASS( "ConsoleSystem/Command" );
@@ -1047,6 +1056,7 @@ void dumper::produce() {
 				}
 			}
 		}
+		*/
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseFishingRod" );

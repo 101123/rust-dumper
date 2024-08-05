@@ -18,6 +18,7 @@ namespace dumper
 
 	char* clean_klass_name( const char* klass_name );
 	void write_to_file( const char* format, ... );
+	void flush();
 
 	__forceinline uint32_t get_image_size( uint8_t* image ) {
 		PIMAGE_DOS_HEADER dos_header = ( PIMAGE_DOS_HEADER ) ( image );
