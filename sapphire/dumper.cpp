@@ -770,17 +770,6 @@ void dumper::produce() {
 
 		DUMP_METHOD_BY_INFO_PTR( GetSpeed, base_player_get_speed );
 
-		il2cpp::method_info_t* base_player_force_position_to = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_SIZE(
-		    NO_FILT,
-			0,
-			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-			METHOD_ATTRIBUTE_PRIVATE,
-			DUMPER_ATTR_DONT_CARE,
-			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
-		);
-
-		DUMP_METHOD_BY_INFO_PTR( ForcePositionTo, base_player_force_position_to );
-
 		il2cpp::method_info_t* base_player_send_projectile_update = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 		    FILT( DUMPER_METHOD( DUMPER_CLASS( "Projectile" ), "AdjustVelocity" ) ),
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
