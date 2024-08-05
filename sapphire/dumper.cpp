@@ -599,19 +599,16 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerInventory" );
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::method_info_t* player_inventory_initialize_method = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			NO_FILT,
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "PlayerInventory" ), "ClientInit" ) ),
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 			METHOD_ATTRIBUTE_FAMILY,
 			DUMPER_ATTR_DONT_CARE,
 			DUMPER_TYPE( "BasePlayer" )
 		);
 
-		DUMP_METHOD_BY_INFO_PTR( Initialize, player_inventory_initialize_method );
-
 		sprintf_s( searchBuf, "%s.Flag", item_container_class->name() );
 		il2cpp::field_info_t* flag = il2cpp::get_field_if_type_contains( item_container_class, searchBuf, FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
 
-		/*
 		if ( player_inventory_initialize_method && flag ) {
 			void( *player_inventory_initialize )( uint64_t, void* ) = ( decltype( player_inventory_initialize ) )player_inventory_initialize_method->get_fn_ptr<void*>();
 
@@ -646,10 +643,12 @@ void dumper::produce() {
 				}
 			}
 		}
-		*/
+		
 	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_INFO_PTR( Initialize, player_inventory_initialize_method );
+
 		sprintf_s( searchBuf, "System.Collections.Generic.List<%s>", item_class->name() );
-		DUMP_METHOD_BY_RETURN_TYPE_STR( FindItemsByItemID, NO_FILT, searchBuf, 1 );
+		DUMP_METHOD_BY_RETURN_TYPE_STR( FindItemsByItemID, FILT_N( DUMPER_METHOD( DUMPER_CLASS( "SellOrderEntry" ), "UpdateNotifications" ), 2 ), searchBuf, 1 );
 	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* input_message_class = DUMPER_CLASS( "InputMessage" );
@@ -746,7 +745,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( playerFlags );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( eyes, "PlayerEyes" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( playerRigidbody, "UnityEngine.Rigidbody" );
-		DUMP_MEMBER_BY_NEAR_OFFSET( userID, DUMPER_OFFSET( playerRigidbody ) + 0x8 );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_MULTIPLE( userID, "BasePlayer", "<System.UInt64>" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( inventory, "PlayerInventory" );
 		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( _displayName, "System.String", TYPE_ATTRIBUTE_NESTED_FAMILY, DUMPER_ATTR_DONT_CARE );
 		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( _lookingAt, "UnityEngine.GameObject", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
@@ -1032,9 +1031,33 @@ void dumper::produce() {
 	il2cpp::il2cpp_class_t* convar_graphics_klass = il2cpp::search_for_class_by_method_return_type_name( "UnityEngine.FullScreenMode", METHOD_ATTRIBUTE_PRIVATE, METHOD_ATTRIBUTE_STATIC );
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "Convar_Graphics", convar_graphics_klass );
-	DUMPER_SECTION( "EncryptedValue" );
+	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* fov = il2cpp::get_static_field_if_value_is<uint32_t>( dumper_klass, convar_graphics_klass->name(), FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( uint32_t value ) { return value != 0; } );
 		DUMP_MEMBER_BY_X( _fov, fov->offset() );
+	DUMPER_SECTION( "Functions" );
+		il2cpp::il2cpp_class_t* console_system_index_client = DUMPER_CLASS( "ConsoleSystem/Index/Client" );
+		il2cpp::il2cpp_class_t* console_system_command = DUMPER_CLASS( "ConsoleSystem/Command" );
+
+		uint64_t( *console_system_index_client_find )( system_c::string_t* ) = ( decltype( console_system_index_client_find ) )DUMPER_METHOD( console_system_index_client, "Find" );
+
+		if ( console_system_index_client_find ) {
+			uint64_t fov_command = console_system_index_client_find( system_c::string_t::create_string( L"graphics.fov" ) );
+
+			if ( fov_command ) {
+				uint64_t getter_function = *( uint64_t* )( fov_command + il2cpp::get_field_by_name( console_system_command, "GetOveride" )->offset() );
+				uint64_t setter_action = *( uint64_t* )( fov_command + il2cpp::get_field_by_name( console_system_command, "SetOveride" )->offset() );
+
+				if ( getter_function ) {
+					uint64_t getter = *( uint64_t* )( getter_function + 0x10 );
+					DUMP_MEMBER_BY_X( _fov_getter, DUMPER_RVA( getter ) );
+				}
+
+				if ( setter_action ) {
+					uint64_t setter = *( uint64_t* )( setter_action + 0x18 );
+					DUMP_MEMBER_BY_X( _fov_setter, DUMPER_RVA( setter ) );
+				}
+			}
+		}
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseFishingRod" );
@@ -1153,8 +1176,8 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "CraftingQueueIcon" );
 	DUMPER_SECTION( "Offsets" );
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( endTime, "System.Single" );
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( item, DUMPER_CLASS( "ItemDefinition" ) );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( endTime, "System.Single" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( item, DUMPER_CLASS( "ItemDefinition" ) );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "Planner" );
@@ -1330,8 +1353,24 @@ void dumper::produce() {
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "UIDeathScreen" )
+	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* ui_death_screen_set_visible = il2cpp::get_method_by_name( dumper_klass, "SetVisible" );
 		DUMP_METHOD_BY_INFO_PTR( SetVisible, ui_death_screen_set_visible );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseScreenShake" );
+	DUMPER_SECTION( "Offsets" );
+		il2cpp::field_info_t* instances_list = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "BaseScreenShake", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* instances_list ) { return instances_list != nullptr; } );
+		DUMP_MEMBER_BY_X( list, instances_list->offset() );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "FlashbangOverlay" );
+	DUMPER_SECTION( "Offsets" );
+		il2cpp::field_info_t* instance = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "FlashbangOverlay", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* instance ) { return instance != nullptr; } );
+		DUMP_MEMBER_BY_X( Instance, instance->offset() );
+
+		il2cpp::field_info_t* flash_length = il2cpp::get_field_if_name_contains( dumper_klass, DUMPER_TYPE_NAMESPACE( "System", "Single" ), "%", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
+		DUMP_MEMBER_BY_X( flashLength, flash_length->offset() );
 	DUMPER_CLASS_END
 
 	fclose( outfile_handle );

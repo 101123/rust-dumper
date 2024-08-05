@@ -13,6 +13,17 @@ namespace system_c {
 			}
 			str[ size ] = 0;
 		}
+
+		static string_t* create_string( const wchar_t* str ) {
+			static string_t* ( *fast_allocate_string_f )( uint32_t ) = ( decltype( fast_allocate_string_f ) )il2cpp::get_method_by_name( il2cpp::get_class_by_name( "String", "System" ), "FastAllocateString" )->get_fn_ptr<void*>();
+
+			int length = wcslen( str );
+			string_t* string = fast_allocate_string_f( length );
+			string->size = length;
+			wcscpy( string->str, str );
+
+			return string;
+		}
 	};
 }
 
