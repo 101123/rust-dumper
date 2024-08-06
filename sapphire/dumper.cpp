@@ -1137,7 +1137,7 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_PTR( "GameManager", game_manager_class );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* game_manager_create_prefab = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			NO_FILT,
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "HBHFSensor" ), "Menu_Configure" ) ),
 			DUMPER_TYPE_NAMESPACE( "UnityEngine", "GameObject" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			DUMPER_ATTR_DONT_CARE,
