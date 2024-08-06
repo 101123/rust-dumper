@@ -766,14 +766,20 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( viewOffset, "PlayerEyes" ); // Contains PlayerEyes.EncryptedValue<Vector3>
 		DUMP_MEMBER_BY_NEAR_OFFSET( bodyRotation, DUMPER_OFFSET( viewOffset ) + 0xC ); // <bodyRotation>k__BackingField
 	DUMPER_SECTION( "Functions" );
-		DUMP_METHOD_BY_RETURN_TYPE_METHOD_ATTRIBUTE( get_Rotation,
-		    FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseProjectile" ), "OnDrawGizmos" ) ),
-			DUMPER_CLASS_NAMESPACE( "UnityEngine", "Quaternion" ),
-			DUMPER_CLASS_NAMESPACE( "System.Runtime.CompilerServices", "CompilerGeneratedAttribute" ),
-			DUMPER_ATTR_DONT_CARE,
-			METHOD_ATTRIBUTE_PUBLIC,
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( get_position,
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "UIFogOverlay" ), "Update" ) ),
+			DUMPER_CLASS_NAMESPACE( "UnityEngine", "Vector3" ),
 			0,
-			il2cpp::attr_search_ignore
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE
+		);
+
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( get_rotation, 
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseProjectile" ), "OnDrawGizmos" ) ), 
+			DUMPER_CLASS_NAMESPACE( "UnityEngine", "Quaternion" ),
+			0, 
+			METHOD_ATTRIBUTE_PUBLIC, 
+			DUMPER_ATTR_DONT_CARE 
 		);
 	DUMPER_CLASS_END
 
