@@ -352,6 +352,21 @@ void dumper::produce() {
 		world_item_on_rpc_message = *( uint64_t* )( ( uint64_t )world_item_class + on_rpc_message_method_offset );
 	}
 
+	il2cpp::il2cpp_class_t* scriptable_object_ref_class = DUMPER_CLASS( "ScriptableObjectRef" );
+	uint64_t resource_ref_get = 0;
+
+	if ( scriptable_object_ref_class ) {
+		il2cpp::il2cpp_class_t* resource_ref_scriptable_object_class = scriptable_object_ref_class->parent();
+
+		if ( resource_ref_scriptable_object_class ) {
+			il2cpp::method_info_t* get_method = il2cpp::get_method_by_return_type_attrs( NO_FILT, resource_ref_scriptable_object_class, DUMPER_CLASS_NAMESPACE( "UnityEngine", "ScriptableObject" ), METHOD_ATTRIBUTE_VIRTUAL, METHOD_ATTRIBUTE_PUBLIC );
+
+			if ( get_method ) {
+				resource_ref_get = get_method->get_fn_ptr<uint64_t>();
+			}
+		}
+	}
+
 	il2cpp::il2cpp_class_t* base_networkable_entity_realm_class = nullptr;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseNetworkable" );
@@ -1137,7 +1152,7 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "GameManifest" );
 	DUMPER_SECTION( "Functions" );
-		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GUIDToObject, NO_FILT, DUMPER_CLASS_NAMESPACE( "UnityEngine", "Object" ), 1, METHOD_ATTRIBUTE_ASSEM, DUMPER_ATTR_DONT_CARE );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GUIDToObject, FILT( resource_ref_get ), DUMPER_CLASS_NAMESPACE( "UnityEngine", "Object" ), 1, METHOD_ATTRIBUTE_ASSEM, DUMPER_ATTR_DONT_CARE );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "GameManager", game_manager_class );
