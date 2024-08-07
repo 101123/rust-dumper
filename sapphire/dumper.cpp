@@ -367,6 +367,48 @@ void dumper::produce() {
 		}
 	}
 
+	uint64_t base_projectile_launch_projectile = DUMPER_METHOD( DUMPER_CLASS( "BaseProjectile" ), "LaunchProjectile" );
+	int64_t get_aimcone_method_offset = -1;
+
+	if ( base_projectile_launch_projectile ) {
+		uint64_t address = base_projectile_launch_projectile;
+		uint64_t limit = 0x1000;
+		uint64_t len = 0;
+
+		uint32_t last_disps[ 2 ]{};
+		uint32_t last_disps_ct = 0;
+
+		while ( len < limit ) {
+			uint8_t* inst = ( uint8_t* )address + len;
+
+			hde64s hs;
+			uint64_t instr_len = hde64_disasm( inst, &hs );
+
+			if ( hs.flags & F_ERROR ) {
+				break;
+			}
+
+			if ( hs.opcode == 0x8B ) {
+				if ( last_disps_ct == 2 ) {
+					last_disps[ 0 ] = last_disps[ 1 ];  
+					last_disps[ 1 ] = hs.disp.disp32; 
+				}
+
+				else {
+					last_disps[ last_disps_ct ] = hs.disp.disp32;
+					last_disps_ct++;
+				}
+			}
+
+			if ( hs.opcode == 0xFF && hs.modrm_reg == 0x2 ) {
+				get_aimcone_method_offset = min( last_disps[ 0 ], last_disps[ 1 ] );
+				break;
+			}
+
+			len += instr_len;
+		}
+	}
+
 	il2cpp::il2cpp_class_t* base_networkable_entity_realm_class = nullptr;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseNetworkable" );
@@ -536,7 +578,14 @@ void dumper::produce() {
 
 	DUMP_METHOD_BY_INFO_PTR( ScaleRepeatDelay, base_projectile_scale_repeat_delay );
 
-	DUMP_METHOD_BY_RETURN_TYPE_SIZE( GetAimCone, NO_FILT, DUMPER_TYPE_NAMESPACE( "System", "Single" ), METHOD_ATTRIBUTE_FAMILY, DUMPER_ATTR_DONT_CARE, 0 );
+	if ( get_aimcone_method_offset != -1 ) {
+		uint64_t base_projectile_get_aimcone = *( uint64_t* )( ( uint64_t )dumper_klass + get_aimcone_method_offset );
+
+		if ( base_projectile_get_aimcone ) {
+			DUMP_MEMBER_BY_X( GetAimCone, DUMPER_RVA( base_projectile_get_aimcone ) );
+		}
+	}
+	
 	DUMP_METHOD_BY_RETURN_TYPE_ATTRS( UpdateAmmoDisplay, NO_FILT, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_FAMILY, METHOD_ATTRIBUTE_VIRTUAL );
 
 	DUMPER_CLASS_END;
@@ -590,6 +639,18 @@ void dumper::produce() {
 				param_types,
 				_countof( param_types )
 			);
+
+			if ( !item_manager_load_method ) {
+				item_manager_load_method = il2cpp::get_method_by_return_type_and_param_types(
+					FILT_N( world_item_on_rpc_message, 2 ),
+					item_manager_class,
+					item_class->type(),
+					METHOD_ATTRIBUTE_PUBLIC,
+					METHOD_ATTRIBUTE_STATIC,
+					param_types,
+					_countof( param_types )
+				);
+			}
 			
 			if ( item_manager_load_method ) {
 				uint32_t* ( *item_manager_load )( uint8_t*, void*, bool ) = ( decltype( item_manager_load ) )item_manager_load_method->get_fn_ptr<void*>();
