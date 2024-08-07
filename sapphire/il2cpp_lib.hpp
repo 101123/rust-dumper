@@ -146,6 +146,12 @@ namespace il2cpp
 				call_cache[ target ].insert( start );
 				inverse_call_cache[ start ].insert( target );
 			}
+
+			for ( uint64_t target : attrs.jmps ) {
+				// insert jump into the call cache
+				call_cache[ target ].insert( start );
+				inverse_call_cache[ start ].insert( target );
+			}
 		}
 	}
 

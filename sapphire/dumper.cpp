@@ -1408,11 +1408,11 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_PTR( "GameObjectEx", game_object_ex_class );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* game_object_ex_to_base_entity = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			NO_FILT,
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "EntityHUDRender" ), "OnWillRenderObject" ) ),
 			DUMPER_TYPE( "BaseEntity" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			METHOD_ATTRIBUTE_STATIC,
-			DUMPER_TYPE_NAMESPACE( "UnityEngine", "GameObject" ),
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Transform" ),
 			DUMPER_TYPE_NAMESPACE( "System", "Boolean" )
 		);
 		DUMP_METHOD_BY_INFO_PTR( ToBaseEntity, game_object_ex_to_base_entity );
