@@ -1047,6 +1047,31 @@ namespace il2cpp
 
 		return search_for_class( search_for_static_class_with_method_with_rettype_param_types );
 	}
+
+	inline il2cpp_class_t* search_for_class_containing_field_types_str( const char** field_types, int field_types_ct ) {
+		const auto search_for_class_containing_field_types = [&]( il2cpp_class_t* klass ) {
+			int match_ct = 0;
+
+			void* iter = nullptr;
+			while ( field_info_t* field = klass->fields( &iter ) ) {
+				il2cpp_type_t* type = field->type();
+				if ( !type )
+					continue;
+
+				for ( int i = 0; i < field_types_ct; i++ ) {
+					if ( !strcmp( type->name(), field_types[ i ] ) ) {
+						match_ct++;
+						break;
+					}
+				}
+			}
+
+			return match_ct >= field_types_ct;
+		};
+
+		return search_for_class( search_for_class_containing_field_types );
+	}
+
 	template<typename Comparator>
 	inline method_info_t* get_method_from_class( method_filter_t filter, il2cpp_class_t* klass, Comparator comparator ) {
 		void* iter = nullptr;
