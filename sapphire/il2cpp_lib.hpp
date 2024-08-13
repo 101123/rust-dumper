@@ -250,6 +250,7 @@ namespace il2cpp
 	CREATE_TYPE( type_get_attrs, uint32_t( * )( il2cpp_type_t* ) );
 	// Class.
 	CREATE_TYPE( class_get_methods, method_info_t* ( * )( void*, void** ) );
+	CREATE_TYPE( class_get_nested_types, il2cpp_class_t* ( * )( void*, void** ) );
 	CREATE_TYPE( class_get_fields, field_info_t* ( * )( void*, void** ) );
 	CREATE_TYPE( class_get_type, il2cpp_type_t* ( * )( void* ) );
 	CREATE_TYPE( class_get_name, const char* ( * )( void* ) );
@@ -474,7 +475,7 @@ namespace il2cpp
 			if ( !this )
 				return 0;
 
-			uint32_t count{};
+			uint32_t count = 0;
 			void* iter = nullptr;
 			while ( field_info_t* field = fields( &iter ) ) {
 				// ignore static fields
@@ -492,6 +493,40 @@ namespace il2cpp
 				return nullptr;
 
 			return class_get_methods( this, iter );
+		}
+
+		uint32_t method_count() {
+			if ( !this )
+				return 0;
+
+			uint32_t count = 0;
+			void* iter = nullptr;
+			while ( method_info_t* method = methods( &iter ) ) {
+				count++;
+			}
+
+			return count;
+		}
+
+		il2cpp_class_t* nested_types( void** iter )
+		{
+			if ( !this )
+				return nullptr;
+
+			return class_get_nested_types( this, iter );
+		}
+
+		uint32_t nested_type_count() {
+			if ( !this )
+				return 0;
+
+			uint32_t count = 0;
+			void* iter = nullptr;
+			while ( il2cpp_class_t* klass = nested_types( &iter ) ) {
+				count++;
+			}
+
+			return count;
 		}
 
 		uint64_t static_field_data( )
@@ -1631,6 +1666,7 @@ namespace il2cpp
 
 		// Class.
 		ASSIGN_TYPE( class_get_methods );
+		ASSIGN_TYPE( class_get_nested_types )
 		ASSIGN_TYPE( class_get_fields);
 		ASSIGN_TYPE( class_get_type );
 		ASSIGN_TYPE( class_get_name );

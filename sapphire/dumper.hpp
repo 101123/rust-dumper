@@ -17,6 +17,7 @@ namespace dumper
 	extern uint64_t game_base;
 
 	char* clean_klass_name( const char* klass_name );
+	char* clean_inner_klass_name( il2cpp::il2cpp_class_t* klass );
 	void write_to_file( const char* format, ... );
 	void flush();
 

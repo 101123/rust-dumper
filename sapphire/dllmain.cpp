@@ -12,5 +12,12 @@ bool __stdcall DllMain( void*, std::uint32_t call_reason, void* )
 		return true;
 	}
 
+	else if ( call_reason == DLL_PROCESS_DETACH ) {
+		FreeConsole();
+		fclose( stdout );
+
+		return true;
+	}
+
 	return false;
 }
