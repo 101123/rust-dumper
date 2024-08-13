@@ -1647,6 +1647,7 @@ void dumper::produce() {
 	}
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "UIInventory" );
+	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( Close,
 			FILT( DUMPER_METHOD( DUMPER_CLASS( "UIInventory" ), "Update" ) ),
 			DUMPER_CLASS_NAMESPACE( "System", "Void" ),
@@ -1654,6 +1655,11 @@ void dumper::produce() {
 			METHOD_ATTRIBUTE_PUBLIC,
 			METHOD_ATTRIBUTE_STATIC
 		);
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "ModelState" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( waterLevel );
 	DUMPER_CLASS_END
 
 	fclose( outfile_handle );
