@@ -556,6 +556,7 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ModelState" );
 	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( waterLevel );
 		DUMP_MEMBER_BY_NAME( flags );
 	DUMPER_CLASS_END;
 
@@ -1657,9 +1658,9 @@ void dumper::produce() {
 		);
 	DUMPER_CLASS_END
 
-	DUMPER_CLASS_BEGIN_FROM_NAME( "ModelState" );
+	DUMPER_CLASS_BEGIN_FROM_NAME( "InputMessage" );
 	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_NAME( waterLevel );
+		DUMP_MEMBER_BY_NAME( buttons );
 	DUMPER_CLASS_END
 
 	fclose( outfile_handle );
