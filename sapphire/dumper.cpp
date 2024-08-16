@@ -1392,6 +1392,7 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "HeldEntity" );
 	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( _punches, "List<HeldEntity", FIELD_ATTRIBUTE_FAMILY, DUMPER_ATTR_DONT_CARE );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( viewModel, DUMPER_CLASS( "ViewModel" ) ); // <viewModel>k__BackingField
 	DUMPER_CLASS_END;
 
