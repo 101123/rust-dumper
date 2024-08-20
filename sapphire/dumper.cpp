@@ -1664,5 +1664,22 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( buttons );
 	DUMPER_CLASS_END
 
+	DUMPER_CLASS_BEGIN_FROM_NAME( "GrowableEntity" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( Properties );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( State, "PlantProperties.State" );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "PlantProperties" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( stages );
+		DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "PlantProperties/Stage" );
+	DUMPER_SECTION( "Offsets" );
+		il2cpp::field_info_t* _resources = il2cpp::get_field_by_name( dumper_klass, "resources" );
+		DUMP_MEMBER_BY_X( resources, _resources->offset() - 0x10 );
+	DUMPER_CLASS_END
+
 	fclose( outfile_handle );
 }
