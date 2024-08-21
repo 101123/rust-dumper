@@ -501,8 +501,9 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseEntity" );
 	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_NAME( flags );
+		DUMP_MEMBER_BY_NAME( bounds );
 		DUMP_MEMBER_BY_NAME( model );
+		DUMP_MEMBER_BY_NAME( flags );
 
 		auto position_lerp = il2cpp::get_field_if_type_contains( dumper_klass, "%", FIELD_ATTRIBUTE_ASSEMBLY, DUMPER_ATTR_DONT_CARE );
 		DUMP_MEMBER_BY_X( positionLerp, position_lerp->offset( ) );
@@ -670,6 +671,11 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( strikeRecoil );
 		DUMP_MEMBER_BY_NEAR_OFFSET( _didSparkThisFrame, DUMPER_OFFSET( strikeRecoil ) + 0x8 );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "CompoundBowWeapon" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( stringHoldDurationMax );
 	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* player_loot_class = DUMPER_CLASS( "PlayerLoot" );
@@ -1287,6 +1293,11 @@ void dumper::produce() {
 		DUMP_METHOD_BY_INFO_PTR( EvaluateFishingPosition, base_fishing_rod_evaluate_fishing_position );
 	DUMPER_CLASS_END;
 
+	DUMPER_CLASS_BEGIN_FROM_NAME( "FishingBobber" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( bobberRoot );
+	DUMPER_CLASS_END;
+
 	DUMPER_CLASS_BEGIN_FROM_NAME( "GameManifest" );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GUIDToObject, FILT( resource_ref_get ), DUMPER_CLASS_NAMESPACE( "UnityEngine", "Object" ), 1, METHOD_ATTRIBUTE_ASSEM, DUMPER_ATTR_DONT_CARE );
@@ -1353,19 +1364,6 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( seed );
 	DUMPER_CLASS_END
 
-	DUMPER_CLASS_BEGIN_FROM_NAME( "GrowableEntity" );
-	DUMPER_SECTION( "Functions" );
-		DUMP_METHOD_BY_RETURN_TYPE_METHOD_ATTRIBUTE_SIZE( CanPick, 
-			NO_FILT,
-			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ), 
-			DUMPER_CLASS_NAMESPACE( "System.Runtime.CompilerServices", "CompilerGeneratedAttribute" ), 
-			METHOD_ATTRIBUTE_PUBLIC, 
-			DUMPER_ATTR_DONT_CARE, 
-			il2cpp::attr_search_ignore, 
-			4 
-		);
-	DUMPER_CLASS_END
-
 	DUMPER_CLASS_BEGIN_FROM_NAME( "CraftingQueue" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( icons, "List" );
@@ -1386,8 +1384,12 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "Planner" );
 	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( currentConstruction, DUMPER_CLASS( "Construction" ) );
+	DUMPER_CLASS_END;
 
-	DUMP_MEMBER_BY_FIELD_TYPE_CLASS( currentConstruction, DUMPER_CLASS( "Construction" ) );
+	DUMPER_CLASS_BEGIN_FROM_NAME( "Construction" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( holdToPlaceDuration );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "HeldEntity" );
@@ -1503,6 +1505,8 @@ void dumper::produce() {
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BuildingBlock" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( grade );
 	DUMPER_SECTION( "Functions" );
 
 	il2cpp::method_info_t* building_block_upgrade_to_grade = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
@@ -1610,6 +1614,18 @@ void dumper::produce() {
 		DUMPER_CLASS_END
 	}
 
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Net", "Network" );
+	DUMPER_SECTION( "Offsets" );
+		il2cpp::field_info_t* _cl = il2cpp::get_field_by_name( dumper_klass, "<cl>k__BackingField" );
+		DUMP_MEMBER_BY_X( cl, _cl->offset() );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Client", "Network" );
+	DUMPER_SECTION( "Offsets" );
+		il2cpp::field_info_t* _connection = il2cpp::get_field_by_name( dumper_klass, "<Connection>k__BackingField" );
+		DUMP_MEMBER_BY_X( Connection, _connection->offset() );
+	DUMPER_CLASS_END
+
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "BaseNetwork", "Network" );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_NAME( StartWrite );
@@ -1673,12 +1689,65 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlantProperties" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( stages );
-		DUMPER_CLASS_END
+	DUMPER_CLASS_END
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlantProperties/Stage" );
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* _resources = il2cpp::get_field_by_name( dumper_klass, "resources" );
 		DUMP_MEMBER_BY_X( resources, _resources->offset() - 0x10 );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseMelee" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( damageProperties );
+		DUMP_MEMBER_BY_NAME( gathering );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Text", "UnityEngine.UI" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( m_Text );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "TOD_Sky" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( Cycle );
+		DUMP_MEMBER_BY_NAME( Night );
+		DUMP_MEMBER_BY_NAME( Ambient );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "TOD_NightParameters" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( AmbientColor );
+	DUMPER_CLASS_END
+
+		DUMPER_CLASS_BEGIN_FROM_NAME( "TOD_AmbientParameters" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( Saturation );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "UIHUD" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( Hunger );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "HudElement" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( lastValue );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "UIBelt" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( ItemIcons );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemModCompostable" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( MaxBaitStack );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "GameObjectRef" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( guid );
 	DUMPER_CLASS_END
 
 	fclose( outfile_handle );
