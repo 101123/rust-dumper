@@ -1427,9 +1427,11 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_X( heightMap, terrain_height_map->offset() );
 	DUMPER_CLASS_END
 
+	il2cpp::il2cpp_class_t* map_image_renderer_display_class = il2cpp::search_for_class_by_method_in_assembly( "Assembly-CSharp", "<Render>g__GetSplat|2", nullptr );
+
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainHeightMap" );
 	DUMPER_SECTION( "Functions" );
-		il2cpp::method_info_t* terrain_height_map_get_height = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		il2cpp::method_info_t* terrain_height_map_get_height_vector3 = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 		    FILT( DUMPER_METHOD( DUMPER_CLASS( "TerrainAnchor" ), "Apply" ) ),
 			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
 			METHOD_ATTRIBUTE_PUBLIC,
@@ -1437,7 +1439,44 @@ void dumper::produce() {
 			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" )
 		);
 
-		DUMP_METHOD_BY_INFO_PTR( GetHeight, terrain_height_map_get_height );
+		DUMP_METHOD_BY_INFO_PTR( GetHeight_Vector3, terrain_height_map_get_height_vector3 );
+
+		il2cpp::method_info_t* terrain_height_map_get_height_flt_flt = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT( DUMPER_METHOD( map_image_renderer_display_class, "<Render>g__GetHeight|0" ) ),
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Single" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( GetHeight_FltFlt, terrain_height_map_get_height_flt_flt );
+
+		il2cpp::method_info_t* terrain_height_map_get_normal = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT( DUMPER_METHOD( map_image_renderer_display_class, "<Render>g__GetNormal|1" ) ),
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Single" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( GetNormal, terrain_height_map_get_normal );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainSplatMap" );
+	DUMPER_SECTION( "Functions" );
+		il2cpp::method_info_t* terrain_splat_map_get_splat = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT( DUMPER_METHOD( map_image_renderer_display_class, "<Render>g__GetSplat|2" ) ),
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Int32" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( GetSplat, terrain_splat_map_get_splat );
 	DUMPER_CLASS_END
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainCollision" );
