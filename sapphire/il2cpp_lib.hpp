@@ -275,7 +275,7 @@ namespace il2cpp
 	CREATE_TYPE( field_get_type, il2cpp_type_t* ( * )( void* ) );
 	CREATE_TYPE( field_get_parent, il2cpp_class_t* ( * )( void* ) );
 	CREATE_TYPE( field_get_name, const char* ( * )( void* ) );
-	CREATE_TYPE( field_static_get_value, void( * )( void*, uint64_t* ) );
+	CREATE_TYPE( field_static_get_value, void( * )( void*, void* ) );
 	CREATE_TYPE( field_get_flags, int( * )( void* ) );
 	CREATE_TYPE( field_has_attribute, bool( * )( void*, il2cpp_class_t* ) );
 
@@ -420,12 +420,13 @@ namespace il2cpp
 			return field_get_offset( this );
 		}
 
-		uint64_t static_get_value( )
+		template <typename T>
+		T static_get_value( )
 		{
 			if ( !this )
-				return 0;
+				return T();
 
-			uint64_t value{ };
+			T value;
 			field_static_get_value( this, &value );
 			return value;
 		}
@@ -1636,9 +1637,9 @@ namespace il2cpp
 			if ( !strstr( name, search ) )
 				continue;
 
-			uint64_t value = field->static_get_value();
+			T value = field->static_get_value<T>();
 
-			if ( compare( *( T* )&value ) )
+			if ( compare( value ) )
 				return field;
 		}
 

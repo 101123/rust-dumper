@@ -1421,62 +1421,22 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainMeta" );
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* terrain_collision = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "TerrainCollision", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain_collision ) { return terrain_collision != nullptr; } );
-		DUMP_MEMBER_BY_X( collision, terrain_collision->offset() );
+		DUMP_MEMBER_BY_X( Collision, terrain_collision->offset() );
 
-		il2cpp::field_info_t* terrain_height_map = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "TerrainHeightMap", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain_collision ) { return terrain_collision != nullptr; } );
-		DUMP_MEMBER_BY_X( heightMap, terrain_height_map->offset() );
-	DUMPER_CLASS_END
+		il2cpp::field_info_t* terrain_height_map = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "TerrainHeightMap", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain_height_map ) { return terrain_height_map != nullptr; } );
+		DUMP_MEMBER_BY_X( HeightMap, terrain_height_map->offset() );
 
-	il2cpp::il2cpp_class_t* map_image_renderer_display_class = il2cpp::search_for_class_by_method_in_assembly( "Assembly-CSharp", "<Render>g__GetSplat|2", nullptr );
+		il2cpp::field_info_t* splat_map = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "TerrainSplatMap", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain_splat_map ) { return terrain_splat_map != nullptr; } );
+		DUMP_MEMBER_BY_X( SplatMap, splat_map->offset() );
 
-	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainHeightMap" );
-	DUMPER_SECTION( "Functions" );
-		il2cpp::method_info_t* terrain_height_map_get_height_vector3 = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-		    FILT( DUMPER_METHOD( DUMPER_CLASS( "TerrainAnchor" ), "Apply" ) ),
-			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
-			METHOD_ATTRIBUTE_PUBLIC,
-			DUMPER_ATTR_DONT_CARE,
-			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" )
-		);
+		il2cpp::field_info_t* position = il2cpp::get_static_field_if_value_is<unity::vector3_t>( dumper_klass, "UnityEngine.Vector3", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::vector3_t position ) { return position == unity::vector3_t( -2000.f, -500.f, -2000.f ); } );
+		DUMP_MEMBER_BY_X( Position, position->offset() );
 
-		DUMP_METHOD_BY_INFO_PTR( GetHeight_Vector3, terrain_height_map_get_height_vector3 );
+		il2cpp::field_info_t* size = il2cpp::get_static_field_if_value_is<unity::vector3_t>( dumper_klass, "UnityEngine.Vector3", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::vector3_t size ) { return size == unity::vector3_t( 4000.f, 1000.f, 4000.f ); } );
+		DUMP_MEMBER_BY_X( Size, size->offset() );
 
-		il2cpp::method_info_t* terrain_height_map_get_height_flt_flt = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			FILT( DUMPER_METHOD( map_image_renderer_display_class, "<Render>g__GetHeight|0" ) ),
-			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
-			METHOD_ATTRIBUTE_PUBLIC,
-			DUMPER_ATTR_DONT_CARE,
-			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
-			DUMPER_TYPE_NAMESPACE( "System", "Single" )
-		);
-
-		DUMP_METHOD_BY_INFO_PTR( GetHeight_FltFlt, terrain_height_map_get_height_flt_flt );
-
-		il2cpp::method_info_t* terrain_height_map_get_normal = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			FILT( DUMPER_METHOD( map_image_renderer_display_class, "<Render>g__GetNormal|1" ) ),
-			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
-			METHOD_ATTRIBUTE_PUBLIC,
-			DUMPER_ATTR_DONT_CARE,
-			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
-			DUMPER_TYPE_NAMESPACE( "System", "Single" )
-		);
-
-		DUMP_METHOD_BY_INFO_PTR( GetNormal, terrain_height_map_get_normal );
-	DUMPER_CLASS_END
-
-	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainSplatMap" );
-	DUMPER_SECTION( "Functions" );
-		il2cpp::method_info_t* terrain_splat_map_get_splat = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			FILT( DUMPER_METHOD( map_image_renderer_display_class, "<Render>g__GetSplat|2" ) ),
-			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
-			METHOD_ATTRIBUTE_PUBLIC,
-			DUMPER_ATTR_DONT_CARE,
-			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
-			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
-			DUMPER_TYPE_NAMESPACE( "System", "Int32" )
-		);
-
-		DUMP_METHOD_BY_INFO_PTR( GetSplat, terrain_splat_map_get_splat );
+		il2cpp::field_info_t* one_over_size = il2cpp::get_static_field_if_value_is<unity::vector3_t>( dumper_klass, "UnityEngine.Vector3", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::vector3_t one_over_size ) { return one_over_size == unity::vector3_t( 0.00025f, 0.001f, 0.00025f ); } );
+		DUMP_MEMBER_BY_X( OneOverSize, one_over_size->offset() );
 	DUMPER_CLASS_END
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainCollision" );

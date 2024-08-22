@@ -58,4 +58,26 @@ namespace unity {
 	class component_t {
 
 	};
+	
+	struct vector2_t {
+		float x, y;
+
+		vector2_t() : x( 0.f ), y( 0.f ) {};
+		vector2_t( float _x, float _y ) : x( _x ), y( _y ) {};
+
+		bool operator==( vector2_t other ) {
+			return this->x == other.x && this->y == other.y;
+		}
+	};
+
+	struct vector3_t {
+		float x, y, z;
+
+		vector3_t() : x( 0.f ), y( 0.f ), z( 0.f ) {};
+		vector3_t( float _x, float _y, float _z ) : x( _x ), y( _y ), z( _z ) {};
+
+		bool operator==( vector3_t other ) {
+			return this->x == other.x && this->y == other.y && this->z == other.z;
+		}
+	};
 }
