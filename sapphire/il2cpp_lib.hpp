@@ -15,8 +15,9 @@
 #include <set>
 
 #define NO_FILT il2cpp::method_filter_t()
-#define FILT_N( x, n ) il2cpp::method_filter_t( x, n )
-#define FILT( x ) il2cpp::method_filter_t( x, 1 )
+#define FILT_I( x, i, n ) il2cpp::method_filter_t( x, i, n )
+#define FILT_N( x, n ) il2cpp::method_filter_t( x, 0, n )
+#define FILT( x ) il2cpp::method_filter_t( x, 0, 1 )
 
 namespace il2cpp
 {
@@ -156,18 +157,19 @@ namespace il2cpp
 	}
 
 	struct method_filter_t {
-		inline method_filter_t() : target( 0 ), max_depth( 0 ) {
+		inline method_filter_t() : target( 0 ), ignore( 0 ), max_depth( 0 ) {
 		}
 
 		inline method_filter_t( const method_filter_t& filter )
-		    : target( filter.target ), max_depth( filter.max_depth ) {
+		    : target( filter.target ), ignore( filter.ignore ), max_depth( filter.max_depth ) {
 		}
 
-		inline method_filter_t( uint64_t _target, uint32_t _max_depth )
-		    : target( _target ), max_depth( _max_depth ) {
+		inline method_filter_t( uint64_t _target, uint64_t _ignore, uint32_t _max_depth )
+		    : target( _target ), ignore( _ignore ), max_depth( _max_depth ) {
 		}
 
 		uint64_t target;
+		uint64_t ignore;
 		uint32_t max_depth;
 	};
 
@@ -322,6 +324,9 @@ namespace il2cpp
 				return false;
 
 			uint64_t address = this->get_fn_ptr< uint64_t >();
+
+			if ( address == filter.ignore )
+				return true;
 
 			bool match = has_call_in_tree( address, filter.target, filter.max_depth );
 

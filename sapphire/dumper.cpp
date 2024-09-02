@@ -402,6 +402,73 @@ void dumper::produce() {
 		world_item_on_rpc_message = *( uint64_t* )( ( uint64_t )world_item_class + on_rpc_message_method_offset );
 	}
 
+	int64_t get_build_menu_method_offset = -1;
+
+	il2cpp::il2cpp_class_t* hammer_class = DUMPER_CLASS( "Hammer" );
+
+	uint64_t hammer_on_input = DUMPER_METHOD( hammer_class, "OnInput" );
+	uint64_t hammer_open_context_menu = hammer_on_input;
+
+	if ( hammer_on_input ) {
+		il2cpp::method_info_t* open_context_menu = il2cpp::get_method_by_return_type_attrs(
+			FILT( hammer_on_input ),
+			hammer_class,
+			DUMPER_CLASS_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_PRIVATE,
+			DUMPER_ATTR_DONT_CARE
+		);
+
+		if ( open_context_menu ) {
+			hammer_open_context_menu = open_context_menu->get_fn_ptr<uint64_t>();
+		}
+	}
+
+	if ( hammer_open_context_menu ) {
+		uint64_t address = hammer_open_context_menu;
+		uint64_t limit = 0x1000;
+		uint64_t len = 0;
+
+		uint32_t last_disps[ 2 ]{};
+		uint32_t last_disps_ct = 0;
+
+		while ( len < limit ) {
+			uint8_t* inst = ( uint8_t* )address + len;
+
+			hde64s hs;
+			uint64_t instr_len = hde64_disasm( inst, &hs );
+
+			if ( hs.flags & F_ERROR ) {
+				break;
+			}
+
+			if ( hs.opcode == 0x8B ) {
+				if ( last_disps_ct == 2 ) {
+					last_disps[ 0 ] = last_disps[ 1 ];
+					last_disps[ 1 ] = hs.disp.disp32;
+				}
+
+				else {
+					last_disps[ last_disps_ct ] = hs.disp.disp32;
+					last_disps_ct++;
+				}
+			}
+
+			if ( hs.opcode == 0xFF && hs.modrm_reg == 0x2 ) {
+				get_build_menu_method_offset = min( last_disps[ 0 ], last_disps[ 1 ] );
+				break;
+			}
+
+			len += instr_len;
+		}
+	}
+
+	il2cpp::il2cpp_class_t* building_block_class = DUMPER_CLASS( "BuildingBlock" );
+	uint64_t building_block_get_build_menu = 0;
+
+	if ( building_block_class && get_build_menu_method_offset != -1 ) {
+		building_block_get_build_menu = *( uint64_t* )( ( uint64_t )building_block_class + get_build_menu_method_offset );
+	}
+
 	il2cpp::il2cpp_class_t* scriptable_object_ref_class = DUMPER_CLASS( "ScriptableObjectRef" );
 	uint64_t resource_ref_get = 0;
 
@@ -459,24 +526,20 @@ void dumper::produce() {
 		}
 	}
 
+	il2cpp::il2cpp_class_t* base_networkable_entity_realm_class = nullptr;
+
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseNetworkable" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( prefabID ); // Dump a member by it's name.
 		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( net, "Network.Networkable", DUMPER_VIS_DONT_CARE, DUMPER_ATTR_DONT_CARE );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( parentEntity, entity_ref_class ); // Search for EntityRef class.
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( children, "System.Collections.Generic.List<BaseEntity>", FIELD_ATTRIBUTE_PUBLIC, FIELD_ATTRIBUTE_INIT_ONLY );
-	DUMPER_CLASS_END;
 
-	il2cpp::il2cpp_class_t* base_networkable_static_class = get_inner_static_class( DUMPER_CLASS( "BaseNetworkable" ) );
-	il2cpp::il2cpp_class_t* base_networkable_entity_realm_class = nullptr;
-
-	DUMPER_CLASS_BEGIN_FROM_PTR( "BaseNetworkable_Static", base_networkable_static_class );
-	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* client_entities = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "BaseNetworkable", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* client_entities ) { return client_entities != nullptr; } );
 		DUMP_MEMBER_BY_X( clientEntities, client_entities->offset() );
 
 		base_networkable_entity_realm_class = client_entities->type()->klass()->get_generic_argument_at( 0 );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "BaseNetworkable_EntityRealm", base_networkable_entity_realm_class )
 	DUMPER_SECTION( "Offsets" );
@@ -607,6 +670,9 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NEAR_OFFSET( hipAimConeScale, DUMPER_OFFSET( hipAimConeOffset ) - 0x4 );
 		DUMP_MEMBER_BY_NEAR_OFFSET( sightAimConeOffset, DUMPER_OFFSET( hipAimConeScale ) - 0x4 );
 		DUMP_MEMBER_BY_NEAR_OFFSET( sightAimConeScale, DUMPER_OFFSET( sightAimConeOffset ) - 0x4 );
+
+		il2cpp::field_info_t* created_projectiles = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "Projectile", FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_INIT_ONLY, []( void* value ) { return value != nullptr; } );
+		DUMP_MEMBER_BY_X( createdProjectiles, created_projectiles->offset() );
 	DUMPER_SECTION( "Functions" );
 	
 	il2cpp::method_info_t* base_projectile_launch_projectile_clientside = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
@@ -642,14 +708,6 @@ void dumper::produce() {
 	DUMP_METHOD_BY_RETURN_TYPE_ATTRS( UpdateAmmoDisplay, NO_FILT, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_FAMILY, METHOD_ATTRIBUTE_VIRTUAL );
 
 	DUMPER_CLASS_END;
-
-	il2cpp::il2cpp_class_t* base_projectile_static_class = get_inner_static_class( DUMPER_CLASS( "BaseProjectile" ) );
-
-	DUMPER_CLASS_BEGIN_FROM_PTR( "BaseProjectile_Static", base_projectile_static_class );
-	DUMPER_SECTION( "Offsets" );
-		il2cpp::field_info_t* created_projectiles = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "Projectile", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* value ) { return value != nullptr; } );
-		DUMP_MEMBER_BY_X( createdProjectiles, created_projectiles->offset() );
-	DUMPER_CLASS_END
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseMelee" );
 	DUMPER_SECTION( "Functions" );
@@ -937,6 +995,14 @@ void dumper::produce() {
 			METHOD_ATTRIBUTE_PUBLIC, 
 			DUMPER_ATTR_DONT_CARE 
 		);
+
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( HeadForward,
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "AttackHeliUIDialog" ), "Update" ) ),
+			DUMPER_CLASS_NAMESPACE( "UnityEngine", "Vector3" ),
+			0,
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE
+		);
 	DUMPER_CLASS_END
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerTick" );
@@ -972,7 +1038,6 @@ void dumper::produce() {
 		DUMP_METHOD_BY_PARAM_CLASS( ClientInput, NO_FILT, input_state_class, 1, DUMPER_VIS_DONT_CARE, METHOD_ATTRIBUTE_VIRTUAL );
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( IsOnGround, NO_FILT, DUMPER_CLASS_NAMESPACE( "System", "Boolean" ), 0, METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_VIRTUAL );
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GetHeldItemID, NO_FILT, DUMPER_CLASS( "ItemId" ), 0, METHOD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
-		DUMP_METHOD_BY_RETURN_TYPE_STR( get_VisiblePlayerList, NO_FILT, "BufferList<BasePlayer>", 0 );
 
 		il2cpp::method_info_t* base_player_get_speed = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 		    FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseProjectile" ), "DoAttack" ) ),
@@ -1005,6 +1070,14 @@ void dumper::produce() {
 		);
 
 		DUMP_METHOD_BY_INFO_PTR( SendProjectileAttack, base_player_send_projectile_attack );
+
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( CanBuild, 
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "Hammer" ), "OnInput" ) ), 
+			DUMPER_CLASS_NAMESPACE( "System", "Boolean" ), 
+			0, 
+			METHOD_ATTRIBUTE_PUBLIC, 
+			DUMPER_ATTR_DONT_CARE 
+		);
 
 		il2cpp::il2cpp_class_t* model_state_class = DUMPER_CLASS( "ModelState" );
 		il2cpp::method_info_t* model_state_get_on_ladder = il2cpp::get_method_by_name( model_state_class, "get_onLadder" );
@@ -1141,8 +1214,7 @@ void dumper::produce() {
 	*/
 
 	il2cpp::il2cpp_class_t* pet_command_desc_class = DUMPER_CLASS( "PetCommandList/PetCommandDesc" );
-	il2cpp::il2cpp_class_t* local_player_inner_class = il2cpp::search_for_class_by_field_types( pet_command_desc_class->type(), 0, FIELD_ATTRIBUTE_STATIC );
-	il2cpp::il2cpp_class_t* local_player_class = get_outer_class( local_player_inner_class );
+	il2cpp::il2cpp_class_t* local_player_class = il2cpp::search_for_class_by_field_types( pet_command_desc_class->type(), 0, FIELD_ATTRIBUTE_STATIC );
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "LocalPlayer", local_player_class );
 	DUMPER_SECTION( "Functions" );
@@ -1171,7 +1243,7 @@ void dumper::produce() {
 		DUMP_METHOD_BY_INFO_PTR( MoveItem, local_player_move_item );
 
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( get_Entity, 
-		    FILT( DUMPER_METHOD( DUMPER_CLASS( "LookAtWeaponRack" ), "Update" ) ),
+		    FILT( DUMPER_METHOD( DUMPER_CLASS( "EggHuntNote" ), "Update" ) ),
 			DUMPER_CLASS( "BasePlayer" ),
 			0,
 			METHOD_ATTRIBUTE_PUBLIC,
@@ -1234,9 +1306,12 @@ void dumper::produce() {
 		DUMP_METHOD_BY_INFO_PTR( Factor, water_level_factor );
 	DUMPER_CLASS_END;
 
-	il2cpp::il2cpp_class_t* convar_graphics_class = il2cpp::search_for_class_by_method_return_type_name( "UnityEngine.FullScreenMode", METHOD_ATTRIBUTE_PRIVATE, METHOD_ATTRIBUTE_STATIC );
+	il2cpp::il2cpp_class_t* convar_graphics_klass = il2cpp::search_for_class_by_method_return_type_name( "UnityEngine.FullScreenMode", METHOD_ATTRIBUTE_PRIVATE, METHOD_ATTRIBUTE_STATIC );
 
-	DUMPER_CLASS_BEGIN_FROM_PTR( "Convar_Graphics", convar_graphics_class );
+	DUMPER_CLASS_BEGIN_FROM_PTR( "Convar_Graphics", convar_graphics_klass );
+	DUMPER_SECTION( "Offsets" );
+		il2cpp::field_info_t* fov = il2cpp::get_static_field_if_value_is<uint32_t>( dumper_klass, convar_graphics_klass->name(), FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( uint32_t value ) { return value != 0; } );
+		DUMP_MEMBER_BY_X( _fov, fov->offset() );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::il2cpp_class_t* console_system_index_client = DUMPER_CLASS( "ConsoleSystem/Index/Client" );
 		il2cpp::il2cpp_class_t* console_system_command = DUMPER_CLASS( "ConsoleSystem/Command" );
@@ -1260,15 +1335,7 @@ void dumper::produce() {
 					DUMP_MEMBER_BY_X( _fov_setter, DUMPER_RVA( setter ) );
 				}
 			}
-		}	
-	DUMPER_CLASS_END;
-
-	il2cpp::il2cpp_class_t* convar_graphics_static_class = get_inner_static_class( convar_graphics_class );
-
-	DUMPER_CLASS_BEGIN_FROM_PTR( "Convar_Graphics_Static", convar_graphics_static_class );
-	DUMPER_SECTION( "Offsets" );
-		il2cpp::field_info_t* fov = il2cpp::get_static_field_if_value_is<uint32_t>( dumper_klass, convar_graphics_class->name(), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( uint32_t value ) { return value != 0; } );
-		DUMP_MEMBER_BY_X( _fov, fov->offset() );
+		}
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseFishingRod" );
@@ -1313,7 +1380,11 @@ void dumper::produce() {
 			DUMPER_TYPE_NAMESPACE( "System", "String" ),
 			DUMPER_TYPE_NAMESPACE( "System", "Boolean" )
 		);
-		DUMP_METHOD_BY_INFO_PTR( CreatePrefab, game_manager_create_prefab ); 
+		DUMP_METHOD_BY_INFO_PTR( CreatePrefab, game_manager_create_prefab );
+
+	DUMPER_SECTION( "Offsets" );
+		il2cpp::field_info_t* client_ = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, game_manager_class->name(), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* client ) { return client != nullptr; } );
+		DUMP_MEMBER_BY_X( client, client_->offset() );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemModProjectile" );
@@ -1367,14 +1438,10 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "CraftingQueue" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( icons, "List" );
-	DUMPER_CLASS_END;
 
-	il2cpp::il2cpp_class_t* crafting_queue_static_class = get_inner_static_class( DUMPER_CLASS( "CraftingQueue" ) );
-
-	DUMPER_CLASS_BEGIN_FROM_PTR( "CraftingQueue_Static", crafting_queue_static_class );
 		il2cpp::field_info_t* is_crafting = il2cpp::get_static_field_if_value_is<bool>( dumper_klass, "System.Boolean", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( bool is_crafting ) { return is_crafting == true; } );
 		DUMP_MEMBER_BY_X( isCrafting, is_crafting->offset() );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "CraftingQueueIcon" );
 	DUMPER_SECTION( "Offsets" );
@@ -1420,14 +1487,8 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainMeta" );
 	DUMPER_SECTION( "Offsets" );
-		il2cpp::field_info_t* terrain_collision = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "TerrainCollision", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain_collision ) { return terrain_collision != nullptr; } );
-		DUMP_MEMBER_BY_X( Collision, terrain_collision->offset() );
-
-		il2cpp::field_info_t* terrain_height_map = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "TerrainHeightMap", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain_height_map ) { return terrain_height_map != nullptr; } );
-		DUMP_MEMBER_BY_X( HeightMap, terrain_height_map->offset() );
-
-		il2cpp::field_info_t* splat_map = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "TerrainSplatMap", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain_splat_map ) { return terrain_splat_map != nullptr; } );
-		DUMP_MEMBER_BY_X( SplatMap, splat_map->offset() );
+		il2cpp::field_info_t* terrain = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "UnityEngine.Terrain", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain ) { return terrain != nullptr; } );
+		DUMP_MEMBER_BY_X( Terrain, terrain->offset() );
 
 		il2cpp::field_info_t* position = il2cpp::get_static_field_if_value_is<unity::vector3_t>( dumper_klass, "UnityEngine.Vector3", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::vector3_t position ) { return position == unity::vector3_t( -2000.f, -500.f, -2000.f ); } );
 		DUMP_MEMBER_BY_X( Position, position->offset() );
@@ -1437,6 +1498,15 @@ void dumper::produce() {
 
 		il2cpp::field_info_t* one_over_size = il2cpp::get_static_field_if_value_is<unity::vector3_t>( dumper_klass, "UnityEngine.Vector3", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::vector3_t one_over_size ) { return one_over_size == unity::vector3_t( 0.00025f, 0.001f, 0.00025f ); } );
 		DUMP_MEMBER_BY_X( OneOverSize, one_over_size->offset() );
+
+		il2cpp::field_info_t* terrain_collision = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "TerrainCollision", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain_collision ) { return terrain_collision != nullptr; } );
+		DUMP_MEMBER_BY_X( Collision, terrain_collision->offset() );
+
+		il2cpp::field_info_t* terrain_height_map = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "TerrainHeightMap", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain_height_map ) { return terrain_height_map != nullptr; } );
+		DUMP_MEMBER_BY_X( HeightMap, terrain_height_map->offset() );
+
+		il2cpp::field_info_t* splat_map = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "TerrainSplatMap", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain_splat_map ) { return terrain_splat_map != nullptr; } );
+		DUMP_MEMBER_BY_X( SplatMap, splat_map->offset() );
 	DUMPER_CLASS_END
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainCollision" );
@@ -1452,15 +1522,18 @@ void dumper::produce() {
 		DUMP_METHOD_BY_INFO_PTR( GetIgnore, terrain_collision_get_ignore );
 	DUMPER_CLASS_END
 
-	il2cpp::il2cpp_class_t* world_class_static_class = il2cpp::search_for_class_by_field_types( DUMPER_TYPE( "WorldSerialization" ), 0, FIELD_ATTRIBUTE_STATIC );
+	il2cpp::il2cpp_class_t* world_class = il2cpp::search_for_class_by_field_types( DUMPER_TYPE( "WorldSerialization" ), 0, FIELD_ATTRIBUTE_STATIC );
 
-	DUMPER_CLASS_BEGIN_FROM_PTR( "World_Static", world_class_static_class );
+	DUMPER_CLASS_BEGIN_FROM_PTR( "World", world_class );
 	DUMPER_SECTION( "Offsets" );
-		il2cpp::field_info_t* size = il2cpp::get_static_field_if_value_is<uint32_t>( dumper_klass, "System.UInt32", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( uint32_t size ) { return size == 4000; } );
+		il2cpp::field_info_t* size = il2cpp::get_static_field_if_value_is<uint32_t>( dumper_klass, "System.UInt32", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( uint32_t size ) { return size == 4000; } );
 		DUMP_MEMBER_BY_X( _size, size->offset() );
 	DUMPER_CLASS_END
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemIcon" );
+	DUMPER_SECTION("Offsets")
+		il2cpp::field_info_t* container_loot_start_times = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "Dictionary", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( void* dictionary ) { return dictionary != nullptr; } );
+		DUMP_MEMBER_BY_X( containerLootStartTimes, container_loot_start_times->offset() );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* item_icon_set_timed_loot_action = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 		    FILT( DUMPER_METHOD( DUMPER_CLASS( "ItemIcon" ), "TryToMove" ) ),
@@ -1472,14 +1545,6 @@ void dumper::produce() {
 			DUMPER_TYPE_NAMESPACE( "System", "Action" )
 		);
 		DUMP_METHOD_BY_INFO_PTR( SetTimedLootAction, item_icon_set_timed_loot_action );
-	DUMPER_CLASS_END
-
-	il2cpp::il2cpp_class_t* item_icon_static_class = get_inner_static_class( DUMPER_CLASS( "ItemIcon" ) );
-
-	DUMPER_CLASS_BEGIN_FROM_PTR( "ItemIcon_Static", item_icon_static_class );
-	DUMPER_SECTION( "Offsets" )
-		il2cpp::field_info_t* container_loot_start_times = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "Dictionary", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* dictionary ) { return dictionary != nullptr; } );
-		DUMP_MEMBER_BY_X( containerLootStartTimes, container_loot_start_times->offset() );
 	DUMPER_CLASS_END
 
 	/*
@@ -1508,30 +1573,34 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( grade );
 	DUMPER_SECTION( "Functions" );
 
-	il2cpp::method_info_t* building_block_upgrade_to_grade = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-		NO_FILT,
-		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-		METHOD_ATTRIBUTE_PRIVATE,
-		DUMPER_ATTR_DONT_CARE,
-		DUMPER_TYPE( "BuildingGrade/Enum" ),
-		DUMPER_TYPE_NAMESPACE( "System", "UInt64" ),
-		DUMPER_TYPE( "BasePlayer" )
-	);
+	if ( building_block_get_build_menu ) {
+		DUMP_MEMBER_BY_X( GetBuildMenu, DUMPER_RVA( building_block_get_build_menu ) );
 
-	DUMP_METHOD_BY_INFO_PTR( UpgradeToGrade, building_block_upgrade_to_grade );
+		il2cpp::method_info_t* building_block_has_upgrade_privilege = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT_N( building_block_get_build_menu, 3 ),
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+			METHOD_ATTRIBUTE_PRIVATE,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE( "BuildingGrade/Enum" ),
+			DUMPER_TYPE_NAMESPACE( "System", "UInt64" ),
+			DUMPER_TYPE( "BasePlayer" )
+		);
 
-	il2cpp::method_info_t* building_block_has_upgrade_privilege = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_SIZE(
-		NO_FILT,
-		1,
-		DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
-		METHOD_ATTRIBUTE_PRIVATE,
-		DUMPER_ATTR_DONT_CARE,
-		DUMPER_TYPE( "BuildingGrade/Enum" ),
-		DUMPER_TYPE_NAMESPACE( "System", "UInt64" ),
-		DUMPER_TYPE( "BasePlayer" )
-	);
+		DUMP_METHOD_BY_INFO_PTR( HasUpgradePrivilege, building_block_has_upgrade_privilege );
 
-	DUMP_METHOD_BY_INFO_PTR( HasUpgradePrivilege, building_block_has_upgrade_privilege );
+		il2cpp::method_info_t* building_block_can_afford_upgrade = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT_I( building_block_get_build_menu, building_block_has_upgrade_privilege->get_fn_ptr<uint64_t>(), 3 ),
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+			METHOD_ATTRIBUTE_PRIVATE,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE( "BuildingGrade/Enum" ),
+			DUMPER_TYPE_NAMESPACE( "System", "UInt64" ),
+			DUMPER_TYPE( "BasePlayer" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( CanAffordUpgrade, building_block_can_afford_upgrade );
+	}
+
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerWalkMovement" );
@@ -1574,10 +1643,8 @@ void dumper::produce() {
 		DUMP_METHOD_BY_INFO_PTR( SetVisible, ui_death_screen_set_visible );
 	DUMPER_CLASS_END
 
-	il2cpp::il2cpp_class_t* base_screen_shake_static_class = get_inner_static_class( DUMPER_CLASS( "BaseScreenShake" ) );
-
-	DUMPER_CLASS_BEGIN_FROM_PTR( "BaseScreenShake_Static", base_screen_shake_static_class );
-	DUMPER_SECTION( "Offsets" )
+	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseScreenShake" );
+	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* instances_list = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "BaseScreenShake", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* instances_list ) { return instances_list != nullptr; } );
 		DUMP_MEMBER_BY_X( list, instances_list->offset() );
 	DUMPER_CLASS_END
@@ -1612,6 +1679,12 @@ void dumper::produce() {
 			DUMP_METHOD_BY_INFO_PTR( Get, string_pool_get );
 		DUMPER_CLASS_END
 	}
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Networkable", "Network" );
+	DUMPER_SECTION( "Offsets" );
+		il2cpp::field_info_t* _ID = il2cpp::get_field_by_name( dumper_klass, "ID" );
+		DUMP_MEMBER_BY_X( ID, _ID->offset() );
+	DUMPER_CLASS_END
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Net", "Network" );
 	DUMPER_SECTION( "Offsets" );
@@ -1747,6 +1820,15 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "GameObjectRef" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( guid );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "EnvironmentManager" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_RETURN_TYPE_STR( Get,
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "BiomeVisuals" ), "Start" ) ),
+			"EnvironmentType",
+			2
+		);
 	DUMPER_CLASS_END
 
 	fclose( outfile_handle );
