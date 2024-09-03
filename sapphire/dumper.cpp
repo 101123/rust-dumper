@@ -1097,6 +1097,44 @@ void dumper::produce() {
 		}
 	DUMPER_CLASS_END;
 
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Attack", "ProtoBuf" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( pointStart );
+		DUMP_MEMBER_BY_NAME( pointEnd );
+		DUMP_MEMBER_BY_NAME( hitID );
+		DUMP_MEMBER_BY_NAME( hitBone );
+		DUMP_MEMBER_BY_NAME( hitNormalLocal );
+		DUMP_MEMBER_BY_NAME( hitPositionLocal );
+		DUMP_MEMBER_BY_NAME( hitNormalWorld );
+		DUMP_MEMBER_BY_NAME( hitPositionWorld );
+		DUMP_MEMBER_BY_NAME( hitPartID );
+		DUMP_MEMBER_BY_NAME( hitMaterialID );
+		DUMP_MEMBER_BY_NAME( srcParentID );
+		DUMP_MEMBER_BY_NAME( dstParentID );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "PlayerAttack", "ProtoBuf" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( attack );
+		DUMP_MEMBER_BY_NAME( projectileID );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "PlayerProjectileAttack", "ProtoBuf" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( playerAttack );
+		DUMP_MEMBER_BY_NAME( hitVelocity );
+		DUMP_MEMBER_BY_NAME( hitDistance );
+		DUMP_MEMBER_BY_NAME( travelTime );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "PlayerProjectileUpdate", "ProtoBuf" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( projectileID );
+		DUMP_MEMBER_BY_NAME( curPosition );
+		DUMP_MEMBER_BY_NAME( curVelocity );
+		DUMP_MEMBER_BY_NAME( travelTime );
+	DUMPER_CLASS_END
+
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseMovement" );
 	DUMPER_SECTION( "Functions" );	
 		il2cpp::method_info_t* base_movement_set_target_movement = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
