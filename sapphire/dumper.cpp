@@ -1015,6 +1015,22 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( parentID );
 	DUMPER_CLASS_END;
 
+	il2cpp::il2cpp_class_t* player_belt_class = il2cpp::search_for_class_by_field_types( DUMPER_TYPE( "BasePlayer" ), 1, FIELD_ATTRIBUTE_FAMILY, DUMPER_ATTR_DONT_CARE );
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "PlayerBelt", player_belt_class );
+	DUMPER_SECTION( "Functions" );
+		il2cpp::method_info_t* player_belt_change_select = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT_N( DUMPER_METHOD( DUMPER_CLASS( "BasePlayer" ), "ClientUpdateLocalPlayer" ), 2 ),
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE_NAMESPACE( "System", "Int32" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( ChangeSelect, player_belt_change_select );
+	DUMPER_CLASS_END
+
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BasePlayer" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( playerModel, DUMPER_CLASS( "PlayerModel" ) );
@@ -1033,7 +1049,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_MULTIPLE( lastSentTickTime, "BasePlayer", "System.Single" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( lastSentTick, DUMPER_CLASS( "PlayerTick" ) );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( mounted, entity_ref_class ); 
-		DUMP_MEMBER_BY_X( Belt, 0 );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( Belt, player_belt_class );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_PARAM_CLASS( ClientInput, NO_FILT, input_state_class, 1, DUMPER_VIS_DONT_CARE, METHOD_ATTRIBUTE_VIRTUAL );
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( IsOnGround, NO_FILT, DUMPER_CLASS_NAMESPACE( "System", "Boolean" ), 0, METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_VIRTUAL );
@@ -1252,7 +1268,7 @@ void dumper::produce() {
 	*/
 
 	il2cpp::il2cpp_class_t* pet_command_desc_class = DUMPER_CLASS( "PetCommandList/PetCommandDesc" );
-	il2cpp::il2cpp_class_t* local_player_class = il2cpp::search_for_class_by_field_types( pet_command_desc_class->type(), 0, FIELD_ATTRIBUTE_STATIC );
+	il2cpp::il2cpp_class_t* local_player_class = il2cpp::search_for_class_by_field_types( pet_command_desc_class->type(), 0, FIELD_ATTRIBUTE_PUBLIC, FIELD_ATTRIBUTE_STATIC );
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "LocalPlayer", local_player_class );
 	DUMPER_SECTION( "Functions" );
@@ -1625,7 +1641,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( num, "System.Int32" );
 	DUMPER_CLASS_END
 
-	il2cpp::il2cpp_class_t* world_class = il2cpp::search_for_class_by_field_types( DUMPER_TYPE( "WorldSerialization" ), 0, FIELD_ATTRIBUTE_STATIC );
+	il2cpp::il2cpp_class_t* world_class = il2cpp::search_for_class_by_field_types( DUMPER_TYPE( "WorldSerialization" ), 0, FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_STATIC );
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "World", world_class );
 	DUMPER_SECTION( "Offsets" );
@@ -1668,8 +1684,26 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "Effect", effect_class );
 	DUMPER_SECTION( "Offsets" );
-	DUMP_ALL_MEMBERS_OF_TYPE( "UnkVector", DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), DUMPER_VIS_DONT_CARE, DUMPER_ATTR_DONT_CARE );
+		DUMP_ALL_MEMBERS_OF_TYPE( "UnkVector", DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), DUMPER_VIS_DONT_CARE, DUMPER_ATTR_DONT_CARE );
 	DUMPER_CLASS_END;
+
+	il2cpp::il2cpp_class_t* effect_network_class = il2cpp::search_for_class_by_field_types( effect_class->type(), 0, FIELD_ATTRIBUTE_PRIVATE, FIELD_ATTRIBUTE_STATIC, effect_class );
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "EffectNetwork", effect_network_class );
+	DUMPER_SECTION( "Offsets" );
+		il2cpp::field_info_t* effect_ = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, effect_class->name(), FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( void* effect ) { return effect != nullptr; } );
+		DUMP_MEMBER_BY_X( effect, effect_->offset() );
+	DUMPER_SECTION( "Functions" );
+		il2cpp::method_info_t* effect_network_on_received_effect = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "Client" ), "OnNetworkMessage" ) ),
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			METHOD_ATTRIBUTE_STATIC,
+			DUMPER_TYPE_NAMESPACE( "Network", "Message" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( OnReceivedEffect, effect_network_on_received_effect );
+	DUMPER_CLASS_END
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BuildingBlock" );
 	DUMPER_SECTION( "Offsets" );

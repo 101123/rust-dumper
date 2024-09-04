@@ -983,21 +983,30 @@ namespace il2cpp
 
 		return search_for_class( search_for_class_by_interfaces_contain );
 	}
-	inline il2cpp_class_t* search_for_class_by_field_types( il2cpp_type_t* field_type, int field_type_ct, uint32_t wanted_flags ) {
+	inline il2cpp_class_t* search_for_class_by_field_types( il2cpp_type_t* field_type, int field_type_ct, int wanted_vis, int wanted_flags, il2cpp_class_t* ignore = nullptr ) {
 		const auto search_for_class_by_field_types = [ = ] ( il2cpp_class_t* klass ) {
-			void* iter = nullptr;
+			if ( klass == ignore )
+				return false;
 
-			int matchingFields = 0;
+			void* iter = nullptr;
+			int matches = 0;
 
 			while ( field_info_t* field = klass->fields( &iter ) ) {
-				if ( ( wanted_flags && ( field->flags( ) & wanted_flags ) ) && strcmp( field->type( )->name( ), field_type->name( ) ) == 0 )
-					matchingFields++;
+				int fl = field->flags();
+				int vis = fl & FIELD_ATTRIBUTE_FIELD_ACCESS_MASK;
+				if ( ( wanted_vis && ( vis != wanted_vis ) ) || ( wanted_flags && !( fl & wanted_flags ) ) )
+					continue;
+
+				if ( strcmp( field->type()->name(), field_type->name() ) )
+					continue;
+
+				matches++;
 			}
 
 			if ( field_type_ct ) {
-				return matchingFields == field_type_ct;
+				return matches == field_type_ct;
 			} else {
-				return matchingFields >= 1;
+				return matches >= 1;
 			}
 		};
 
