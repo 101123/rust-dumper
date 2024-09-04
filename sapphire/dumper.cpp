@@ -526,6 +526,80 @@ void dumper::produce() {
 		}
 	}
 
+	int64_t base_melee_do_attack_offset = -1;
+	int64_t base_melee_process_attack_offset = -1;
+
+	il2cpp::il2cpp_class_t* base_melee_class = DUMPER_CLASS( "BaseMelee" );
+
+	uint64_t base_melee_on_viewmodel_event = DUMPER_METHOD( base_melee_class, "OnViewmodelEvent" );
+
+	if ( base_melee_on_viewmodel_event ) {
+		uint64_t address = base_melee_on_viewmodel_event;
+		uint64_t limit = 0x1000;
+		uint64_t len = 0;
+
+		uint32_t last_disps[ 2 ]{};
+		uint32_t last_disps_ct = 0;
+
+		while ( len < limit ) {
+			uint8_t* inst = ( uint8_t* )address + len;
+
+			hde64s hs;
+			uint64_t instr_len = hde64_disasm( inst, &hs );
+
+			if ( hs.flags & F_ERROR ) {
+				break;
+			}
+
+			if ( hs.opcode == 0xFF && hs.modrm_reg == 0x2 ) {
+				base_melee_do_attack_offset = hs.disp.disp32;
+				break;
+			}
+
+			len += instr_len;
+		}
+	}
+
+	uint64_t base_melee_do_attack = 0;
+	if ( base_melee_class && base_melee_do_attack_offset != -1 ) {
+		base_melee_do_attack = *( uint64_t* )( ( uint64_t )base_melee_class + base_melee_do_attack_offset );
+	}
+
+	if ( base_melee_do_attack ) {
+		uint64_t address = base_melee_do_attack;
+		uint64_t limit = 0x1000;
+		uint64_t len = 0;
+
+		uint32_t valid_calls = 0;
+
+		while ( len < limit ) {
+			uint8_t* inst = ( uint8_t* )address + len;
+
+			hde64s hs;
+			uint64_t instr_len = hde64_disasm( inst, &hs );
+
+			if ( hs.flags & F_ERROR ) {
+				break;
+			}
+			
+			// We want the third valid call
+			if ( hs.opcode == 0xFF && hs.modrm_reg == 0x2 && hs.disp.disp32 ) {
+				valid_calls++;
+
+				if ( valid_calls == 3 ) {
+					base_melee_process_attack_offset = hs.disp.disp32;
+				}
+			}
+
+			len += instr_len;
+		}
+	}
+
+	uint64_t base_melee_process_attack = 0;
+	if ( base_melee_class && base_melee_process_attack_offset != -1 ) {
+		base_melee_process_attack = *( uint64_t* )( ( uint64_t )base_melee_class + base_melee_process_attack_offset );
+	}
+
 	il2cpp::il2cpp_class_t* base_networkable_entity_realm_class = nullptr;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseNetworkable" );
@@ -650,7 +724,12 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "AttackEntity" );
 	DUMPER_SECTION( "Offsets" );
-	DUMP_MEMBER_BY_NAME( repeatDelay );
+		DUMP_MEMBER_BY_NAME( deployDelay );
+		DUMP_MEMBER_BY_NAME( repeatDelay );
+		DUMP_MEMBER_BY_NAME( animationDelay );
+		DUMP_MEMBER_BY_NAME( noHeadshots );
+		DUMP_MEMBER_BY_NEAR_OFFSET( nextAttackTime, DUMPER_OFFSET( noHeadshots ) + 0x2 );
+		DUMP_MEMBER_BY_NEAR_OFFSET( timeSinceDeploy, DUMPER_OFFSET( noHeadshots ) + 0x1A );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseProjectile" );
@@ -706,19 +785,107 @@ void dumper::produce() {
 	}
 	
 	DUMP_METHOD_BY_RETURN_TYPE_ATTRS( UpdateAmmoDisplay, NO_FILT, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_FAMILY, METHOD_ATTRIBUTE_VIRTUAL );
-
 	DUMPER_CLASS_END;
 
+	DUMPER_CLASS_BEGIN_FROM_PTR( "HitTest", hit_test_class );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( type, ".Type" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( AttackRay, "UnityEngine.Ray" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( RayHit, "UnityEngine.RaycastHit" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( damageProperties, DUMPER_CLASS( "DamageProperties" ) );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( gameObject, "UnityEngine.GameObject" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( collider, "UnityEngine.Collider" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( ignoredType, "System.Type" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( HitTransform, "UnityEngine.Transform" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( HitPart, "System.UInt32" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( HitMaterial, "System.String" );
+
+		rust::console_system::command* battery_command = rust::console_system::client::find( system_c::string_t::create_string( L"electricbattery.battery" ) );
+
+		if ( battery_command ) {
+			uint64_t call = battery_command->call();
+
+			if ( call ) {
+				il2cpp::il2cpp_type_t* param_types[] = {
+					DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+					DUMPER_TYPE( "BaseEntity" ),
+					DUMPER_TYPE_NAMESPACE( "System", "Single" )
+				};
+
+				il2cpp::method_info_t* main_camera_trace_method = il2cpp::get_method_by_return_type_and_param_types(
+					FILT_N( call, 2 ),
+					DUMPER_CLASS( "MainCamera" ),
+					hit_test_class->type(),
+					METHOD_ATTRIBUTE_PUBLIC,
+					METHOD_ATTRIBUTE_STATIC,
+					param_types,
+					_countof( param_types )
+				);
+
+				if ( main_camera_trace_method ) {
+					uint64_t( *main_camera_trace )( float, uint64_t, float ) = ( decltype( main_camera_trace ) )main_camera_trace_method->get_fn_ptr<void*>();
+
+					if ( main_camera_trace ) {
+						uint64_t hit_test = main_camera_trace( 69420.f, 0xDEADBEEFCAFEBEEF, 0.f );
+
+						if ( hit_test ) {
+							std::vector<il2cpp::field_info_t*> bools = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "System", "Boolean" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+							std::vector<il2cpp::field_info_t*> floats = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "System", "Single" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+							std::vector<il2cpp::field_info_t*> vectors = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+							std::vector<il2cpp::field_info_t*> base_entities = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE( "BaseEntity" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+
+							for ( il2cpp::field_info_t* bl : bools ) {
+								bool value = *( bool* )( hit_test + bl->offset() );
+								
+								if ( value == true ) {
+									DUMP_MEMBER_BY_X( DidHit, bl->offset() );
+								}
+							}
+
+							for ( il2cpp::field_info_t* flt : floats ) {
+								float value = *( float* )( hit_test + flt->offset() );
+
+								if ( value == 69420.f ) {
+									DUMP_MEMBER_BY_X( MaxDistance, flt->offset() );
+								}
+							}
+
+							for ( il2cpp::field_info_t* vector : vectors ) {
+								unity::vector3_t value = *( unity::vector3_t* )( hit_test + vector->offset() );
+
+								if ( value.magnitude() != 1.f ) {
+									DUMP_MEMBER_BY_X( HitPoint, vector->offset() );
+								}
+
+								else {
+									DUMP_MEMBER_BY_X( HitNormal, vector->offset() );
+								}
+							}
+
+							for ( il2cpp::field_info_t* base_entity : base_entities ) {
+								uint64_t value = *( uint64_t* )( hit_test + base_entity->offset() );
+
+								if ( value != 0xDEADBEEFCAFEBEEF ) {
+									DUMP_MEMBER_BY_X( HitEntity, base_entity->offset() );
+								}
+
+								else {
+									DUMP_MEMBER_BY_X( ignoreEntity, base_entity->offset() );
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	DUMPER_CLASS_END
+
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseMelee" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( damageProperties );
+		DUMP_MEMBER_BY_NAME( gathering );
 	DUMPER_SECTION( "Functions" );
-		il2cpp::method_info_t* base_melee_process_attack = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			NO_FILT, 
-			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-			METHOD_ATTRIBUTE_FAMILY,
-			METHOD_ATTRIBUTE_VIRTUAL,
-			hit_test_class->type()
-		);
-		DUMP_METHOD_BY_INFO_PTR( ProcessAttack, base_melee_process_attack );
+		DUMP_MEMBER_BY_X( ProcessAttack, DUMPER_RVA( base_melee_process_attack ) );
 
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( DoThrow,
 			FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseMelee" ), "OnViewmodelEvent" ) ),
@@ -1367,28 +1534,11 @@ void dumper::produce() {
 		il2cpp::field_info_t* fov = il2cpp::get_static_field_if_value_is<uint32_t>( dumper_klass, convar_graphics_klass->name(), FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( uint32_t value ) { return value != 0; } );
 		DUMP_MEMBER_BY_X( _fov, fov->offset() );
 	DUMPER_SECTION( "Functions" );
-		il2cpp::il2cpp_class_t* console_system_index_client = DUMPER_CLASS( "ConsoleSystem/Index/Client" );
-		il2cpp::il2cpp_class_t* console_system_command = DUMPER_CLASS( "ConsoleSystem/Command" );
+		rust::console_system::command* fov_command = rust::console_system::client::find( system_c::string_t::create_string( L"graphics.fov" ) );
 
-		uint64_t( *console_system_index_client_find )( system_c::string_t* ) = ( decltype( console_system_index_client_find ) )DUMPER_METHOD( console_system_index_client, "Find" );
-
-		if ( console_system_index_client_find ) {
-			uint64_t fov_command = console_system_index_client_find( system_c::string_t::create_string( L"graphics.fov" ) );
-
-			if ( fov_command ) {
-				uint64_t getter_function = *( uint64_t* )( fov_command + il2cpp::get_field_by_name( console_system_command, "GetOveride" )->offset() );
-				uint64_t setter_action = *( uint64_t* )( fov_command + il2cpp::get_field_by_name( console_system_command, "SetOveride" )->offset() );
-
-				if ( getter_function ) {
-					uint64_t getter = *( uint64_t* )( getter_function + 0x10 );
-					DUMP_MEMBER_BY_X( _fov_getter, DUMPER_RVA( getter ) );
-				}
-
-				if ( setter_action ) {
-					uint64_t setter = *( uint64_t* )( setter_action + 0x18 );
-					DUMP_MEMBER_BY_X( _fov_setter, DUMPER_RVA( setter ) );
-				}
-			}
+		if ( fov_command ) {
+			DUMP_MEMBER_BY_X( _fov_getter, DUMPER_RVA( fov_command->get() ) );
+			DUMP_MEMBER_BY_X( _fov_setter, DUMPER_RVA( fov_command->set() ) );
 		}
 	DUMPER_CLASS_END;
 
@@ -1536,8 +1686,8 @@ void dumper::produce() {
 			if ( uint64_t held_entity = game_object->get_component( held_entity_class->type() ) ) {
 				held_entity_add_punch( held_entity, unity::vector3_t( 1337.f, 1337.f, 1337.f ), 420.f );
 
-				std::vector<il2cpp::field_info_t*> vectors = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
 				std::vector<il2cpp::field_info_t*> floats = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "System", "Single" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+				std::vector<il2cpp::field_info_t*> vectors = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
 
 				system_c::list<uint64_t>* punches = *( system_c::list<uint64_t>** )( held_entity + punches_field->offset() );
 
@@ -1545,18 +1695,6 @@ void dumper::produce() {
 					uint64_t punch = punches->at( i );
 					if ( !punch )
 						continue;
-
-					for ( il2cpp::field_info_t* vector : vectors ) {
-						unity::vector3_t value = *( unity::vector3_t* )( punch + vector->offset() );
-
-						if ( value == unity::vector3_t( 1337.f, 1337.f, 1337.f ) ) {
-							DUMP_MEMBER_BY_X( amount, vector->offset() );
-						}
-
-						else {
-							DUMP_MEMBER_BY_X( amountAdded, vector->offset() );
-						}
-					}
 
 					for ( il2cpp::field_info_t* flt : floats ) {
 						float value = *( float* )( punch + flt->offset() );
@@ -1567,6 +1705,18 @@ void dumper::produce() {
 
 						else {
 							DUMP_MEMBER_BY_X( startTime, flt->offset() );
+						}
+					}
+
+					for ( il2cpp::field_info_t* vector : vectors ) {
+						unity::vector3_t value = *( unity::vector3_t* )( punch + vector->offset() );
+
+						if ( value == unity::vector3_t( 1337.f, 1337.f, 1337.f ) ) {
+							DUMP_MEMBER_BY_X( amount, vector->offset() );
+						}
+
+						else {
+							DUMP_MEMBER_BY_X( amountAdded, vector->offset() );
 						}
 					}
 				}
@@ -1906,12 +2056,6 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_X( resources, _resources->offset() - 0x10 );
 	DUMPER_CLASS_END
 
-	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseMelee" );
-	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_NAME( damageProperties );
-		DUMP_MEMBER_BY_NAME( gathering );
-	DUMPER_CLASS_END
-
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Text", "UnityEngine.UI" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( m_Text );
@@ -1954,7 +2098,9 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( MaxBaitStack );
 	DUMPER_CLASS_END
 
-	DUMPER_CLASS_BEGIN_FROM_NAME( "GameObjectRef" );
+	il2cpp::il2cpp_class_t* resource_ref = DUMPER_CLASS( "GameObjectRef" )->parent();
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "GameObjectRef", resource_ref );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( guid );
 	DUMPER_CLASS_END

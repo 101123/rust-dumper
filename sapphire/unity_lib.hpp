@@ -106,5 +106,9 @@ namespace unity {
 		bool operator==( vector3_t other ) {
 			return this->x == other.x && this->y == other.y && this->z == other.z;
 		}
+
+		float magnitude() {
+			return sqrtf( this->x * this->x + this->y * this->y + this->z * this->z );
+		}
 	};
 }
