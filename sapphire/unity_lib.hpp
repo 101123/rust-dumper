@@ -1,5 +1,7 @@
 #pragma once
 
+#define _this ( uint64_t )this
+
 namespace system_c {
 	class string_t {
 		char zpad[ 0x10 ];
@@ -23,6 +25,31 @@ namespace system_c {
 			wcscpy( string->str, str );
 
 			return string;
+		}
+	};
+
+	template <typename t>
+	class list {
+	public:
+		int size() {
+			uint64_t buffer = get_buffer();
+			if ( !buffer )
+				return 0;
+
+			return *( int* )( buffer + 0x18 );
+		}
+
+		t at( int index ) {
+			uint64_t buffer = get_buffer();
+			if ( !buffer )
+				return t();
+
+			return *( t* )( buffer + 0x20 + ( sizeof( t ) * index ) );
+		}
+
+	private:
+		uint64_t get_buffer() {
+			return *( uint64_t* )( _this + 0x10 );
 		}
 	};
 }

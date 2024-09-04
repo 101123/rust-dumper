@@ -1497,10 +1497,65 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( holdToPlaceDuration );
 	DUMPER_CLASS_END;
 
-	DUMPER_CLASS_BEGIN_FROM_NAME( "HeldEntity" );
+	il2cpp::il2cpp_class_t* held_entity_class = DUMPER_CLASS( "HeldEntity" );
+	il2cpp::field_info_t* punches_field = nullptr;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "HeldEntity", held_entity_class );
 	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( _punches, "List<HeldEntity", FIELD_ATTRIBUTE_FAMILY, DUMPER_ATTR_DONT_CARE );
+		punches_field = il2cpp::get_field_if_type_contains( dumper_klass, "List<HeldEntity", FIELD_ATTRIBUTE_FAMILY, DUMPER_ATTR_DONT_CARE );
+		DUMP_MEMBER_BY_X( _punches, punches_field->offset() );
+
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( viewModel, DUMPER_CLASS( "ViewModel" ) ); // <viewModel>k__BackingField
+	DUMPER_CLASS_END;
+
+	il2cpp::il2cpp_class_t* punch_entry_class = punches_field->type()->klass()->get_generic_argument_at( 0 );
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "PunchEntry", punch_entry_class );
+	DUMPER_SECTION( "Offsets" );
+		void( *held_entity_add_punch )( uint64_t, unity::vector3_t, float ) = ( decltype( held_entity_add_punch ) )DUMPER_METHOD( held_entity_class, "AddPunch" );
+		if ( held_entity_add_punch ) {
+			unity::game_object_t* game_object = unity::game_object_t::create( L"" );
+			game_object->add_component( held_entity_class->type() );
+
+			if ( uint64_t held_entity = game_object->get_component( held_entity_class->type() ) ) {
+				held_entity_add_punch( held_entity, unity::vector3_t( 1337.f, 1337.f, 1337.f ), 420.f );
+
+				std::vector<il2cpp::field_info_t*> vectors = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+				std::vector<il2cpp::field_info_t*> floats = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "System", "Single" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+
+				system_c::list<uint64_t>* punches = *( system_c::list<uint64_t>** )( held_entity + punches_field->offset() );
+
+				for ( int i = 0; i < punches->size(); i++ ) {
+					uint64_t punch = punches->at( i );
+					if ( !punch )
+						continue;
+
+					for ( il2cpp::field_info_t* vector : vectors ) {
+						unity::vector3_t value = *( unity::vector3_t* )( punch + vector->offset() );
+
+						if ( value == unity::vector3_t( 1337.f, 1337.f, 1337.f ) ) {
+							DUMP_MEMBER_BY_X( amount, vector->offset() );
+						}
+
+						else {
+							DUMP_MEMBER_BY_X( amountAdded, vector->offset() );
+						}
+					}
+
+					for ( il2cpp::field_info_t* flt : floats ) {
+						float value = *( float* )( punch + flt->offset() );
+
+						if ( value == 420.f ) {
+							DUMP_MEMBER_BY_X( duration, flt->offset() );
+						}
+
+						else {
+							DUMP_MEMBER_BY_X( startTime, flt->offset() );
+						}
+					}
+				}
+			}
+		}
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ViewModel" );
@@ -1558,6 +1613,16 @@ void dumper::produce() {
 			DUMPER_TYPE_NAMESPACE( "System", "Single" )
 		);
 		DUMP_METHOD_BY_INFO_PTR( GetIgnore, terrain_collision_get_ignore );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainHeightMap" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( normY, "System.Single" );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainSplatMap" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( num, "System.Int32" );
 	DUMPER_CLASS_END
 
 	il2cpp::il2cpp_class_t* world_class = il2cpp::search_for_class_by_field_types( DUMPER_TYPE( "WorldSerialization" ), 0, FIELD_ATTRIBUTE_STATIC );
@@ -1868,6 +1933,11 @@ void dumper::produce() {
 			2
 		);
 	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "Translate/Phrase" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( english );
+	DUMPER_CLASS_END;
 
 	fclose( outfile_handle );
 }
