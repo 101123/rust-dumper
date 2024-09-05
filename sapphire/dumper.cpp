@@ -2119,5 +2119,19 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( english );
 	DUMPER_CLASS_END;
 
+	DUMPER_CLASS_BEGIN_FROM_NAME( "ResourceDispenser/GatherPropertyEntry" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( gatherDamage );
+		DUMP_MEMBER_BY_NAME( destroyFraction );
+		DUMP_MEMBER_BY_NAME( conditionLost );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "ResourceDispenser/GatherProperties" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( Tree );
+		DUMP_MEMBER_BY_NAME( Ore );
+		DUMP_MEMBER_BY_NAME( Flesh );
+	DUMPER_CLASS_END
+
 	fclose( outfile_handle );
 }
