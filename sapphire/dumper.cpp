@@ -1225,6 +1225,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( mounted, entity_ref_class ); 
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( Belt, player_belt_class );
 	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_NAME( ChatMessage );
 		DUMP_METHOD_BY_PARAM_CLASS( ClientInput, NO_FILT, input_state_class, 1, DUMPER_VIS_DONT_CARE, METHOD_ATTRIBUTE_VIRTUAL );
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( IsOnGround, NO_FILT, DUMPER_CLASS_NAMESPACE( "System", "Boolean" ), 0, METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_VIRTUAL );
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GetHeldItemID, NO_FILT, DUMPER_CLASS( "ItemId" ), 0, METHOD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
@@ -1269,22 +1270,6 @@ void dumper::produce() {
 			DUMPER_ATTR_DONT_CARE 
 		);
 
-		il2cpp::il2cpp_class_t* model_state_class = DUMPER_CLASS( "ModelState" );
-		il2cpp::method_info_t* model_state_get_on_ladder = il2cpp::get_method_by_name( model_state_class, "get_onLadder" );
-		il2cpp::method_info_t* model_state_get_on_ground = il2cpp::get_method_by_name( model_state_class, "get_onground" );
-
-		std::vector<il2cpp::method_info_t*> methods = il2cpp::get_methods_by_return_type_attrs( NO_FILT, dumper_klass, DUMPER_CLASS_NAMESPACE( "System", "Boolean" ), METHOD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, 0 );
-
-		for ( il2cpp::method_info_t* method : methods ) {
-			util::function_attributes_t function_attributes = util::get_function_attributes( method->get_fn_ptr<void*>(), 0x1000 );
-
-			if ( function_attributes.transfers_control_to( model_state_get_on_ladder->get_fn_ptr<void*>() ) ) {
-				if ( !function_attributes.transfers_control_to( model_state_get_on_ground->get_fn_ptr<void*>() ) ) {
-					DUMP_METHOD_BY_INFO_PTR( OnLadder, method );
-					break;
-				}
-			}
-		}
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Attack", "ProtoBuf" );
@@ -1518,26 +1503,11 @@ void dumper::produce() {
 		);
 
 		DUMP_METHOD_BY_INFO_PTR( GetWaterLevel, water_level_get_water_level );
-
-		il2cpp::method_info_t* water_level_factor = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			NO_FILT,
-			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
-			METHOD_ATTRIBUTE_PUBLIC,
-			METHOD_ATTRIBUTE_STATIC,
-			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
-			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
-			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
-			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
-			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
-			DUMPER_TYPE( "BaseEntity" )
-		);
-
-		DUMP_METHOD_BY_INFO_PTR( Factor, water_level_factor );
 	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* convar_graphics_class = il2cpp::search_for_class_by_method_return_type_name( "UnityEngine.FullScreenMode", METHOD_ATTRIBUTE_PRIVATE, METHOD_ATTRIBUTE_STATIC );
 
-	DUMPER_CLASS_BEGIN_FROM_PTR( "Convar_Graphics", convar_graphics_class );
+	DUMPER_CLASS_BEGIN_FROM_PTR( "ConVar_Graphics", convar_graphics_class );
 	DUMPER_SECTION( "Functions" );
 		rust::console_system::command* fov_command = rust::console_system::client::find( system_c::string_t::create_string( L"graphics.fov" ) );
 
@@ -1549,7 +1519,7 @@ void dumper::produce() {
 
 	il2cpp::il2cpp_class_t* convar_graphics_static_class = get_inner_static_class( convar_graphics_class );
 
-	DUMPER_CLASS_BEGIN_FROM_PTR( "Convar_Graphics_Static", convar_graphics_static_class );
+	DUMPER_CLASS_BEGIN_FROM_PTR( "ConVar_Graphics_Static", convar_graphics_static_class );
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* fov = il2cpp::get_static_field_if_value_is<uint32_t>( dumper_klass, convar_graphics_class->name(), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( uint32_t value ) { return value != 0; } );
 		DUMP_MEMBER_BY_X( _fov, fov->offset() );
@@ -2155,6 +2125,11 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( Tree );
 		DUMP_MEMBER_BY_NAME( Ore );
 		DUMP_MEMBER_BY_NAME( Flesh );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "UIChat" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( chatArea );
 	DUMPER_CLASS_END
 
 	fclose( outfile_handle );
