@@ -113,6 +113,7 @@
 #define DUMP_METHOD_BY_RETURN_TYPE_METHOD_ATTRIBUTE_SIZE(NAME, filter, ret_type, method_attr, wanted_vis, wanted_attrs, want_or_ignore, idx ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_return_type_and_param_types_size( filter, idx, dumper_klass, ret_type, wanted_vis, wanted_attrs, nullptr, 0, method_attr, want_or_ignore )->get_fn_ptr<uint64_t>() ) )
 
 #define DUMP_METHOD_BY_NAME( NAME ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_name(dumper_klass, #NAME)->get_fn_ptr<uint64_t>()));
+#define DUMP_METHOD_BY_PARAM_NAME( NAME, method_name, param_name, param_idx ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_param_name( NO_FILT, dumper_klass, method_name, param_name, param_idx )->get_fn_ptr<uint64_t>() ) ) 
 
 il2cpp::il2cpp_class_t* get_outer_class( il2cpp::il2cpp_class_t * klass ) {
 	if ( !klass )
@@ -606,6 +607,8 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( net, "Network.Networkable", DUMPER_VIS_DONT_CARE, DUMPER_ATTR_DONT_CARE );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( parentEntity, entity_ref_class ); // Search for EntityRef class.
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( children, "System.Collections.Generic.List<BaseEntity>", FIELD_ATTRIBUTE_PUBLIC, FIELD_ATTRIBUTE_INIT_ONLY );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_NAME( get_IsDestroyed );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "BaseNetworkable_Static", base_networkable_static_class );
@@ -890,6 +893,7 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseMelee" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( damageProperties );
+		DUMP_MEMBER_BY_NAME( maxDistance );
 		DUMP_MEMBER_BY_NAME( gathering );
 	DUMPER_SECTION( "Functions" );
 		DUMP_MEMBER_BY_X( ProcessAttack, DUMPER_RVA( base_melee_process_attack ) );
@@ -1596,6 +1600,8 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( gravityModifier );
 		DUMP_MEMBER_BY_NAME( thickness );
 		DUMP_MEMBER_BY_NAME( initialDistance );
+		DUMP_MEMBER_BY_NAME( swimScale );
+		DUMP_MEMBER_BY_NAME( swimSpeed );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( owner, DUMPER_CLASS( "BasePlayer" ) );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( sourceProjectilePrefab, DUMPER_CLASS( "Projectile" ) );
 	DUMPER_SECTION( "Functions" );
@@ -2130,6 +2136,17 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "UIChat" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( chatArea );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "OBB" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_PARAM_NAME( ctor, ".ctor", "scale", 1 );
+		DUMP_METHOD_BY_NAME( ClosestPoint );
+	DUMPER_CLASS_END
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "PatrolHelicopter" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( mainRotor );
 	DUMPER_CLASS_END
 
 	fclose( outfile_handle );

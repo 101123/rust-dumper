@@ -1317,6 +1317,22 @@ namespace il2cpp
 
 		return get_method_from_class( filter, klass, get_method_by_param_type_name );
 	}
+
+	inline method_info_t* get_method_by_param_name( method_filter_t filter, il2cpp_class_t* klass, const char* method_name, const char* param_name, int param_idx ) {
+		const auto get_method_by_param_name_idx = [=]( method_info_t* method ) -> bool {
+			if ( method->param_count() < param_idx + 1 )
+				return false;
+
+			if ( strcmp( method->name(), method_name ) )
+				return false;
+
+			if ( !strcmp( method->get_param_name( param_idx ), param_name ) )
+				return true;
+		};
+
+		return get_method_from_class( filter, klass, get_method_by_param_name_idx );
+	}
+
 	inline method_info_t* get_method_by_return_type_attrs( method_filter_t filter, il2cpp_class_t* klass, il2cpp_class_t* ret_type_klass, int wanted_flags = 0, int wanted_vis = 0, int param_ct = -1 ) {
 		void* iter = nullptr;
 
