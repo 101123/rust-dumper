@@ -1541,7 +1541,7 @@ namespace il2cpp
 			if ( !name )
 				return false;
 
-			return strcmp( name, wanted_klass->name( ) ) == 0;
+			return strcmp( name, wanted_klass->type()->name( ) ) == 0;
 		};
 
 		return get_field_from_class( klass, get_field_from_field_type_class );

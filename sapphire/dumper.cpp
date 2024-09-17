@@ -797,18 +797,23 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_X( createdProjectiles, created_projectiles->offset() );
 	DUMPER_CLASS_END
 
+	uint64_t( *main_camera_trace )( float, uint64_t, float ) = nullptr;
+
+	char searchBuf[ 128 ] = { 0 };
+	sprintf_s( searchBuf, "%s.Type", hit_test_class->name() );
+
 	DUMPER_CLASS_BEGIN_FROM_PTR( "HitTest", hit_test_class );
 	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( type, ".Type" );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( AttackRay, "UnityEngine.Ray" );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( RayHit, "UnityEngine.RaycastHit" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( type, searchBuf );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( AttackRay, DUMPER_CLASS_NAMESPACE( "UnityEngine", "Ray" ) );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( RayHit, DUMPER_CLASS_NAMESPACE( "UnityEngine", "RaycastHit" ) );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( damageProperties, DUMPER_CLASS( "DamageProperties" ) );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( gameObject, "UnityEngine.GameObject" );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( collider, "UnityEngine.Collider" );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( ignoredType, "System.Type" );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( HitTransform, "UnityEngine.Transform" );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( HitPart, "System.UInt32" );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( HitMaterial, "System.String" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( gameObject, DUMPER_CLASS_NAMESPACE( "UnityEngine", "GameObject" ) );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( collider, DUMPER_CLASS_NAMESPACE( "UnityEngine", "Collider" ) );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( ignoredTypes, "System.Collections.Generic.List<System.Type>" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( HitTransform, DUMPER_CLASS_NAMESPACE( "UnityEngine", "Transform" ) );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( HitPart, DUMPER_CLASS_NAMESPACE( "System", "UInt32" ) );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( HitMaterial, DUMPER_CLASS_NAMESPACE( "System", "String" ) );
 
 		rust::console_system::command* battery_command = rust::console_system::client::find( system_c::string_t::create_string( L"electricbattery.battery" ) );
 
@@ -833,7 +838,7 @@ void dumper::produce() {
 				);
 
 				if ( main_camera_trace_method ) {
-					uint64_t( *main_camera_trace )( float, uint64_t, float ) = ( decltype( main_camera_trace ) )main_camera_trace_method->get_fn_ptr<void*>();
+					main_camera_trace = ( decltype( main_camera_trace ) )main_camera_trace_method->get_fn_ptr<void*>();
 
 					if ( main_camera_trace ) {
 						uint64_t hit_test = main_camera_trace( 69420.f, 0xDEADBEEFCAFEBEEF, 0.f );
@@ -1028,7 +1033,6 @@ void dumper::produce() {
 		}
 	DUMPER_CLASS_END;
 
-	char searchBuf[ 128 ] = { 0 };
 	sprintf_s( searchBuf, "System.Collections.Generic.List<%s>", item_class->name( ) );
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "ItemContainer", item_container_class );
@@ -1390,6 +1394,8 @@ void dumper::produce() {
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* main_camera_update = il2cpp::get_method_by_name( dumper_klass, "Update" );
 		DUMP_METHOD_BY_INFO_PTR( Update, main_camera_update );
+
+		DUMP_MEMBER_BY_X( Trace, DUMPER_RVA( ( uint64_t )main_camera_trace ) );
 	DUMPER_CLASS_END
 
 	/*
