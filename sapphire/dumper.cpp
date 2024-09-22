@@ -75,6 +75,10 @@
 
 #define DUMPER_CLASS_END dumper::write_to_file( "}\n\n" ); dumper::flush(); } 
 
+#define DUMP_CLASS_NAME( dump_name, klass_ptr ) \
+	dumper::write_to_file( "// obf name: %s::%s\n", klass_ptr->namespaze(), klass_ptr->name() ); \
+	DUMPER_PTR_CLASS_NAME( dump_name, klass_ptr );	\
+	
 #define DUMP_MEMBER_BY_X( NAME, X ) uint64_t NAME##_Offset = X; dumper::write_to_file("\tconstexpr const static size_t " #NAME " = 0x%x;\n", static_cast<uint32_t>( NAME##_Offset ) )
 
 #define DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( NAME, field_type, wanted_vis, wanted_attrs )			DUMP_MEMBER_BY_X( NAME, il2cpp::get_field_by_type_name_attrs( dumper_klass, field_type, wanted_vis, wanted_attrs )->offset( ) ) 
@@ -393,6 +397,8 @@ void dumper::produce() {
 		}
 	}
 
+	on_rpc_message_method_offset = 0x7E8;
+
 	il2cpp::il2cpp_class_t* world_item_class = DUMPER_CLASS( "WorldItem" );
 	uint64_t world_item_on_rpc_message = 0;
 
@@ -631,7 +637,7 @@ void dumper::produce() {
 			DUMPER_TYPE( "NetworkableId" )
 		);
 		DUMP_METHOD_BY_INFO_PTR( Find, base_networkable_entity_realm_find );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "Model" );
 	DUMPER_SECTION( "Offsets" );
@@ -795,7 +801,7 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* created_projectiles = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "Projectile", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* value ) { return value != nullptr; } );
 		DUMP_MEMBER_BY_X( createdProjectiles, created_projectiles->offset() );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	uint64_t( *main_camera_trace )( float, uint64_t, float ) = nullptr;
 
@@ -906,7 +912,7 @@ void dumper::produce() {
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( DoThrow,
 			FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseMelee" ), "OnViewmodelEvent" ) ),
 		    DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_ASSEM, DUMPER_ATTR_DONT_CARE );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "FlintStrikeWeapon" );
 	DUMPER_SECTION( "Offsets" );
@@ -1185,7 +1191,7 @@ void dumper::produce() {
 			METHOD_ATTRIBUTE_PUBLIC,
 			DUMPER_ATTR_DONT_CARE
 		);
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerTick" );
 	DUMPER_SECTION( "Offsets" );
@@ -1211,7 +1217,7 @@ void dumper::produce() {
 		);
 
 		DUMP_METHOD_BY_INFO_PTR( ChangeSelect, player_belt_change_select );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BasePlayer" );
 	DUMPER_SECTION( "Offsets" );
@@ -1294,13 +1300,13 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( hitMaterialID );
 		DUMP_MEMBER_BY_NAME( srcParentID );
 		DUMP_MEMBER_BY_NAME( dstParentID );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "PlayerAttack", "ProtoBuf" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( attack );
 		DUMP_MEMBER_BY_NAME( projectileID );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "PlayerProjectileAttack", "ProtoBuf" );
 	DUMPER_SECTION( "Offsets" );
@@ -1308,7 +1314,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( hitVelocity );
 		DUMP_MEMBER_BY_NAME( hitDistance );
 		DUMP_MEMBER_BY_NAME( travelTime );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "PlayerProjectileUpdate", "ProtoBuf" );
 	DUMPER_SECTION( "Offsets" );
@@ -1316,7 +1322,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( curPosition );
 		DUMP_MEMBER_BY_NAME( curVelocity );
 		DUMP_MEMBER_BY_NAME( travelTime );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseMovement" );
 	DUMPER_SECTION( "Functions" );	
@@ -1330,7 +1336,6 @@ void dumper::produce() {
 
 		DUMP_METHOD_BY_INFO_PTR( set_TargetMovement, base_movement_set_target_movement );
 	DUMPER_CLASS_END;
-
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BuildingPrivlidge" );
 	DUMPER_SECTION( "Offsets" );
@@ -1361,7 +1366,6 @@ void dumper::produce() {
 	DUMP_MEMBER_BY_NEAR_OFFSET( groundTime, DUMPER_OFFSET( capsule ) + 0x20 );
 	DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( modify, "BaseEntity.MovementModify" );
 	DUMPER_CLASS_END;
-
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ConsoleSystem/Command" );
 	DUMPER_SECTION( "Offsets" );
@@ -1396,45 +1400,7 @@ void dumper::produce() {
 		DUMP_METHOD_BY_INFO_PTR( Update, main_camera_update );
 
 		DUMP_MEMBER_BY_X( Trace, DUMPER_RVA( ( uint64_t )main_camera_trace ) );
-	DUMPER_CLASS_END
-
-	/*
-	uint32_t gameManager = parser.FindType(S("GameManager"));
-	if (gameManager != -1) {
-		parser.ParseTypeMethods(gameManager, [](const char* className, const char* methodName, uint32_t rva) {
-			static int index;
-
-			uint64_t hash = CoreSDK_Hash(methodName);
-
-			if (hash == H("CreatePrefab")) {
-				if (index == 2)
-					Offsets::GameManager__CreatePrefab = rva;
-
-				index++;
-			}
-		});
-	}
-
-	uint32_t behaviour = parser.FindType(S("Behaviour"));
-	if (behaviour != -1) {
-		parser.ParseTypeMethods(behaviour, [](const char* className, const char* methodName, uint32_t rva) {
-			uint64_t hash = CoreSDK_Hash(methodName);
-
-			if (hash == H("set_enabled"))
-				Offsets::UnityEngine_Behaviour__set_enabled = rva;
-		});
-	}
-
-	uint32_t serverAdminUGCEntry = parser.FindType(S("ServerAdminUGCEntry"));
-	if (serverAdminUGCEntry != -1) {
-		parser.ParseTypeMethods(serverAdminUGCEntry, [](const char* className, const char* methodName, uint32_t rva) {
-			uint64_t hash = CoreSDK_Hash(methodName);
-
-			if (hash == H("ReceivedDataFromServer"))
-				Offsets::ServerAdminUGCEntry__ReceivedDataFromServer = rva;
-		});
-	}
-	*/
+	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* pet_command_desc_class = DUMPER_CLASS( "PetCommandList/PetCommandDesc" );
 	il2cpp::il2cpp_class_t* local_player_inner_class = il2cpp::search_for_class_by_field_types( pet_command_desc_class->type(), 0, FIELD_ATTRIBUTE_PUBLIC, FIELD_ATTRIBUTE_STATIC );
@@ -1586,7 +1552,7 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* client_ = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, game_manager_class->name(), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* client ) { return client != nullptr; } );
 		DUMP_MEMBER_BY_X( client, client_->offset() );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemModProjectile" );
 	DUMPER_SECTION( "Offsets" );
@@ -1623,12 +1589,12 @@ void dumper::produce() {
 		);
 
 		DUMP_METHOD_BY_INFO_PTR( DoHit, projectile_do_hit );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "ProjectileShoot", "ProtoBuf" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( projectiles );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "ProjectileShoot/Projectile", "ProtoBuf" );
 	DUMPER_SECTION( "Offsets" );
@@ -1636,7 +1602,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( startPos );
 		DUMP_MEMBER_BY_NAME( startVel );
 		DUMP_MEMBER_BY_NAME( seed );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "CraftingQueue" );
 	DUMPER_SECTION( "Offsets" );
@@ -1676,6 +1642,8 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_X( _punches, punches_field->offset() );
 
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( viewModel, DUMPER_CLASS( "ViewModel" ) ); // <viewModel>k__BackingField
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_NAME( OnDeploy );
 	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* punch_entry_class = punches_field->type()->klass()->get_generic_argument_at( 0 );
@@ -1731,22 +1699,22 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ViewModel" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( instance, DUMPER_CLASS( "BaseViewModel" ) ); 
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "MedicalTool" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( resetTime, "System.Single", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "WaterSystem" );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( get_Ocean, NO_FILT, DUMPER_CLASS( "WaterBody" ), 0, METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "WaterBody" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( meshFilter, "UnityEngine.MeshFilter" ); // <MeshFilter>k__BackingField
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainMeta" );
 	DUMPER_SECTION( "Offsets" );
@@ -1770,7 +1738,7 @@ void dumper::produce() {
 
 		il2cpp::field_info_t* splat_map = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "TerrainSplatMap", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain_splat_map ) { return terrain_splat_map != nullptr; } );
 		DUMP_MEMBER_BY_X( SplatMap, splat_map->offset() );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainCollision" );
 	DUMPER_SECTION( "Functions" );
@@ -1783,17 +1751,17 @@ void dumper::produce() {
 			DUMPER_TYPE_NAMESPACE( "System", "Single" )
 		);
 		DUMP_METHOD_BY_INFO_PTR( GetIgnore, terrain_collision_get_ignore );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainHeightMap" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( normY, "System.Single" );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainSplatMap" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( num, "System.Int32" );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* world_class_static_class = il2cpp::search_for_class_by_field_types( DUMPER_TYPE( "WorldSerialization" ), 0, FIELD_ATTRIBUTE_PUBLIC, FIELD_ATTRIBUTE_STATIC );
 
@@ -1801,7 +1769,7 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* size = il2cpp::get_static_field_if_value_is<uint32_t>( dumper_klass, "System.UInt32", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( uint32_t size ) { return size == 4000; } );
 		DUMP_MEMBER_BY_X( _size, size->offset() );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemIcon" );
 	DUMPER_SECTION( "Functions" );
@@ -1815,7 +1783,7 @@ void dumper::produce() {
 			DUMPER_TYPE_NAMESPACE( "System", "Action" )
 		);
 		DUMP_METHOD_BY_INFO_PTR( SetTimedLootAction, item_icon_set_timed_loot_action );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* item_icon_static_class = get_inner_static_class( DUMPER_CLASS( "ItemIcon" ) );
 
@@ -1823,12 +1791,12 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" )
 		il2cpp::field_info_t* container_loot_start_times = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "Dictionary", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* dictionary ) { return dictionary != nullptr; } );
 		DUMP_MEMBER_BY_X( containerLootStartTimes, container_loot_start_times->offset() );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME("EffectData")
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( pooledstringid );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* effect_class = il2cpp::search_for_class_by_parent_class_type( DUMPER_TYPE( "EffectData" ) );
 
@@ -1851,7 +1819,7 @@ void dumper::produce() {
 		);
 
 		DUMP_METHOD_BY_INFO_PTR( OnReceivedEffect, effect_network_on_received_effect );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "EffectNetwork_Static", effect_network_static_class );
 	DUMPER_SECTION( "Offsets" );
@@ -1932,7 +1900,7 @@ void dumper::produce() {
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* ui_death_screen_set_visible = il2cpp::get_method_by_name( dumper_klass, "SetVisible" );
 		DUMP_METHOD_BY_INFO_PTR( SetVisible, ui_death_screen_set_visible );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* base_screen_shake_static_class = get_inner_static_class( DUMPER_CLASS( "BaseScreenShake" ) );
 
@@ -1940,7 +1908,7 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" )
 		il2cpp::field_info_t* instances_list = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "BaseScreenShake", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* instances_list ) { return instances_list != nullptr; } );
 		DUMP_MEMBER_BY_X( list, instances_list->offset() );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "FlashbangOverlay" );
 	DUMPER_SECTION( "Offsets" );
@@ -1949,7 +1917,7 @@ void dumper::produce() {
 
 		il2cpp::field_info_t* flash_length = il2cpp::get_field_if_name_contains( dumper_klass, DUMPER_TYPE_NAMESPACE( "System", "Single" ), "%", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
 		DUMP_MEMBER_BY_X( flashLength, flash_length->offset() );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	const char* field_types[] = {
 		"System.Collections.Generic.Dictionary<System.UInt32,System.String>",
@@ -1970,31 +1938,31 @@ void dumper::produce() {
 			);
 
 			DUMP_METHOD_BY_INFO_PTR( Get, string_pool_get );
-		DUMPER_CLASS_END
+		DUMPER_CLASS_END;
 	}
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Networkable", "Network" );
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* _ID = il2cpp::get_field_by_name( dumper_klass, "ID" );
 		DUMP_MEMBER_BY_X( ID, _ID->offset() );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Net", "Network" );
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* _cl = il2cpp::get_field_by_name( dumper_klass, "<cl>k__BackingField" );
 		DUMP_MEMBER_BY_X( cl, _cl->offset() );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Client", "Network" );
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* _connection = il2cpp::get_field_by_name( dumper_klass, "<Connection>k__BackingField" );
 		DUMP_MEMBER_BY_X( Connection, _connection->offset() );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "BaseNetwork", "Network" );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_NAME( StartWrite );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "NetWrite", "Network" );
 	DUMPER_SECTION( "Functions" );
@@ -2014,7 +1982,7 @@ void dumper::produce() {
 		DUMP_METHOD_BY_NAME( String );
 		DUMP_METHOD_BY_NAME( Vector3 );
 		DUMP_METHOD_BY_NAME( PacketID );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	if ( item_container_class ) {
 		DUMPER_CLASS_BEGIN_FROM_NAME( "LootPanel" );
@@ -2026,7 +1994,7 @@ void dumper::produce() {
 				METHOD_ATTRIBUTE_PUBLIC, 
 				DUMPER_ATTR_DONT_CARE
 			);
-		DUMPER_CLASS_END
+		DUMPER_CLASS_END;
 	}
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "UIInventory" );
@@ -2038,78 +2006,78 @@ void dumper::produce() {
 			METHOD_ATTRIBUTE_PUBLIC,
 			METHOD_ATTRIBUTE_STATIC
 		);
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "InputMessage" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( buttons );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "GrowableEntity" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( Properties );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( State, "PlantProperties.State" );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlantProperties" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( stages );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlantProperties/Stage" );
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* _resources = il2cpp::get_field_by_name( dumper_klass, "resources" );
 		DUMP_MEMBER_BY_X( resources, _resources->offset() - 0x10 );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Text", "UnityEngine.UI" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( m_Text );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TOD_Sky" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( Cycle );
 		DUMP_MEMBER_BY_NAME( Night );
 		DUMP_MEMBER_BY_NAME( Ambient );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TOD_NightParameters" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( AmbientColor );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 		DUMPER_CLASS_BEGIN_FROM_NAME( "TOD_AmbientParameters" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( Saturation );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "UIHUD" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( Hunger );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "HudElement" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( lastValue );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "UIBelt" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( ItemIcons );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemModCompostable" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( MaxBaitStack );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* resource_ref = DUMPER_CLASS( "GameObjectRef" )->parent();
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "GameObjectRef", resource_ref );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( guid );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "EnvironmentManager" );
 	DUMPER_SECTION( "Functions" );
@@ -2118,7 +2086,7 @@ void dumper::produce() {
 			"EnvironmentType",
 			2
 		);
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "Translate/Phrase" );
 	DUMPER_SECTION( "Offsets" );
@@ -2130,30 +2098,57 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( gatherDamage );
 		DUMP_MEMBER_BY_NAME( destroyFraction );
 		DUMP_MEMBER_BY_NAME( conditionLost );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ResourceDispenser/GatherProperties" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( Tree );
 		DUMP_MEMBER_BY_NAME( Ore );
 		DUMP_MEMBER_BY_NAME( Flesh );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "UIChat" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( chatArea );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "OBB" );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_PARAM_NAME( ctor, ".ctor", "scale", 1 );
 		DUMP_METHOD_BY_NAME( ClosestPoint );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PatrolHelicopter" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( mainRotor );
-	DUMPER_CLASS_END
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "Chainsaw" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( ammo );
+	DUMPER_CLASS_END;
+
+	il2cpp::il2cpp_class_t* camera_update_hook_class = DUMPER_CLASS( "CameraUpdateHook" );
+	il2cpp::il2cpp_class_t* camera_update_hook_static_class = get_inner_static_class( camera_update_hook_class );
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "CameraUpdateHook_Static", camera_update_hook_static_class );
+	DUMPER_SECTION( "Offsets" );
+		il2cpp::field_info_t* _action = il2cpp::get_static_field_if_value_is<uint64_t>( dumper_klass, "System.Action", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( uint64_t action ) {
+			if ( !action )
+				return false;
+
+			il2cpp::method_info_t* method = *( il2cpp::method_info_t** )( action + 0x28 );
+			if ( !method )
+				return false;
+
+			if ( strcmp( method->name(), "<AddStopwatch>b__1" ) )
+				return false;
+
+			return true;
+		} );
+
+		DUMP_MEMBER_BY_X( action, _action->offset() );
+	DUMPER_CLASS_END;
 
 	fclose( outfile_handle );
 }
