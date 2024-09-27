@@ -14,11 +14,13 @@ namespace dumper
 	void dump_call( uint64_t function, uint32_t limit, uint32_t depth = 0 );
 
 	extern FILE* outfile_handle;
+	extern FILE* outfile_log_handle;
 	extern uint64_t game_base;
 
 	char* clean_klass_name( const char* klass_name );
 	char* clean_inner_klass_name( il2cpp::il2cpp_class_t* klass );
 	void write_to_file( const char* format, ... );
+	void write_to_log( const char* format, ... );
 	void flush();
 
 	__forceinline uint32_t get_image_size( uint8_t* image ) {

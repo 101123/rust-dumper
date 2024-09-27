@@ -4,15 +4,17 @@
 
 namespace rust {
 	namespace console_system {
+		inline size_t get_override_offset = 0;
+		inline size_t set_override_offset = 0;
+		inline size_t call_offset = 0;
+
 		class command {
 		public:
 			uint64_t get() {
-				static uint32_t offset = il2cpp::get_field_by_name( il2cpp::get_class_by_name( "ConsoleSystem/Command" ), "GetOveride" )->offset();
-				
 				if ( !_this )
 					return 0;
 
-				uint64_t func = *( uint64_t* )( _this + offset );
+				uint64_t func = *( uint64_t* )( _this + get_override_offset );
 				if ( !func )
 					return 0;
 
@@ -20,12 +22,10 @@ namespace rust {
 			}
 
 			uint64_t set() {
-				static uint32_t offset = il2cpp::get_field_by_name( il2cpp::get_class_by_name( "ConsoleSystem/Command" ), "SetOveride" )->offset();
-
 				if ( !_this )
 					return 0;
 
-				uint64_t action = *( uint64_t* )( _this + offset );
+				uint64_t action = *( uint64_t* )( _this + set_override_offset );
 				if ( !action )
 					return 0;
 
@@ -33,12 +33,10 @@ namespace rust {
 			}
 
 			uint64_t call() {
-				static uint32_t offset = il2cpp::get_field_by_name( il2cpp::get_class_by_name( "ConsoleSystem/Command" ), "Call" )->offset();
-
 				if ( !_this )
 					return 0;
 
-				uint64_t action = *( uint64_t* )( _this + offset );
+				uint64_t action = *( uint64_t* )( _this + call_offset );
 				if ( !action )
 					return 0;
 
@@ -46,12 +44,11 @@ namespace rust {
 			}
 		};
 
+		inline command*( *console_system_index_client_find )( system_c::string_t* ) = nullptr;
+
 		class client {
 		public:
 			static command* find( system_c::string_t* str ) {
-				static command*( *console_system_index_client_find )( system_c::string_t* ) =
-					( decltype( console_system_index_client_find ) )il2cpp::get_method_by_name( il2cpp::get_class_by_name( "ConsoleSystem/Index/Client" ), "Find" )->get_fn_ptr<void*>();
-
 				return console_system_index_client_find( str );
 			}
 		};
