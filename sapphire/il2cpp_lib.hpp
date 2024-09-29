@@ -573,7 +573,13 @@ namespace il2cpp
 
 	struct il2cpp_object_t
 	{
+		il2cpp_class_t* get_class()
+		{
+			if ( !this )
+				return nullptr;
 
+			return object_get_class( this );
+		}
 	};
 
 	struct il2cpp_assembly_t
@@ -765,6 +771,7 @@ namespace il2cpp
 		return 0;
 
 	}
+
 	inline il2cpp_assembly_t* get_assembly_by_name( const char* assemblyName )
 	{
 		il2cpp_domain_t* domain = il2cpp_domain_t::get( );
@@ -785,14 +792,17 @@ namespace il2cpp
 
 		return nullptr;
 	}
+
 	inline il2cpp_class_t* get_class_from_field_type_by_name( il2cpp_class_t* klass, const char* field_name )
 	{
 		return get_class_from_class_field_type( klass, [ = ] ( field_info_t* field ) -> bool { return strcmp( field->name( ), field_name ) == 0; } );
 	}
+
 	inline il2cpp_class_t* get_class_from_field_type_by_offset( il2cpp_class_t* klass, uint64_t offset )
 	{
 		return get_class_from_class_field_type( klass, [ = ] ( field_info_t* field ) -> bool { return field->offset( ) == offset; } );
 	}
+
 	inline il2cpp_class_t* get_class_from_field_type_by_type( il2cpp_class_t* klass, il2cpp_type_t* wanted_type )
 	{
 		return get_class_from_class_field_type( klass, [ = ] ( field_info_t* field ) -> bool {
@@ -857,6 +867,7 @@ namespace il2cpp
 
 		return nullptr;
 	}
+
 	inline il2cpp_class_t* get_class_by_name_from_assembly( il2cpp_assembly_t* assembly, const char* klass_name, const char* namespaze = "" ) {
 		il2cpp_image_t* image = assembly->image( );
 		if ( !image )
@@ -864,6 +875,7 @@ namespace il2cpp
 
 		return image->get_class_from_name( namespaze, klass_name );
 	}
+
 	inline il2cpp_class_t* get_class_by_name( const char* klass, const char* namespaze = "" )
 	{
 		il2cpp_domain_t* domain = il2cpp_domain_t::get( );
@@ -906,6 +918,25 @@ namespace il2cpp
 
 		return nullptr;
 	}
+
+	template<typename T>
+	inline void populate_classes_in_image( il2cpp_image_t* image, std::vector<il2cpp_class_t*>* classes, T comparator ) {
+		if ( !image )
+			return;
+
+		size_t class_ct = image->class_count();
+		for ( size_t i = 0; i < class_ct; i++ ) {
+			il2cpp_class_t* klass = image->get_class( i );
+			if ( !klass )
+				continue;
+
+			if ( comparator( klass ) )
+				classes->push_back( klass );
+		}
+
+		return;
+	}
+
 	inline il2cpp_class_t* search_for_class_by_method_in_assembly( const char* assembly_name, const char* method_name, const char* param_name, int param_ct = -1 ) {
 		il2cpp_assembly_t* assembly = get_assembly_by_name( assembly_name );
 		if ( !assembly )
@@ -946,6 +977,35 @@ namespace il2cpp
 
 		return nullptr;
 	}
+
+	template<typename Comparator>
+	inline std::vector<il2cpp_class_t*> search_for_classes( Comparator comparator ) {
+		std::vector<il2cpp_class_t*> classes;
+
+		il2cpp_domain_t* domain = il2cpp_domain_t::get();
+		if ( !domain )
+			return classes;
+
+		size_t assembly_ct = 0;
+		il2cpp_assembly_t** assemblies = domain->get_assemblies( &assembly_ct );
+		if ( !assemblies )
+			return classes;
+
+		for ( size_t i = 0; i < assembly_ct; i++ ) {
+			il2cpp_assembly_t* assembly = assemblies[ i ];
+			if ( !assembly )
+				continue;
+
+			il2cpp_image_t* image = assembly->image();
+			if ( !image )
+				continue;
+
+			populate_classes_in_image( image, &classes, comparator );
+		}
+
+		return classes;
+	}
+
 	inline il2cpp_class_t* search_for_class_by_field_count( il2cpp_class_t** match_klasses, int match_klasses_ct, int field_count, uint8_t equality )
 	{
 		const auto search_by_field_count = [ = ] ( il2cpp_class_t* klass ) -> bool {
@@ -984,6 +1044,7 @@ namespace il2cpp
 
 		return search_for_class( search_by_field_count );
 	}
+
 	inline il2cpp_class_t* search_for_class_by_method_return_type_name( const char* ret_type_name, uint32_t wanted_vis, uint32_t wanted_flags )
 	{
 		const auto search_by_return_type_name = [ = ] ( il2cpp_class_t* klass ) -> bool {
@@ -1012,17 +1073,19 @@ namespace il2cpp
 
 		return search_for_class( search_by_return_type_name );
 	}
-	inline il2cpp_class_t* search_for_class_by_parent_class_type( il2cpp_type_t* parent_klass_type ) {
-		const auto search_for_class_by_parent_class_type = [ = ] ( il2cpp_class_t* klass ) -> bool {
-			il2cpp_class_t* parent = klass->parent( );
+
+	inline std::vector<il2cpp_class_t*> get_inheriting_classes( il2cpp_class_t* target ) {
+		const auto get_inheriting_classes = [=]( il2cpp_class_t* klass ) -> bool {
+			il2cpp_class_t* parent = klass->parent();
 			if ( !parent )
 				return false;
 
-			return strcmp( parent->type( )->name( ), parent_klass_type->name( ) ) == 0;
+			return strcmp( parent->type()->name(), target->type()->name() ) == 0;
 		};
 
-		return search_for_class( search_for_class_by_parent_class_type );
+		return search_for_classes( get_inheriting_classes );
 	}
+
 	inline il2cpp_class_t* search_for_class_by_interfaces_contain( const char* search ) {
 		const auto search_for_class_by_interfaces_contain = [ = ] ( il2cpp_class_t* klass ) {
 			void* iter = nullptr;
@@ -1036,6 +1099,7 @@ namespace il2cpp
 
 		return search_for_class( search_for_class_by_interfaces_contain );
 	}
+
 	inline il2cpp_class_t* search_for_class_by_field_types( il2cpp_type_t* field_type, int field_type_ct, int wanted_vis, int wanted_flags, il2cpp_class_t* ignore = nullptr ) {
 		const auto search_for_class_by_field_types = [ = ] ( il2cpp_class_t* klass ) {
 			if ( klass == ignore )
@@ -1064,6 +1128,34 @@ namespace il2cpp
 		};
 
 		return search_for_class( search_for_class_by_field_types );
+	}
+
+	inline std::vector<il2cpp::il2cpp_class_t*> search_for_classes_by_field_types( il2cpp_type_t* field_type, int field_type_ct, int wanted_vis, int wanted_flags ) {
+		const auto search_for_classes_by_field_types = [=]( il2cpp_class_t* klass ) {
+			void* iter = nullptr;
+			int matches = 0;
+
+			while ( field_info_t* field = klass->fields( &iter ) ) {
+				int fl = field->flags();
+				int vis = fl & FIELD_ATTRIBUTE_FIELD_ACCESS_MASK;
+				if ( ( wanted_vis && ( vis != wanted_vis ) ) || ( wanted_flags && !( fl & wanted_flags ) ) )
+					continue;
+
+				if ( strcmp( field->type()->name(), field_type->name() ) )
+					continue;
+
+				matches++;
+			}
+
+			if ( field_type_ct ) {
+				return matches == field_type_ct;
+			}
+			else {
+				return matches >= 1;
+			}
+		};
+
+		return search_for_classes( search_for_classes_by_field_types );
 	}
 
 	inline il2cpp_class_t* search_for_static_class_with_method_with_rettype_param_types( int method_ct, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, il2cpp_type_t** param_types, int param_ct ) {
@@ -1124,6 +1216,7 @@ namespace il2cpp
 
 		return search_for_class( search_for_static_class_with_method_with_rettype_param_types );
 	}
+
 	inline method_info_t* get_method_by_return_type_and_param_types_str( method_filter_t filter, il2cpp_class_t* klass, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, const char** param_strs, int param_ct );
 	inline il2cpp_class_t* search_for_class_containing_method_prototypes( const std::vector<method_search_flags_t>& search_params ) {
 		const auto search_for_static_class_with_method_with_rettype_param_types = [&]( il2cpp_class_t* klass ) {
@@ -1211,10 +1304,6 @@ namespace il2cpp
 		return search_for_class( search_for_class_containing_field_types );
 	}
 
-	inline il2cpp_class_t* get_class_from_prototype( method_filter_t filter ) {
-
-	}
-
 	template<typename Comparator>
 	inline method_info_t* get_method_from_class( method_filter_t filter, il2cpp_class_t* klass, Comparator comparator ) {
 		void* iter = nullptr;
@@ -1228,9 +1317,13 @@ namespace il2cpp
 
 		return nullptr;
 	}
-	inline method_info_t* get_method_by_name( il2cpp_class_t* klass, const char* method_name )
+
+	inline method_info_t* get_method_by_name( il2cpp_class_t* klass, const char* method_name, int param_ct = 1337 )
 	{
 		const auto get_method_by_name = [ = ] ( method_info_t* method ) -> bool {
+			if ( param_ct != 1337 && method->param_count() != param_ct )
+				return false;
+
 			const char* name = method->name( );
 			return name && strcmp( name, method_name ) == 0;
 		};
@@ -1250,6 +1343,7 @@ namespace il2cpp
 
 		return get_method_from_class( filter, klass, get_method_by_return_type_name );
 	}
+
 	inline method_info_t* get_method_by_return_type_and_param_types( method_filter_t filter, il2cpp_class_t* klass, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, il2cpp_type_t** param_types, int param_ct ) {
 		void* iter = nullptr;
 
@@ -1284,6 +1378,7 @@ namespace il2cpp
 
 		return get_method_from_class( filter, klass, get_method_by_return_type_and_param_types );
 	}
+
 	inline method_info_t* get_method_by_return_type_and_param_types_str( method_filter_t filter, il2cpp_class_t* klass, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, const char** param_strs, int param_ct ) {
 		void* iter = nullptr;
 
@@ -1453,6 +1548,7 @@ namespace il2cpp
 
 		return get_method_from_class( filter, klass, get_method_by_return_type_attrs );
 	}
+
 	inline std::vector<method_info_t*> get_methods_by_return_type_attrs( method_filter_t filter, il2cpp_class_t* klass, il2cpp_class_t* ret_type_klass, int wanted_flags = 0, int wanted_vis = 0, int param_ct = -1 ) {
 		std::vector<method_info_t*> matches;
 
@@ -1482,6 +1578,7 @@ namespace il2cpp
 
 		return matches;
 	}
+
 	inline method_info_t* get_method_by_param_class( method_filter_t filter, il2cpp_class_t* klass, il2cpp_class_t* param_klass, int param_ct, int wanted_vis, int wanted_flags )
 	{
 		const auto get_method_by_param_class = [ = ] ( method_info_t* method ) -> bool {
@@ -1572,7 +1669,7 @@ namespace il2cpp
 		return methods;
 	}
 
-	inline il2cpp::method_info_t* get_method_in_method_by_return_type( method_filter_t filter, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, int param_ct ) {
+	inline il2cpp::method_info_t* get_method_in_method_by_return_type( il2cpp_class_t* klass, method_filter_t filter, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, int param_ct ) {
 		if ( !filter.target )
 			return nullptr;
 
@@ -1581,6 +1678,10 @@ namespace il2cpp
 			method_info_t* method = methods.at( i );
 			if ( !method )
 				continue;
+
+			if ( klass != WILDCARD_VALUE( il2cpp_class_t* ) )
+				if ( method->klass() != klass )
+					continue;
 
 			uint32_t count = method->param_count();
 			if ( count != param_ct )
@@ -1603,7 +1704,7 @@ namespace il2cpp
 		return nullptr;
 	}
 
-	inline il2cpp::method_info_t* get_method_in_method_by_return_type_and_param_types( method_filter_t filter, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, il2cpp_type_t** param_types, int param_ct ) {
+	inline il2cpp::method_info_t* get_method_in_method_by_return_type_and_param_types( il2cpp_class_t* klass, method_filter_t filter, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, il2cpp_type_t** param_types, int param_ct ) {
 		if ( !filter.target )
 			return nullptr;
 
@@ -1612,6 +1713,10 @@ namespace il2cpp
 			method_info_t* method = methods.at( i );
 			if ( !method )
 				continue;
+
+			if ( klass != WILDCARD_VALUE( il2cpp_class_t* ) ) 
+				if ( method->klass() != klass )
+					continue;
 
 			uint32_t count = method->param_count();
 			if ( count != param_ct )
@@ -1630,17 +1735,25 @@ namespace il2cpp
 			if ( wanted_flags && !( method->flags() & wanted_flags ) )
 				continue;
 
-			int matchedTypes = 0;
-			for ( uint32_t i = 0; i < count; i++ ) {
-				il2cpp_type_t* param = method->get_param( i );
+			int match_requirement = 0;
+			for ( uint32_t j = 0; j < param_ct; j++ )
+				if ( param_types[ j ] != WILDCARD_VALUE( il2cpp_type_t* ) )
+					match_requirement++;
+
+			int matched_types = 0;
+			for ( uint32_t k = 0; k < count; k++ ) {
+				if ( param_types[ k ] == WILDCARD_VALUE( il2cpp_type_t* ) )
+					continue;
+
+				il2cpp_type_t* param = method->get_param( k );
 				if ( !param )
 					continue;
 
-				if ( strcmp( param->name(), param_types[ i ]->name() ) == 0 )
-					matchedTypes++;
+				if ( strcmp( param->name(), param_types[ k ]->name() ) == 0 )
+					matched_types++;
 			}
 
-			if ( matchedTypes == param_ct )
+			if ( matched_types == match_requirement )
 				return method;
 		}
 
@@ -1739,6 +1852,7 @@ namespace il2cpp
 
 		return get_field_from_class( klass, get_field_from_field_type_class );
 	}
+
 	inline field_info_t* get_field_by_offset( il2cpp_class_t* klass, uint64_t offset )
 	{
 		const auto get_field_by_offset = [ = ] ( field_info_t* field ) -> bool {
@@ -1747,6 +1861,7 @@ namespace il2cpp
 
 		return get_field_from_class( klass, get_field_by_offset );
 	}
+
 	inline field_info_t* get_field_by_name( il2cpp_class_t* klass, const char* name )
 	{
 		const auto get_field_by_name = [ = ] ( field_info_t* field ) -> bool {
@@ -1755,6 +1870,7 @@ namespace il2cpp
 
 		return get_field_from_class( klass, get_field_by_name );
 	}
+
 	inline field_info_t* get_field_by_type_name_attrs( il2cpp_class_t* klass, const char* type_name, int wanted_vis = 0, int wanted_attrs = 0 )
 	{
 		const auto get_field_by_type_name_attrs = [ = ] ( field_info_t* field ) -> bool {
@@ -1771,7 +1887,8 @@ namespace il2cpp
 		};
 
 		return  get_field_from_class( klass, get_field_by_type_name_attrs );
-	}
+	} 
+
 	inline field_info_t* get_field_if_type_contains_terms( il2cpp_class_t* klass, const char** search_terms, int search_terms_ct ) {
 		const auto get_field_if_type_contains_multiple = [ = ] ( field_info_t* field ) -> bool {			
 			const char* name = field->type( )->name( );

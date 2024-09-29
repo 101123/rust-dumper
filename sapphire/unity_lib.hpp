@@ -28,28 +28,18 @@ namespace system_c {
 		}
 	};
 
-	template <typename t>
+	template <typename T>
 	class list {
 	public:
-		int size() {
-			uint64_t buffer = get_buffer();
-			if ( !buffer )
-				return 0;
+		uint8_t pad[ 0x10 ];
+		uint64_t _items;
+		int _size;
 
-			return *( int* )( buffer + 0x18 );
-		}
+		T at( int index ) {
+			if ( !_items )
+				return T();
 
-		t at( int index ) {
-			uint64_t buffer = get_buffer();
-			if ( !buffer )
-				return t();
-
-			return *( t* )( buffer + 0x20 + ( sizeof( t ) * index ) );
-		}
-
-	private:
-		uint64_t get_buffer() {
-			return *( uint64_t* )( _this + 0x10 );
+			return *( T* )( _items + 0x20 + ( index * sizeof( T ) ) );
 		}
 	};
 }

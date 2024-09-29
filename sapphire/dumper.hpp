@@ -3,6 +3,7 @@
 #include "il2cpp_lib.hpp"
 #include "unity_lib.hpp"
 #include "rust_lib.hpp"
+#include "hook_lib.hpp"
 
 #include <windows.h>
 
@@ -22,6 +23,8 @@ namespace dumper
 	void write_to_file( const char* format, ... );
 	void write_to_log( const char* format, ... );
 	void flush();
+
+	void hk_base_entity_server_rpc_object( rust::base_entity* base_entity, system_c::string_t* func_name, il2cpp::il2cpp_object_t* arg, il2cpp::method_info_t* method );
 
 	__forceinline uint32_t get_image_size( uint8_t* image ) {
 		PIMAGE_DOS_HEADER dos_header = ( PIMAGE_DOS_HEADER ) ( image );

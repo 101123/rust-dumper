@@ -7,6 +7,7 @@ bool __stdcall DllMain( void*, std::uint32_t call_reason, void* )
 		freopen_s( reinterpret_cast< FILE** >( stdout ), "CONOUT$", "w", stdout );
 
 		il2cpp::init( );
+		hook_manager::init();
 		dumper::produce( );
 
 		return true;
@@ -15,6 +16,8 @@ bool __stdcall DllMain( void*, std::uint32_t call_reason, void* )
 	else if ( call_reason == DLL_PROCESS_DETACH ) {
 		FreeConsole();
 		fclose( stdout );
+
+		hook_manager::uninit();
 
 		return true;
 	}

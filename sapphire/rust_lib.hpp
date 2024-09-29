@@ -3,6 +3,10 @@
 #include "unity_lib.hpp"
 
 namespace rust {
+	class base_entity {
+
+	};
+
 	namespace console_system {
 		inline size_t get_override_offset = 0;
 		inline size_t set_override_offset = 0;

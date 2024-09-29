@@ -7,6 +7,12 @@
     <Filter Include="hde">
       <UniqueIdentifier>{694bff41-6a61-4c44-b7b9-04f635fd2c0a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="minhook">
+      <UniqueIdentifier>{77f28f49-aa40-4820-b1ff-0e8068edae8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="minhook\hde">
+      <UniqueIdentifier>{ae833bb6-4883-4aaa-8cd8-a2a144354707}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
@@ -17,6 +23,23 @@
       <Filter>hde</Filter>
     </ClCompile>
     <ClCompile Include="util.cpp">
+      <Filter>impl</Filter>
+    </ClCompile>
+    <ClCompile Include="il2cpp_ext.cpp" />
+    <ClCompile Include="minhook\hook.c" />
+    <ClCompile Include="minhook\hde\hde32.c">
+      <Filter>minhook\hde</Filter>
+    </ClCompile>
+    <ClCompile Include="minhook\hde\hde64.c">
+      <Filter>minhook\hde</Filter>
+    </ClCompile>
+    <ClCompile Include="minhook\trampoline.c">
+      <Filter>minhook</Filter>
+    </ClCompile>
+    <ClCompile Include="minhook\buffer.c">
+      <Filter>minhook</Filter>
+    </ClCompile>
+    <ClCompile Include="hook_lib.cpp">
       <Filter>impl</Filter>
     </ClCompile>
   </ItemGroup>
@@ -40,6 +63,34 @@
       <Filter>impl</Filter>
     </ClInclude>
     <ClInclude Include="rust_lib.hpp">
+      <Filter>impl</Filter>
+    </ClInclude>
+    <ClInclude Include="il2cpp_ext.hpp" />
+    <ClInclude Include="minhook\hde\hde32.h">
+      <Filter>minhook\hde</Filter>
+    </ClInclude>
+    <ClInclude Include="minhook\hde\hde64.h">
+      <Filter>minhook\hde</Filter>
+    </ClInclude>
+    <ClInclude Include="minhook\hde\table32.h">
+      <Filter>minhook\hde</Filter>
+    </ClInclude>
+    <ClInclude Include="minhook\hde\table64.h">
+      <Filter>minhook\hde</Filter>
+    </ClInclude>
+    <ClInclude Include="minhook\hde\pstdint.h">
+      <Filter>minhook\hde</Filter>
+    </ClInclude>
+    <ClInclude Include="minhook\minhook.h">
+      <Filter>minhook</Filter>
+    </ClInclude>
+    <ClInclude Include="minhook\trampoline.h">
+      <Filter>minhook</Filter>
+    </ClInclude>
+    <ClInclude Include="minhook\buffer.h">
+      <Filter>minhook</Filter>
+    </ClInclude>
+    <ClInclude Include="hook_lib.hpp">
       <Filter>impl</Filter>
     </ClInclude>
   </ItemGroup>
