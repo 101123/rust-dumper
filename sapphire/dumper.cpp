@@ -1043,6 +1043,19 @@ void dumper::produce() {
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "RustCamera<MainCamera>", rust_camera_main_camera_class );
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "SingletonComponent<RustCamera<MainCamera>>", singleton_component_rust_camera_main_camera_class );
 
+	il2cpp::method_info_t* aimcone_util_get_modified_aimcone_direction = SEARCH_FOR_METHOD_IN_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		WILDCARD_VALUE( il2cpp::il2cpp_class_t* ),
+		FILT( DUMPER_METHOD( DUMPER_CLASS( "SpinUpWeapon" ), "FireFakeBulletClient" ) ),
+		DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
+		METHOD_ATTRIBUTE_PUBLIC,
+		METHOD_ATTRIBUTE_STATIC,
+		DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+		DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
+		DUMPER_TYPE_NAMESPACE( "System", "Boolean" )
+	);
+
+	CHECK_RESOLVED_VALUE( VALUE_METHOD, "AimConeUtil.GetModifiedAimConeDirection", aimcone_util_get_modified_aimcone_direction );
+	
 	int64_t get_build_menu_method_offset = -1;
 
 	il2cpp::il2cpp_class_t* hammer_class = DUMPER_CLASS( "Hammer" );
@@ -2941,6 +2954,11 @@ void dumper::produce() {
 		);
 
 		DUMP_METHOD_BY_INFO_PTR( GetAvatarTexture, steam_client_wrapper_get_avatar_texture );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "AimConeUtil", aimcone_util_get_modified_aimcone_direction->klass() );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_INFO_PTR( GetModifiedAimConeDirection, aimcone_util_get_modified_aimcone_direction );
 	DUMPER_CLASS_END;
 
 	fclose( outfile_handle );
