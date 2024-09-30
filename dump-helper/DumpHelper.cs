@@ -19,6 +19,12 @@ namespace Carbon.Plugins
     {
 	static public bool _enabled = false;
 
+	void OnLoaded() 
+	{	
+		// Don't rape my cpu please
+		ConVar.FPS.limit = 20;
+	}
+
 	[ConsoleCommand("dumphelper.status")]
 	private void Status(ConsoleSystem.Arg arg)
 	{
@@ -44,6 +50,12 @@ namespace Carbon.Plugins
 			ProjectileHelper._enabled.ToString().ToLower()		
 		});
 
+		textTable.AddRow(new string[]
+		{
+			"crafting",
+			CraftingHelper._enabled.ToString().ToLower()		
+		});
+
     		arg.ReplyWith(textTable.ToString());
 	}
 
@@ -64,6 +76,11 @@ namespace Carbon.Plugins
     		if (arg.HasArgs(1))
 		{
 			ItemHelper._enabled = arg.GetBool(0);
+
+			if (ItemHelper._enabled && ProjectileHelper._enabled)
+			{
+				ProjectileHelper._enabled = false;
+			}
 		}	
 
 		arg.ReplyWith("dumphelper.items: \"" + ItemHelper._enabled + "\"");
@@ -75,9 +92,25 @@ namespace Carbon.Plugins
     		if (arg.HasArgs(1))
 		{
 			ProjectileHelper._enabled = arg.GetBool(0);
+
+			if (ProjectileHelper._enabled && ItemHelper._enabled)
+			{
+				ItemHelper._enabled = false;
+			}
 		}	
 
 		arg.ReplyWith("dumphelper.projectile: \"" + ProjectileHelper._enabled + "\"");
+	}
+	
+	[ConsoleCommand("dumphelper.crafting")]
+	private void ToggleCraftingHelper(ConsoleSystem.Arg arg)
+	{
+    		if (arg.HasArgs(1))
+		{
+			CraftingHelper._enabled = arg.GetBool(0);
+		}	
+
+		arg.ReplyWith("dumphelper.crafting: \"" + CraftingHelper._enabled + "\"");
 	}
 
 	public class Dump
@@ -290,10 +323,10 @@ namespace Carbon.Plugins
 
 	public class ProjectileHelper : CarbonPlugin 
 	{
-		static public bool _enabled = true;
+		static public bool _enabled = false;
 
 		[HarmonyPatch(typeof(BaseProjectile), nameof(BaseProjectile.CLProject))]
-		public class OnCLProject
+		public class CLProject
 		{
 			static void Prefix(BaseProjectile __instance, BaseEntity.RPCMessage msg) 
 			{		
@@ -382,6 +415,55 @@ namespace Carbon.Plugins
 				Pool.Free(ref playerProjectileAttack);
 			}
 		}	
+	}
+
+	public class CraftingHelper : CarbonPlugin 
+	{
+		static public bool _enabled = true;
+
+		[HarmonyPatch(typeof(ItemCrafter), "CanCraft", new Type[]{typeof(ItemBlueprint), typeof(int), typeof(bool)})]
+		public class CanCraft
+		{
+			static void Postfix(ItemCrafter __instance, ItemBlueprint bp, int amount, bool free, ref bool __result) 
+			{
+				if (DumpHelper._enabled && CraftingHelper._enabled)
+				{
+					__result = true;
+				}
+			}
+		}
+
+	
+		[HarmonyPatch(typeof(ItemCrafter), nameof(ItemCrafter.ServerUpdate))]
+		public class ServerUpdate
+		{
+			static void Prefix(ItemCrafter __instance, float delta) 
+			{
+				if (!DumpHelper._enabled || !CraftingHelper._enabled)
+				{
+					return;
+				}
+
+				if (__instance.queue.Count != 0)
+				{
+					return;
+				}
+
+				ItemDefinition itemDefinition = ItemManager.FindItemDefinition(1248356124);
+				if (itemDefinition == null)
+				{
+					return;
+				}
+
+				ItemBlueprint itemBlueprint = ItemManager.FindBlueprint(itemDefinition);
+				if (!itemBlueprint)
+				{
+					return;
+				}
+
+				__instance.CraftItem(itemBlueprint, __instance.owner, null, 1, 0, null, true);
+			}	
+		}
 	}
 
 	#endregion
