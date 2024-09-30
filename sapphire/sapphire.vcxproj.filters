@@ -26,7 +26,6 @@
       <Filter>impl</Filter>
     </ClCompile>
     <ClCompile Include="il2cpp_ext.cpp" />
-    <ClCompile Include="minhook\hook.c" />
     <ClCompile Include="minhook\hde\hde32.c">
       <Filter>minhook\hde</Filter>
     </ClCompile>
@@ -41,6 +40,9 @@
     </ClCompile>
     <ClCompile Include="hook_lib.cpp">
       <Filter>impl</Filter>
+    </ClCompile>
+    <ClCompile Include="minhook\hook.c">
+      <Filter>minhook</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

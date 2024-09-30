@@ -467,6 +467,8 @@ void dumper::hk_base_entity_server_rpc_object( rust::base_entity* base_entity, s
 
 		DUMPER_CLASS_BEGIN_FROM_PTR( "ProtoBuf_PlayerProjectileAttack", protobuf_player_projectile_attack_class );
 		DUMPER_SECTION( "Offsets" );
+			DUMP_MEMBER_BY_FIELD_TYPE_CLASS( playerAttack, protobuf_player_attack_class );
+
 			if ( protobuf_player_projectile_attack ) {
 				SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( protobuf_player_projectile_attack, DUMPER_TYPE_NAMESPACE( "System", "Single" ), float );
 				SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( protobuf_player_projectile_attack, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), float );
@@ -475,6 +477,8 @@ void dumper::hk_base_entity_server_rpc_object( rust::base_entity* base_entity, s
 
 		DUMPER_CLASS_BEGIN_FROM_PTR( "ProtoBuf_PlayerAttack", protobuf_player_attack_class );
 		DUMPER_SECTION( "Offsets" );
+			DUMP_MEMBER_BY_FIELD_TYPE_CLASS( attack, protobuf_attack_class );
+
 			if ( protobuf_player_attack ) {
 				SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( protobuf_player_attack, DUMPER_TYPE_NAMESPACE( "System", "Int32" ), int );
 			}
@@ -705,6 +709,36 @@ void dumper::produce() {
 	rust::console_system::console_system_index_client_find = 
 		( decltype( rust::console_system::console_system_index_client_find ) )console_system_index_client_find->get_fn_ptr<uint64_t>();
 
+	rust::console_system::command* steamstatus_command = rust::console_system::client::find( system_c::string_t::create_string( L"steamstatus" ) );
+	il2cpp::il2cpp_class_t* console_system_arg_class = nullptr;
+	il2cpp::il2cpp_class_t* facepunch_network_steam_networking_class = nullptr;
+
+	if ( steamstatus_command ) {
+		il2cpp::method_info_t* steamstatus_wrapper = il2cpp::method_info_t::from_addr( steamstatus_command->call() );
+
+		if ( steamstatus_wrapper ) {
+			if ( steamstatus_wrapper->param_count() == 1 ) {
+				console_system_arg_class = steamstatus_wrapper->get_param( 0 )->klass();
+			}
+
+			il2cpp::method_info_t* steamstatus = SEARCH_FOR_METHOD_IN_METHOD_WITH_RETTYPE(
+				WILDCARD_VALUE( il2cpp::il2cpp_class_t* ),
+				FILT( steamstatus_wrapper->get_fn_ptr<uint64_t>() ),
+				DUMPER_TYPE_NAMESPACE( "System", "String" ),
+				METHOD_ATTRIBUTE_PUBLIC,
+				METHOD_ATTRIBUTE_STATIC,
+				0,
+			);
+
+			if ( steamstatus ) {
+				facepunch_network_steam_networking_class = steamstatus->klass();
+			}
+		}
+	}
+
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "ConsoleSystem.Arg", console_system_arg_class );
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Facepunch.Network.SteamNetworking", facepunch_network_steam_networking_class );
+
 	il2cpp::il2cpp_class_t* player_loot_class = DUMPER_CLASS( "PlayerLoot" );
 	il2cpp::il2cpp_class_t* item_class = nullptr;
 	il2cpp::il2cpp_class_t* item_id_class = nullptr;
@@ -716,10 +750,10 @@ void dumper::produce() {
 			item_class = il2cpp::get_field_by_offset( player_loot_class, entity_source->offset() + 0x8 )->type()->klass();
 
 			if ( item_class ) {
-				il2cpp::method_info_t* item_find_item = il2cpp::get_method_by_return_type_attrs( NO_FILT, item_class, item_class, 0, 0, 1 );
+				il2cpp::method_info_t* base_entity_get_item = il2cpp::get_method_by_return_type_attrs( NO_FILT, DUMPER_CLASS( "BaseEntity" ), item_class, 0, 0, 1 );
 
-				if ( item_find_item ) {
-					il2cpp::il2cpp_type_t* param_type = item_find_item->get_param( 0 );
+				if ( base_entity_get_item ) {
+					il2cpp::il2cpp_type_t* param_type = base_entity_get_item->get_param( 0 );
 
 					if ( param_type ) {
 						item_id_class = param_type->klass();
@@ -732,6 +766,16 @@ void dumper::produce() {
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "PlayerLoot", player_loot_class );
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Item", item_class );
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "ItemId", item_id_class );
+
+	il2cpp::il2cpp_class_t* item_definition_class = DUMPER_CLASS( "ItemDefinition" );
+	il2cpp::il2cpp_class_t* translate_phrase_class = nullptr;
+
+	if ( item_definition_class ) {
+		translate_phrase_class = il2cpp::get_field_by_name( item_definition_class, "displayName" )->type()->klass();
+	}
+
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "ItemDefinition", item_definition_class );
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Translate.Phrase", translate_phrase_class );
 
 	il2cpp::il2cpp_class_t* item_container_class = nullptr;
 	il2cpp::il2cpp_class_t* item_container_id_class = nullptr;
@@ -783,7 +827,7 @@ void dumper::produce() {
 
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Network.Networkable", network_networkable_class );
 
-	/*hook_t base_entity_server_rpc_object_hook( ( void* )( game_base + 0x72731B0 ), hk_base_entity_server_rpc_object, ( void** )&o_base_entity_server_rpc_object );
+	/*hook_t base_entity_server_rpc_object_hook( ( void* )( game_base + 0x74711B0 ), hk_base_entity_server_rpc_object, ( void** )&o_base_entity_server_rpc_object );
 	base_entity_server_rpc_object_hook.create();
 	base_entity_server_rpc_object_hook.enable();
 
@@ -982,6 +1026,22 @@ void dumper::produce() {
 
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "EffectNetwork_Static", effect_network_static_class );
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "EffectNetwork", effect_network_class );
+
+	il2cpp::il2cpp_class_t* main_camera_class = DUMPER_CLASS( "MainCamera" );  // MainCamera
+	il2cpp::il2cpp_class_t* rust_camera_main_camera_class = nullptr; // RustCamera<MainCamera>
+	il2cpp::il2cpp_class_t* singleton_component_rust_camera_main_camera_class = nullptr; // SingletonComponent<RustCamera<MainCamera>>
+
+	if ( main_camera_class ) {
+		rust_camera_main_camera_class = main_camera_class->parent();
+
+		if ( rust_camera_main_camera_class ) {
+			singleton_component_rust_camera_main_camera_class = rust_camera_main_camera_class->parent();
+		}
+	}
+
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "MainCamera", main_camera_class );
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "RustCamera<MainCamera>", rust_camera_main_camera_class );
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "SingletonComponent<RustCamera<MainCamera>>", singleton_component_rust_camera_main_camera_class );
 
 	int64_t get_build_menu_method_offset = -1;
 
@@ -1220,14 +1280,31 @@ void dumper::produce() {
 		DUMP_METHOD_BY_INFO_PTR( Find, base_networkable_entity_realm_find );
 	DUMPER_CLASS_END;
 
+	il2cpp::il2cpp_class_t* system_buffer_list_class = nullptr;
+
 	DUMPER_CLASS_BEGIN_FROM_PTR( "System_ListDictionary", system_list_dictionary_class );
 	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( vals, "<BaseNetworkable>" );
+		il2cpp::field_info_t* _vals = il2cpp::get_field_if_type_contains( dumper_klass, "<BaseNetworkable>" );
+		DUMP_MEMBER_BY_X( vals, _vals->offset() );
+
+		system_buffer_list_class = _vals->type()->klass();
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "System_BufferList", system_buffer_list_class );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( count, DUMPER_CLASS_NAMESPACE( "System", "Int32" ) );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( buffer, "BaseNetworkable" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "SingletonComponent", singleton_component_rust_camera_main_camera_class );
+	DUMPER_SECTION( "Offsets" );
+		il2cpp::field_info_t* instance = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, main_camera_class->name(), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* instance ) { return instance != nullptr; } );
+		DUMP_MEMBER_BY_X( Instance, instance->offset() );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "Model" );
 	DUMPER_SECTION( "Offsets" );
-	DUMP_MEMBER_BY_NAME( boneTransforms );
+		DUMP_MEMBER_BY_NAME( boneTransforms );
 	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* position_lerp_class = nullptr;
@@ -1290,10 +1367,11 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemDefinition" );
 	DUMPER_SECTION( "Offsets" );
-	DUMP_MEMBER_BY_NAME( itemid );
-	DUMP_MEMBER_BY_NAME( category );
-	DUMP_MEMBER_BY_NAME( shortname );
-	DUMP_MEMBER_BY_NAME( displayName );
+		DUMP_MEMBER_BY_NAME( itemid );
+		DUMP_MEMBER_BY_NAME( shortname );
+		DUMP_MEMBER_BY_NAME( displayName );
+		DUMP_MEMBER_BY_NAME( iconSprite );
+		DUMP_MEMBER_BY_NAME( category );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "RecoilProperties" );
@@ -1862,6 +1940,9 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( AllowRunFromServer );
 	DUMPER_CLASS_END;
 
+	DUMP_CLASS_NAME( "ConsoleSystem_Arg", console_system_arg_class );
+	DUMP_CLASS_NAME( "Facepunch_Network_SteamNetworking", facepunch_network_steam_networking_class );
+
 	DUMPER_CLASS_BEGIN_FROM_NAME( "LootableCorpse" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( playerSteamID, "System.UInt64" );
@@ -2347,7 +2428,7 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainMeta" );
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* terrain = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "UnityEngine.Terrain", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain ) { return terrain != nullptr; } );
-		DUMP_MEMBER_BY_X( Terrain, terrain->offset() );
+		DUMP_MEMBER_BY_X( _Terrain, terrain->offset() );
 
 		il2cpp::field_info_t* position = il2cpp::get_static_field_if_value_is<unity::vector3_t>( dumper_klass, "UnityEngine.Vector3", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::vector3_t position ) { return position == unity::vector3_t( -2000.f, -500.f, -2000.f ); } );
 		DUMP_MEMBER_BY_X( Position, position->offset() );
@@ -2366,6 +2447,12 @@ void dumper::produce() {
 
 		il2cpp::field_info_t* splat_map = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "TerrainSplatMap", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain_splat_map ) { return terrain_splat_map != nullptr; } );
 		DUMP_MEMBER_BY_X( SplatMap, splat_map->offset() );
+
+		il2cpp::field_info_t* terrain_topology_map = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "TerrainTopologyMap", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain_topology_map ) { return terrain_topology_map != nullptr; } );
+		DUMP_MEMBER_BY_X( TopologyMap, terrain_topology_map->offset() );
+
+		il2cpp::field_info_t* terrain_texturing = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "TerrainTexturing", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain_texturing ) { return terrain_texturing != nullptr; } );
+		DUMP_MEMBER_BY_X( Texturing, terrain_texturing->offset() );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainCollision" );
@@ -2389,6 +2476,16 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainSplatMap" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( num, "System.Int32" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainTopologyMap" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( shoreVectors, "Vector4[]" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainTexturing" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( shoreVectors, "Vector4[]" );
 	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* world_class_static_class = il2cpp::search_for_class_by_field_types( world_serialization_class->type(), 0, FIELD_ATTRIBUTE_PUBLIC, FIELD_ATTRIBUTE_STATIC );
@@ -2449,6 +2546,7 @@ void dumper::produce() {
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "EffectNetwork", effect_network_class );
+	DUMPER_SECTION( "Functions" );
 
 	DUMPER_CLASS_END;
 
@@ -2770,7 +2868,7 @@ void dumper::produce() {
 		);
 	DUMPER_CLASS_END;
 
-	DUMPER_CLASS_BEGIN_FROM_NAME( "Translate/Phrase" );
+	DUMPER_CLASS_BEGIN_FROM_PTR( "Translate_Phrase", translate_phrase_class );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( english );
 	DUMPER_CLASS_END;
