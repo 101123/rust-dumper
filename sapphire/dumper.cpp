@@ -709,7 +709,7 @@ void dumper::produce() {
 	rust::console_system::console_system_index_client_find = 
 		( decltype( rust::console_system::console_system_index_client_find ) )console_system_index_client_find->get_fn_ptr<uint64_t>();
 
-	rust::console_system::command* steamstatus_command = rust::console_system::client::find( system_c::string_t::create_string( L"steamstatus" ) );
+	rust::console_system::command* steamstatus_command = rust::console_system::client::find( system_c::string_t::create_string( L"global.steamstatus" ) );
 	il2cpp::il2cpp_class_t* console_system_arg_class = nullptr;
 	il2cpp::il2cpp_class_t* facepunch_network_steam_networking_class = nullptr;
 
@@ -1055,7 +1055,75 @@ void dumper::produce() {
 	);
 
 	CHECK_RESOLVED_VALUE( VALUE_METHOD, "AimConeUtil.GetModifiedAimConeDirection", aimcone_util_get_modified_aimcone_direction );
-	
+
+	il2cpp::il2cpp_class_t* buttons_conbutton_class = nullptr;
+	il2cpp::il2cpp_class_t* buttons_class = nullptr;
+	il2cpp::il2cpp_class_t* buttons_static_class = nullptr;
+
+	rust::console_system::command* buttons_pets_command = rust::console_system::client::find( system_c::string_t::create_string( L"buttons.pets" ) );
+
+	if ( buttons_pets_command ) {
+		il2cpp::method_info_t* buttons_conbutton_set_is_pressed = SEARCH_FOR_METHOD_IN_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			WILDCARD_VALUE( il2cpp::il2cpp_class_t* ),
+			FILT( buttons_pets_command->set() ),
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" )
+		);
+
+		if ( buttons_conbutton_set_is_pressed ) {
+			buttons_conbutton_class = buttons_conbutton_set_is_pressed->klass();
+
+			if ( buttons_conbutton_class ) {
+				buttons_class = get_outer_class( buttons_conbutton_class );
+
+				if ( buttons_class ) {
+					buttons_static_class = get_inner_static_class( buttons_class );
+				}
+			}
+		}
+	}
+
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Buttons.ConButton", buttons_conbutton_class );
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Buttons", buttons_class );
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Buttons_Static", buttons_static_class );
+
+	int64_t pets_offset = -1;
+
+	uint64_t buttons_pets_setter = buttons_pets_command->set();
+
+	if ( buttons_pets_setter ) {
+		uint64_t address = buttons_pets_setter;
+		uint64_t limit = 0x1000;
+		uint64_t len = 0;
+
+		uint32_t last_disps[ 2 ]{};
+		uint32_t last_disps_ct = 0;
+
+		while ( len < limit ) {
+			uint8_t* inst = ( uint8_t* )address + len;
+
+			hde64s hs;
+			uint64_t instr_len = hde64_disasm( inst, &hs );
+
+			if ( hs.flags & F_ERROR ) {
+				break;
+			}
+
+			if ( hs.opcode == 0x8B ) {
+				if ( hs.disp.disp32 != 0xB8 ) {
+					if ( hs.disp.disp32 > 0 && hs.disp.disp32 < 0x1000 ) {
+						pets_offset = hs.disp.disp32;
+						break;
+					}
+				}
+			}
+
+			len += instr_len;
+		}
+	}
+
 	int64_t get_build_menu_method_offset = -1;
 
 	il2cpp::il2cpp_class_t* hammer_class = DUMPER_CLASS( "Hammer" );
@@ -2902,6 +2970,13 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_PTR( "AimConeUtil", aimcone_util_get_modified_aimcone_direction->klass() );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_INFO_PTR( GetModifiedAimConeDirection, aimcone_util_get_modified_aimcone_direction );
+	DUMPER_CLASS_END;
+	
+	DUMPER_CLASS_BEGIN_FROM_PTR( "Buttons_Static", buttons_static_class );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_X( Pets, pets_offset );
+	DUMPER_SECTION( "Functions" );
+		DUMP_MEMBER_BY_X( Pets_setter, DUMPER_RVA( buttons_pets_command->set() ) );
 	DUMPER_CLASS_END;
 
 	fclose( outfile_handle );
