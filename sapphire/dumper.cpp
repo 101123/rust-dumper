@@ -823,11 +823,11 @@ void dumper::produce() {
 
 	projectile_attack_networkable_id = networkable_id_class;
 
-	il2cpp::il2cpp_class_t* network_networkable_class = get_class_by_field_in_class( DUMPER_CLASS( "BaseNetworkable" ), networkable_id_class, 2 );
+	il2cpp::il2cpp_class_t* network_networkable_class = get_class_by_field_in_class( DUMPER_CLASS( "BaseNetworkable" ), network_connection_class, 2 );
 
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Network.Networkable", network_networkable_class );
 
-	/*hook_t base_entity_server_rpc_object_hook( ( void* )( game_base + 0x74D8F60 ), hk_base_entity_server_rpc_object, ( void** )&o_base_entity_server_rpc_object );
+	/*hook_t base_entity_server_rpc_object_hook( ( void* )( game_base + 0x7205970 ), hk_base_entity_server_rpc_object, ( void** )&o_base_entity_server_rpc_object );
 	base_entity_server_rpc_object_hook.create();
 	base_entity_server_rpc_object_hook.enable();
 
@@ -1546,6 +1546,8 @@ void dumper::produce() {
 	char searchBuf[ 128 ] = { 0 };
 	sprintf_s( searchBuf, "%s.Type", hit_test_class->name() );
 
+	il2cpp::method_info_t* gametrace_trace = nullptr;
+
 	DUMPER_CLASS_BEGIN_FROM_PTR( "HitTest", hit_test_class );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( type, searchBuf );
@@ -1633,10 +1635,25 @@ void dumper::produce() {
 								}
 							}
 						}
+
+						gametrace_trace = SEARCH_FOR_METHOD_IN_METHOD_WITH_RETTYPE_PARAM_TYPES(
+							WILDCARD_VALUE( il2cpp::il2cpp_class_t* ),
+							FILT( main_camera_trace_method->get_fn_ptr<uint64_t>() ),
+							DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+							METHOD_ATTRIBUTE_PUBLIC,
+							METHOD_ATTRIBUTE_STATIC,
+							hit_test_class->type(),
+							DUMPER_TYPE_NAMESPACE( "System", "Int32" )
+						);
 					}
 				}
 			}
 		}
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "GameTrace", gametrace_trace->klass() );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_INFO_PTR( Trace, gametrace_trace );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseMelee" );
@@ -2852,6 +2869,14 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( Ambient );
 	DUMPER_CLASS_END;
 
+	il2cpp::il2cpp_class_t* tod_sky_static_class = get_inner_static_class( DUMPER_CLASS( "TOD_Sky" ) );
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "TOD_Sky_Static", tod_sky_static_class );
+	DUMPER_SECTION( "Offsets" );
+		il2cpp::field_info_t* _instances = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "List<TOD_Sky>", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* list ) { return list != nullptr; } );
+		DUMP_MEMBER_BY_X( instances, _instances->offset() );
+	DUMPER_CLASS_END;
+
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TOD_NightParameters" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( AmbientColor );
@@ -2932,8 +2957,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( ammo );
 	DUMPER_CLASS_END;
 
-	il2cpp::il2cpp_class_t* camera_update_hook_class = DUMPER_CLASS( "CameraUpdateHook" );
-	il2cpp::il2cpp_class_t* camera_update_hook_static_class = get_inner_static_class( camera_update_hook_class );
+	il2cpp::il2cpp_class_t* camera_update_hook_static_class = get_inner_static_class( DUMPER_CLASS( "CameraUpdateHook" ) );
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "CameraUpdateHook_Static", camera_update_hook_static_class );
 	DUMPER_SECTION( "Offsets" );
