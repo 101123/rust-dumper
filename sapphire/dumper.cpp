@@ -2243,8 +2243,7 @@ void dumper::produce() {
 			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
 			METHOD_ATTRIBUTE_PRIVATE,
 			METHOD_ATTRIBUTE_STATIC,
-			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
-			DUMPER_TYPE_NAMESPACE( "System", "Boolean" )
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" )
 		);
 
 		DUMP_METHOD_BY_INFO_PTR( GetWaterLevel, water_level_get_water_level );
