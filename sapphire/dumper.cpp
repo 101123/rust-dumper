@@ -827,7 +827,7 @@ void dumper::produce() {
 
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Network.Networkable", network_networkable_class );
 
-	/*hook_t base_entity_server_rpc_object_hook( ( void* )( game_base + 0x7205970 ), hk_base_entity_server_rpc_object, ( void** )&o_base_entity_server_rpc_object );
+	/*hook_t base_entity_server_rpc_object_hook(( void* )( game_base + 0x79252A0 ), hk_base_entity_server_rpc_object, ( void** )&o_base_entity_server_rpc_object);
 	base_entity_server_rpc_object_hook.create();
 	base_entity_server_rpc_object_hook.enable();
 
@@ -2079,6 +2079,11 @@ void dumper::produce() {
 	size_t model_state_offset = -1;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "PlayerTick", player_tick_class );
+	DUMPER_SECTION( "Functions" );
+		if ( player_tick_class ) {
+			uint64_t player_tick_write_to_stream_delta = *( uint64_t* )( player_tick_class + 0x238 );
+			DUMP_MEMBER_BY_X( SerializeDelta, DUMPER_RVA( player_tick_write_to_stream_delta ) );
+		}
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( inputState, input_message_class );
 
@@ -2243,7 +2248,8 @@ void dumper::produce() {
 			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
 			METHOD_ATTRIBUTE_PRIVATE,
 			METHOD_ATTRIBUTE_STATIC,
-			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" )
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" )
 		);
 
 		DUMP_METHOD_BY_INFO_PTR( GetWaterLevel, water_level_get_water_level );
