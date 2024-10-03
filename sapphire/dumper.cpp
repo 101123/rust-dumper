@@ -2600,6 +2600,9 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* _effect = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, effect_class->name(), DUMPER_ATTR_DONT_CARE, DUMPER_ATTR_DONT_CARE, []( void* effect ) { return effect != nullptr; } );
 		DUMP_MEMBER_BY_X( effect, _effect->offset() );
+	DUMPER_SECTION( "Functions" );
+		il2cpp::method_info_t* _cctor = il2cpp::get_method_by_name( dumper_klass, ".cctor" );
+		DUMP_METHOD_BY_INFO_PTR( cctor, _cctor );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BuildingBlock" );
