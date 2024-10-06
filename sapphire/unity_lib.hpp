@@ -45,6 +45,45 @@ namespace system_c {
 }
 
 namespace unity {
+	struct vector2_t {
+		float x, y;
+
+		vector2_t() : x( 0.f ), y( 0.f ) {};
+		vector2_t( float _x, float _y ) : x( _x ), y( _y ) {};
+
+		bool operator==( vector2_t other ) {
+			return this->x == other.x && this->y == other.y;
+		}
+	};
+
+	struct vector3_t {
+		float x, y, z;
+
+		vector3_t() : x( 0.f ), y( 0.f ), z( 0.f ) {};
+		vector3_t( float _x, float _y, float _z ) : x( _x ), y( _y ), z( _z ) {};
+
+		bool operator==( vector3_t other ) {
+			return this->x == other.x && this->y == other.y && this->z == other.z;
+		}
+
+		float magnitude() {
+			return sqrtf( this->x * this->x + this->y * this->y + this->z * this->z );
+		}
+
+		float distance( vector3_t other ) {
+			return sqrtf( 
+				( ( this->x - other.x ) * ( this->x - other.x ) ) + 
+				( ( this->y - other.y ) * ( this->y - other.y ) ) + 
+				( ( this->z - other.z ) * ( this->z - other.z ) ) 
+			);
+		}
+	};
+
+	class game_object_t;
+	class component_t;
+	class transform_t;
+	class camera_t;
+
 	class game_object_t {
 	public:
 		static game_object_t* create( system_c::string_t name ) {
@@ -73,32 +112,29 @@ namespace unity {
 	};
 
 	class component_t {
-
-	};
-	
-	struct vector2_t {
-		float x, y;
-
-		vector2_t() : x( 0.f ), y( 0.f ) {};
-		vector2_t( float _x, float _y ) : x( _x ), y( _y ) {};
-
-		bool operator==( vector2_t other ) {
-			return this->x == other.x && this->y == other.y;
+	public:
+		transform_t* get_transform() {
+			static transform_t*( *get_transform_f )( component_t* ) = ( decltype( get_transform_f ) )il2cpp::resolve_icall( "UnityEngine.Component::get_transform()" );
+			return get_transform_f( this );
 		}
 	};
 
-	struct vector3_t {
-		float x, y, z;
+	class transform_t {
+	public:
+		vector3_t get_position() {
+			static void( *get_position_injected_f )( transform_t*, vector3_t* ) = ( decltype( get_position_injected_f ) )il2cpp::resolve_icall( "UnityEngine.Transform::get_position_Injected(UnityEngine.Vector3&)" );
 
-		vector3_t() : x( 0.f ), y( 0.f ), z( 0.f ) {};
-		vector3_t( float _x, float _y, float _z ) : x( _x ), y( _y ), z( _z ) {};
-
-		bool operator==( vector3_t other ) {
-			return this->x == other.x && this->y == other.y && this->z == other.z;
+			vector3_t result;
+			get_position_injected_f( this, &result );
+			return result;
 		}
+	};
 
-		float magnitude() {
-			return sqrtf( this->x * this->x + this->y * this->y + this->z * this->z );
+	class camera_t : public component_t {
+	public:
+		static camera_t* get_main() {
+			static camera_t*( *get_main_f )() = ( decltype( get_main_f ) )il2cpp::resolve_icall( "UnityEngine.Camera::get_main()" );
+			return get_main_f();
 		}
 	};
 }
