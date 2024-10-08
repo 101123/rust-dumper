@@ -54,6 +54,13 @@
 	return il2cpp::get_method_in_method_by_return_type_and_param_types( klass, filter, ret_type, wanted_vis, wanted_flags, param_types, _countof( param_types ) ); \
 } ( )
 
+#define SEARCH_FOR_VIRTUAL_METHOD_WITH_RETTYPE_PARAM_TYPES( filter, ret_type, wanted_vis, wanted_flags, ... ) \
+[=]( ) -> il2cpp::virtual_method_t \
+{ \
+	il2cpp::il2cpp_type_t* param_types[ ] = { __VA_ARGS__ }; \
+	return il2cpp::get_virtual_method_by_return_type_and_param_types( filter, dumper_klass, ret_type, wanted_vis, wanted_flags, param_types, _countof( param_types ) ); \
+} ( )
+
 #define DUMPER_VIS_DONT_CARE 0 
 #define DUMPER_ATTR_DONT_CARE 0
 
@@ -128,6 +135,8 @@
 
 #define DUMP_METHOD_BY_NAME( NAME ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_name(dumper_klass, #NAME)->get_fn_ptr<uint64_t>()));
 #define DUMP_METHOD_BY_PARAM_NAME( NAME, method_name, param_name, param_idx ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_param_name( NO_FILT, dumper_klass, method_name, param_name, param_idx )->get_fn_ptr<uint64_t>() ) ) 
+
+#define DUMP_VIRTUAL_METHOD( NAME, virtual_method ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( virtual_method.method->get_fn_ptr<uint64_t>( ) ) ); dumper::write_to_file( "\tconstexpr const static size_t %s_vtableoff = 0x%x;\n", #NAME, virtual_method.offset )
 
 il2cpp::il2cpp_class_t* get_outer_class( il2cpp::il2cpp_class_t * klass ) {
 	if ( !klass )
@@ -342,10 +351,10 @@ void dumper::write_game_assembly() {
 	}
 
 	uint64_t convar_server_typeinfo = 0;
-	sig = FIND_PATTERN_IMAGE( game_base, "\x0F\x2F\xC8\x0F\x86\xCC\xCC\xCC\xCC\x48\x8B\x05\xCC\xCC\xCC\xCC\x44" );
+	sig = FIND_PATTERN_IMAGE( game_base, "\xFF\xD0\xF3\x0F\xCC\xCC\xCC\xCC\xCC\xCC\x0F\x2F\xC8\x0F\x86\xCC\xCC\xCC\xCC\x48\x8B\x05\xCC\xCC\xCC\xCC\x44" );
 
 	if ( sig ) {
-		convar_server_typeinfo = DUMPER_RVA( ( uint64_t )dumper::relative_32( sig + 0x9, 3 ) );
+		convar_server_typeinfo = DUMPER_RVA( ( uint64_t )dumper::relative_32( sig + 19, 3 ) );
 	}
 
 	dumper::write_to_file( "namespace GameAssembly {\n" );
@@ -364,8 +373,6 @@ il2cpp::il2cpp_class_t* projectile_attack_networkable_id = nullptr;
 bool resolved_projectile_shoot = false;
 bool resolved_projectile_update = false;
 bool resolved_projectile_attack = false;
-
-#define IsValidPtr( x ) !IsBadReadPtr( ( void* )x, 8 )
 
 #define SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( instance, il2cpp_type, type ) { \
 	std::vector<il2cpp::field_info_t*> fields = il2cpp::get_fields_of_type( dumper_klass, il2cpp_type, DUMPER_ATTR_DONT_CARE, DUMPER_ATTR_DONT_CARE ); \
@@ -596,8 +603,7 @@ int get_button_offset( const wchar_t* button_command ) {
 	return 0;
 }
 
-
-
+#define WAIT( key ) while ( !( GetAsyncKeyState( key ) & 0x1 ) ) Sleep( 100 );
 
 void dumper::produce() {
 	game_base = ( uint64_t ) ( GetModuleHandleA( "GameAssembly.dll" ) );
@@ -869,7 +875,7 @@ void dumper::produce() {
 
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Network.Networkable", network_networkable_class );
 
-	/*hook_t base_entity_server_rpc_object_hook(( void* )( game_base + 0x7747A90 ), hk_base_entity_server_rpc_object, ( void** )&o_base_entity_server_rpc_object);
+	/*hook_t base_entity_server_rpc_object_hook(( void* )( game_base + 0x78D7E10 ), hk_base_entity_server_rpc_object, ( void** )&o_base_entity_server_rpc_object);
 	base_entity_server_rpc_object_hook.create();
 	base_entity_server_rpc_object_hook.enable();
 
@@ -2039,6 +2045,9 @@ void dumper::produce() {
 	size_t last_sent_tick_offset = -1;
 	size_t belt_offset = -1;
 
+	uint64_t base_player_send_client_tick = 0;
+	uint64_t base_player_client_input = 0;
+
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BasePlayer" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( playerModel, DUMPER_CLASS( "PlayerModel" ) );
@@ -2067,7 +2076,6 @@ void dumper::produce() {
 		belt_offset = Belt_Offset;
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_NAME( ChatMessage );
-		DUMP_METHOD_BY_PARAM_CLASS( ClientInput, NO_FILT, input_state_class, 1, DUMPER_VIS_DONT_CARE, METHOD_ATTRIBUTE_VIRTUAL );
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( IsOnGround, NO_FILT, DUMPER_CLASS_NAMESPACE( "System", "Boolean" ), 0, METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_VIRTUAL );
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GetHeldItemID, NO_FILT, item_id_class, 0, METHOD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
 
@@ -2111,21 +2119,58 @@ void dumper::produce() {
 			DUMPER_ATTR_DONT_CARE 
 		);
 
+		il2cpp::method_info_t* base_player_send_client_tick_ = il2cpp::get_method_containing_function(
+			FILT_N( DUMPER_METHOD( DUMPER_CLASS( "BasePlayer" ), "ClientUpdateLocalPlayer" ), 3 ),
+			DUMPER_CLASS_NAMESPACE( "System.Diagnostics", "Stopwatch" ),
+			DUMPER_METHOD( DUMPER_CLASS_NAMESPACE( "System.Diagnostics", "Stopwatch" ), "get_ElapsedMilliseconds" )
+		); base_player_send_client_tick = base_player_send_client_tick_->get_fn_ptr<uint64_t>();
+
+		DUMP_METHOD_BY_INFO_PTR( SendClientTick, base_player_send_client_tick_ );
+
+		il2cpp::virtual_method_t base_player_client_input_ = SEARCH_FOR_VIRTUAL_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "BasePlayer" ), "ClientUpdateLocalPlayer" ) ),
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_ASSEM,
+			METHOD_ATTRIBUTE_VIRTUAL,
+			input_state_class->type()
+		); base_player_client_input = base_player_client_input_.method->get_fn_ptr<uint64_t>();
+
+		DUMP_VIRTUAL_METHOD( ClientInput, base_player_client_input_ );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseMovement" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( adminCheat, DUMPER_CLASS_NAMESPACE( "System", "Boolean" ) );
-	DUMPER_SECTION( "Functions" );	
-		il2cpp::method_info_t* base_movement_set_target_movement = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			NO_FILT,
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerWalkMovement" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( gravityMultiplierSwimming );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( capsule, "UnityEngine.CapsuleCollider" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( ladder, DUMPER_CLASS( "TriggerLadder" ) );
+		DUMP_MEMBER_BY_NEAR_OFFSET( groundTime, DUMPER_OFFSET( capsule ) + 0x20 );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( modify, "BaseEntity.MovementModify" );
+	DUMPER_SECTION( "Functions" );
+		il2cpp::virtual_method_t player_walk_movement_client_input = SEARCH_FOR_VIRTUAL_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT( base_player_client_input ),
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-			METHOD_ATTRIBUTE_FAMILY,
+			METHOD_ATTRIBUTE_PUBLIC,
 			DUMPER_ATTR_DONT_CARE,
-			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" )
+			input_state_class->type(),
+			model_state_class->type()
 		);
 
-		DUMP_METHOD_BY_INFO_PTR( set_TargetMovement, base_movement_set_target_movement );
+		DUMP_VIRTUAL_METHOD( ClientInput, player_walk_movement_client_input );
+
+		il2cpp::virtual_method_t player_walk_movement_do_fixed_update = SEARCH_FOR_VIRTUAL_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT_I( DUMPER_METHOD( DUMPER_CLASS( "BasePlayer" ), "DoMovement" ), 200, 1 ),
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_ATTR_DONT_CARE,
+			model_state_class->type()
+		);
+
+		DUMP_VIRTUAL_METHOD( DoFixedUpdate, player_walk_movement_do_fixed_update );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BuildingPrivlidge" );
@@ -2149,15 +2194,6 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( projectileVelocity );
 		DUMP_MEMBER_BY_NAME( recoil );
-	DUMPER_CLASS_END;
-
-	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerWalkMovement" );
-	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_NAME( gravityMultiplierSwimming );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( capsule, "UnityEngine.CapsuleCollider" );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( ladder, DUMPER_CLASS( "TriggerLadder" ) );
-		DUMP_MEMBER_BY_NEAR_OFFSET( groundTime, DUMPER_OFFSET( capsule ) + 0x20 );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( modify, "BaseEntity.MovementModify" );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "ConsoleSystem", console_system_class );
@@ -2292,10 +2328,16 @@ void dumper::produce() {
 			}
 		}
 	DUMPER_SECTION( "Functions" );
-		if ( player_tick_class ) {
-			uint64_t player_tick_write_to_stream_delta = *( uint64_t* )( player_tick_class + 0x298 );
-			DUMP_MEMBER_BY_X( WriteToStreamDelta, DUMPER_RVA( player_tick_write_to_stream_delta ) );
-		}
+		il2cpp::virtual_method_t player_tick_write_to_stream_delta = SEARCH_FOR_VIRTUAL_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT( base_player_send_client_tick ),
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_ATTR_DONT_CARE,
+			WILDCARD_VALUE( il2cpp::il2cpp_type_t* ),
+			player_tick_class->type()
+		);
+
+		DUMP_VIRTUAL_METHOD( WriteToStreamDelta, player_tick_write_to_stream_delta );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "ModelState", model_state_class );
@@ -2844,19 +2886,6 @@ void dumper::produce() {
 		DUMP_METHOD_BY_INFO_PTR( CanAffordUpgrade, building_block_can_afford_upgrade );
 	}
 
-	DUMPER_CLASS_END;
-
-	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerWalkMovement" );
-	il2cpp::method_info_t* client_input = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-		NO_FILT,
-		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-		METHOD_ATTRIBUTE_PUBLIC,
-		DUMPER_ATTR_DONT_CARE,
-		input_state_class->type(),
-		model_state_class->type(), 
-	);
-
-	DUMP_METHOD_BY_INFO_PTR( ClientInput, client_input );
 	DUMPER_CLASS_END;
 
 	auto game_object_ex_search_types = std::vector<il2cpp::method_search_flags_t> {

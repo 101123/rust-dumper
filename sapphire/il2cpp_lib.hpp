@@ -25,9 +25,11 @@ namespace il2cpp
 {
 	using call_set_t = std::set< uint64_t >;
 	using call_map_t = std::map< uint64_t, call_set_t >;
+	using size_map_t = std::map< uint64_t, uint64_t >;
 
 	inline call_map_t call_cache;
 	inline call_map_t inverse_call_cache;
+	inline size_map_t function_size_cache;
 
 	inline call_set_t* get_calls( uint64_t function ) {
 		if ( call_cache.find( function ) != call_cache.end() ) {
@@ -43,6 +45,14 @@ namespace il2cpp
 		}
 
 		return nullptr;
+	}
+
+	inline size_t get_function_size( uint64_t function ) {
+		if ( function_size_cache.find( function ) != function_size_cache.end() ) {
+			return function_size_cache[ function ];
+		}
+
+		return 0;
 	}
 
 	inline bool has_call_in_tree( uint64_t function, uint64_t target, uint32_t depth ) {
@@ -148,12 +158,14 @@ namespace il2cpp
 				// insert call into the call cache
 				call_cache[ target ].insert( start );
 				inverse_call_cache[ start ].insert( target );
+				function_size_cache[ start ] = length;
 			}
 
 			for ( uint64_t target : attrs.jmps ) {
 				// insert jump into the call cache
 				call_cache[ target ].insert( start );
 				inverse_call_cache[ start ].insert( target );
+				function_size_cache[ start ] = length;
 			}
 		}
 	}
@@ -374,6 +386,11 @@ namespace il2cpp
 		}
 	};
 
+	struct virtual_invoke_data_t {
+		void* method_ptr;
+		method_info_t* method;
+	};
+
 	struct il2cpp_class_t
 	{ 
 		const char* name( )
@@ -441,6 +458,22 @@ namespace il2cpp
 			}
 
 			return count;
+		}
+
+		method_info_t* method_from_addr( uint64_t address ) {
+			if ( !this )
+				return nullptr;
+
+			void* iter = nullptr;
+			while ( method_info_t* method = this->methods( &iter ) ) {
+				if ( !method )
+					continue;
+
+				if ( *( uint64_t* )( method ) == address )
+					return method;
+			}
+
+			return nullptr;
 		}
 
 		il2cpp_class_t* nested_types( void** iter )
@@ -525,6 +558,21 @@ namespace il2cpp
 				return nullptr;
 
 			return class_from_il2cpp_type( generic_arg );
+		}
+
+		uint32_t vtable_count() {
+			if ( !this )
+				return 0;
+
+			return ( uint32_t )*( uint16_t* )( ( uint64_t )this + 0x11a );
+		}
+
+		virtual_invoke_data_t* get_vtable_entry( uint32_t index ) {
+			if ( !this )
+				return nullptr;
+
+			virtual_invoke_data_t* vtable = ( virtual_invoke_data_t* )( ( uint64_t )this + 0x128 );
+			return &vtable[ index ];
 		}
 	};
 
@@ -1660,20 +1708,22 @@ namespace il2cpp
 		}
 	}
 
-	inline std::vector<method_info_t*> get_methods_in_method( uint64_t method_addr, uint32_t limit ) {
+	inline std::vector<method_info_t*> get_methods_in_method( const method_filter_t& filter, bool include_self = false ) {
 		std::vector<method_info_t*> methods;
-		if ( !method_addr )
+		if ( !filter.target )
 			return methods;
 
-		get_methods_in_method_impl( &methods, method_addr, limit );
+		if ( include_self )
+			if ( method_info_t* method = il2cpp::method_info_t::from_addr( filter.target ) )
+				methods.push_back( method );
+
+		get_methods_in_method_impl( &methods, filter.target, filter.max_depth );
 		return methods;
 	}
 
 	inline il2cpp::method_info_t* get_method_in_method_by_return_type( il2cpp_class_t* klass, method_filter_t filter, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, int param_ct ) {
-		if ( !filter.target )
-			return nullptr;
+		std::vector<method_info_t*> methods = get_methods_in_method( filter );
 
-		std::vector<method_info_t*> methods = get_methods_in_method( filter.target, filter.max_depth );
 		for ( uint32_t i = 0; i < methods.size(); i++ ) {
 			method_info_t* method = methods.at( i );
 			if ( !method )
@@ -1705,10 +1755,8 @@ namespace il2cpp
 	}
 
 	inline il2cpp::method_info_t* get_method_in_method_by_return_type_and_param_types( il2cpp_class_t* klass, method_filter_t filter, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, il2cpp_type_t** param_types, int param_ct ) {
-		if ( !filter.target )
-			return nullptr;
+		std::vector<method_info_t*> methods = get_methods_in_method( filter );
 
-		std::vector<method_info_t*> methods = get_methods_in_method( filter.target, filter.max_depth );
 		for ( uint32_t i = 0; i < methods.size(); i++ ) {
 			method_info_t* method = methods.at( i );
 			if ( !method )
@@ -1757,7 +1805,196 @@ namespace il2cpp
 				return method;
 		}
 
+		return nullptr; 
+	}
+
+	struct functions_in_function_t {
+		functions_in_function_t( uint64_t _parent, std::vector<uint64_t> _children ) :
+			parent( _parent ), children( _children ) {};
+
+		functions_in_function_t( uint64_t _parent ) : parent( _parent ) {};
+
+		uint64_t parent;
+		std::vector<uint64_t> children;
+	};
+
+	inline void get_functions_in_function_tree_impl( std::vector<functions_in_function_t>* functions_in_functions, uint64_t function, uint32_t limit ) {
+		if ( limit == 0 )
+			return;
+
+		functions_in_function_t functions_in_function( function );
+
+		il2cpp::call_set_t* calls = il2cpp::get_inverse_calls( function );
+		if ( !calls )
+			return;
+
+		for ( auto call : *calls ) {
+			functions_in_function.children.push_back( call );
+			get_functions_in_function_tree_impl( functions_in_functions, call, limit - 1 );
+		}
+
+		functions_in_functions->push_back( functions_in_function );
+	}
+
+	inline std::vector<functions_in_function_t> get_functions_in_function_tree( const method_filter_t& filter ) {
+		std::vector<functions_in_function_t> functions_in_function;
+		if ( !filter.target )
+			return functions_in_function;
+
+		get_functions_in_function_tree_impl( &functions_in_function, filter.target, filter.max_depth );
+		return functions_in_function;
+	}
+
+	inline il2cpp::method_info_t* get_method_containing_function( method_filter_t filter, il2cpp_class_t* klass, uint64_t method ) {
+		std::vector<functions_in_function_t> function_tree = get_functions_in_function_tree( filter );
+
+		for ( uint32_t i = 0; i < function_tree.size(); i++ ) {
+			const functions_in_function_t& functions_in_function = function_tree.at( i );
+
+			for ( uint32_t j = 0; j < functions_in_function.children.size(); j++ ) {
+				uint64_t child_function = functions_in_function.children.at( j );
+				if ( !child_function )
+					continue;
+
+				il2cpp::method_info_t* method = klass->method_from_addr( child_function );
+				if ( !method )
+					continue;
+
+				if ( method->get_fn_ptr<uint64_t>() == child_function )
+					return il2cpp::method_info_t::from_addr( functions_in_function.parent );
+			}
+		}
+
 		return nullptr;
+	}
+
+	struct virtual_method_t {
+		virtual_method_t( method_info_t* _method, uint32_t _offset ) :
+			method( _method ), offset( _offset ) {};
+
+		method_info_t* method;
+		uint32_t offset;
+	};
+
+	inline std::vector<uint32_t> get_virtual_method_offsets( const method_filter_t& filter ) {
+		std::vector<uint32_t> method_offsets;
+		std::vector<method_info_t*> methods = get_methods_in_method( filter, true );
+
+		for ( uint32_t i = 0; i < methods.size(); i++ ) {
+			method_info_t* method = methods.at( i );
+			if ( !method )
+				continue;
+
+			uint64_t address = method->get_fn_ptr<uint64_t>();
+			if ( !address )
+				continue;
+
+			uint64_t limit = filter.ignore ? filter.ignore : get_function_size( address );
+			if ( !limit )
+				continue;
+
+			std::vector<hde64s> instructions;
+
+			uint64_t len = 0;
+			while ( len < limit ) {
+				uint8_t* inst = ( uint8_t* )address + len;
+
+				hde64s hs;
+				hde64_disasm( inst, &hs );
+
+				if ( hs.flags & F_ERROR ) {
+					break;
+				}
+
+				if ( hs.opcode == 0xFF ) {
+					if ( hs.modrm_mod == 0x2 ) {
+						method_offsets.push_back( hs.disp.disp32 );
+					}
+
+					else if ( hs.modrm_mod == 0x3 ) {
+						uint32_t disp32 = 0;
+
+						size_t instruction_ct = instructions.size();
+						size_t backtrack_ct = min( instruction_ct, 4 );
+
+						for ( uint32_t i = 0; i < backtrack_ct; i++ ) {
+							const hde64s& instr = instructions.at( instruction_ct - i - 1 );
+
+							if ( instr.opcode == 0x8B &&
+								instr.modrm_mod == 0x2 ) {
+
+								if ( hs.rex_b == instr.rex_r &&
+									hs.modrm_rm == instr.modrm_reg ) {
+									method_offsets.push_back( instr.disp.disp32 );
+								}
+							}
+						}
+					}
+				}
+
+				len += hs.len;
+				instructions.push_back( hs );
+			}
+		}
+
+		return method_offsets;
+	}
+
+	inline virtual_method_t get_virtual_method_by_return_type_and_param_types( method_filter_t filter, il2cpp_class_t* klass, il2cpp_type_t* ret_type, int wanted_vis, int wanted_flags, il2cpp_type_t** param_types, int param_ct ) {
+		std::vector<uint32_t> method_offsets = get_virtual_method_offsets( filter );
+
+		for ( uint32_t i = 0; i < method_offsets.size(); i++ ) {
+			uint64_t deref_addr = ( uint64_t )klass + method_offsets.at( i );
+			if ( !IsValidPtr( deref_addr ) )
+				continue;
+
+			il2cpp::method_info_t* method = il2cpp::method_info_t::from_addr( *( uint64_t* )( deref_addr ) );
+			if ( !method )
+				continue;
+
+			if ( method->klass() != klass )
+				continue;
+
+			uint32_t count = method->param_count();
+			if ( count != param_ct )
+				continue;
+
+			il2cpp::il2cpp_type_t* ret = method->return_type();
+			if ( !ret || strcmp( ret->name(), ret_type->name() ) != 0 )
+				continue;		
+
+			int vis = method->flags() & METHOD_ATTRIBUTE_MEMBER_ACCESS_MASK;
+			if ( wanted_vis && vis != wanted_vis ) 
+				continue;
+
+			if ( wanted_flags && !( method->flags() & wanted_flags ) )
+				continue;
+
+			int match_requirement = 0;
+			for ( uint32_t j = 0; j < param_ct; j++ )
+				if ( param_types[ j ] != WILDCARD_VALUE( il2cpp_type_t* ) )
+					match_requirement++;
+
+			int matched_types = 0;
+			for ( uint32_t k = 0; k < count; k++ ) {
+				if ( param_types[ k ] == WILDCARD_VALUE( il2cpp_type_t* ) )
+					continue;
+
+				il2cpp_type_t* param = method->get_param( k );
+				if ( !param )
+					continue;
+
+				if ( strcmp( param->name(), param_types[ k ]->name() ) == 0 )
+					matched_types++;
+			}
+
+			if ( matched_types != match_requirement )
+				continue;
+
+			return virtual_method_t( method, method_offsets.at( i ) );
+		}	
+
+		return virtual_method_t( nullptr, 0 );
 	}
 
 	template<typename Comparator>

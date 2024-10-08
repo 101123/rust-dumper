@@ -4,6 +4,8 @@
 
 #include "hde/hde64.h"
 
+#define IsValidPtr( x ) !IsBadReadPtr( ( void* )x, 8 )
+
 namespace util {
 	struct function_attributes_t {
 		std::vector<uint64_t> calls;
