@@ -605,6 +605,10 @@ int get_button_offset( const wchar_t* button_command ) {
 
 #define WAIT( key ) while ( !( GetAsyncKeyState( key ) & 0x1 ) ) Sleep( 100 );
 
+#define SERVER_IP L"216.146.25.119" 
+#define SERVER_PORT 28015
+#define WORLD_SIZE 2000
+
 void dumper::produce() {
 	game_base = ( uint64_t ) ( GetModuleHandleA( "GameAssembly.dll" ) );
 	outfile_handle = fopen( "C:\\dumps\\output.h", "w" );
@@ -2724,13 +2728,13 @@ void dumper::produce() {
 		il2cpp::field_info_t* terrain = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "UnityEngine.Terrain", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain ) { return terrain != nullptr; } );
 		DUMP_MEMBER_BY_X( _Terrain, terrain->offset() );
 
-		il2cpp::field_info_t* position = il2cpp::get_static_field_if_value_is<unity::vector3_t>( dumper_klass, "UnityEngine.Vector3", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::vector3_t position ) { return position == unity::vector3_t( -2000.f, -500.f, -2000.f ); } );
+		il2cpp::field_info_t* position = il2cpp::get_static_field_if_value_is<unity::vector3_t>( dumper_klass, "UnityEngine.Vector3", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::vector3_t position ) { return position == unity::vector3_t( -1000.f, -500.f, -1000.f ); } );
 		DUMP_MEMBER_BY_X( Position, position->offset() );
 
-		il2cpp::field_info_t* size = il2cpp::get_static_field_if_value_is<unity::vector3_t>( dumper_klass, "UnityEngine.Vector3", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::vector3_t size ) { return size == unity::vector3_t( 4000.f, 1000.f, 4000.f ); } );
+		il2cpp::field_info_t* size = il2cpp::get_static_field_if_value_is<unity::vector3_t>( dumper_klass, "UnityEngine.Vector3", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::vector3_t size ) { return size == unity::vector3_t( 2000.f, 1000.f, 2000.f ); } );
 		DUMP_MEMBER_BY_X( Size, size->offset() );
 
-		il2cpp::field_info_t* one_over_size = il2cpp::get_static_field_if_value_is<unity::vector3_t>( dumper_klass, "UnityEngine.Vector3", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::vector3_t one_over_size ) { return one_over_size == unity::vector3_t( 0.00025f, 0.001f, 0.00025f ); } );
+		il2cpp::field_info_t* one_over_size = il2cpp::get_static_field_if_value_is<unity::vector3_t>( dumper_klass, "UnityEngine.Vector3", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::vector3_t one_over_size ) { return one_over_size == unity::vector3_t( 0.0005f, 0.001f, 0.0005f ); } );
 		DUMP_MEMBER_BY_X( OneOverSize, one_over_size->offset() );
 
 		il2cpp::field_info_t* terrain_collision = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "TerrainCollision", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain_collision ) { return terrain_collision != nullptr; } );
@@ -2786,7 +2790,7 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "World_Static", world_class_static_class );
 	DUMPER_SECTION( "Offsets" );
-		il2cpp::field_info_t* size = il2cpp::get_static_field_if_value_is<uint32_t>( dumper_klass, "System.UInt32", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( uint32_t size ) { return size == 4000; } );
+		il2cpp::field_info_t* size = il2cpp::get_static_field_if_value_is<uint32_t>( dumper_klass, "System.UInt32", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( uint32_t size ) { return size == WORLD_SIZE; } );
 		DUMP_MEMBER_BY_X( _size, size->offset() );
 	DUMPER_CLASS_END;
 
@@ -2983,7 +2987,7 @@ void dumper::produce() {
 			for ( il2cpp::field_info_t* _int : ints ) {
 				int value = *( int* )( client + _int->offset() );
 
-				if ( value == 28015 ) {
+				if ( value == SERVER_PORT ) {
 					DUMP_MEMBER_BY_X( ConnectedPort, _int->offset() );
 				}
 			}
@@ -2992,7 +2996,7 @@ void dumper::produce() {
 				system_c::string_t* value = *( system_c::string_t** )( client + string->offset() );
 
 				if ( value ) {
-					if ( !wcscmp( value->str, L"127.0.0.1" ) ) {
+					if ( !wcscmp( value->str, SERVER_IP ) ) {
 						DUMP_MEMBER_BY_X( ConnectedAddress, string->offset() );
 					}
 				}
