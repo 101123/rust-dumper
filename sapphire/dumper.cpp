@@ -61,6 +61,9 @@
 	return il2cpp::get_virtual_method_by_return_type_and_param_types( filter, dumper_klass, ret_type, wanted_vis, wanted_flags, param_types, _countof( param_types ) ); \
 } ( )
 
+#define SEARCH_FOR_VIRTUAL_METHOD_WITH_RETTYPE( filter, ret_type, wanted_vis, wanted_flags ) \
+	il2cpp::get_virtual_method_by_return_type_and_param_types( filter, dumper_klass, ret_type, wanted_vis, wanted_flags, nullptr, 0 ); 
+
 #define DUMPER_VIS_DONT_CARE 0 
 #define DUMPER_ATTR_DONT_CARE 0
 
@@ -369,6 +372,8 @@ void dumper::write_game_assembly() {
 void( *o_base_entity_server_rpc_object )( rust::base_entity*, system_c::string_t*, il2cpp::il2cpp_object_t*, il2cpp::method_info_t* ) = nullptr;
 
 il2cpp::il2cpp_class_t* projectile_attack_networkable_id = nullptr;
+il2cpp::il2cpp_class_t* protobuf_player_projectile_update_class = nullptr;
+il2cpp::il2cpp_class_t* protobuf_player_projectile_attack_class = nullptr;
 
 bool resolved_projectile_shoot = false;
 bool resolved_projectile_update = false;
@@ -378,6 +383,11 @@ bool resolved_projectile_attack = false;
 	std::vector<il2cpp::field_info_t*> fields = il2cpp::get_fields_of_type( dumper_klass, il2cpp_type, DUMPER_ATTR_DONT_CARE, DUMPER_ATTR_DONT_CARE ); \
 	for ( auto field : fields ) \
 		*( type* )( instance + field->offset() ) = ( type )field->offset(); }
+
+#define SET_ALL_FIELDS_OF_TYPE_TO_VALUE( instance, il2cpp_type, type, value ) { \
+	std::vector<il2cpp::field_info_t*> fields = il2cpp::get_fields_of_type( dumper_klass, il2cpp_type, DUMPER_ATTR_DONT_CARE, DUMPER_ATTR_DONT_CARE ); \
+	for ( auto field : fields ) \
+		*( type* )( instance + field->offset() ) = ( type )value; }
 
 void dumper::hk_base_entity_server_rpc_object( rust::base_entity* base_entity, system_c::string_t* func_name, il2cpp::il2cpp_object_t* arg, il2cpp::method_info_t* method ) {
 	if ( !resolved_projectile_shoot && !wcscmp( func_name->str, L"CLProject" ) ) {
@@ -419,7 +429,7 @@ void dumper::hk_base_entity_server_rpc_object( rust::base_entity* base_entity, s
 	}
 
 	else if ( !resolved_projectile_update && !wcscmp( func_name->str, L"OnProjectileUpdate" ) ) {
-		il2cpp::il2cpp_class_t* protobuf_player_projectile_update_class = arg->get_class();
+		protobuf_player_projectile_update_class = arg->get_class();
 
 		DUMPER_CLASS_BEGIN_FROM_PTR( "ProtoBuf_PlayerProjectileUpdate", protobuf_player_projectile_update_class );
 		DUMPER_SECTION( "Offsets" );
@@ -436,7 +446,7 @@ void dumper::hk_base_entity_server_rpc_object( rust::base_entity* base_entity, s
 	}
 
 	else if ( !resolved_projectile_attack && !wcscmp( func_name->str, L"OnProjectileAttack" ) ) {
-		il2cpp::il2cpp_class_t* protobuf_player_projectile_attack_class = arg->get_class(); // ProtoBuf.PlayerProjectileAttack
+		protobuf_player_projectile_attack_class = arg->get_class(); // ProtoBuf.PlayerProjectileAttack
 		il2cpp::field_info_t* protobuf_player_projectile_attack_player_attack = nullptr; // ProtoBuf.PlayerProjectileAttack.playerAttack
 
 		il2cpp::il2cpp_class_t* protobuf_player_attack_class = nullptr; // ProtoBuf.PlayerAttack
@@ -604,6 +614,9 @@ int get_button_offset( const wchar_t* button_command ) {
 }
 
 #define WAIT( key ) while ( !( GetAsyncKeyState( key ) & 0x1 ) ) Sleep( 100 );
+
+#define FLOAT_IS_EQUAL( a, b, c ) abs( a - b ) < c
+#define VECTOR_IS_EQUAL( a, b, c ) abs( a.distance( b ) ) < c 
 
 #define SERVER_IP L"216.146.25.119" 
 #define SERVER_PORT 28015
@@ -879,22 +892,36 @@ void dumper::produce() {
 
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Network.Networkable", network_networkable_class );
 
-	/*hook_t base_entity_server_rpc_object_hook(( void* )( game_base + 0x78D7E10 ), hk_base_entity_server_rpc_object, ( void** )&o_base_entity_server_rpc_object);
-	base_entity_server_rpc_object_hook.create();
-	base_entity_server_rpc_object_hook.enable();
+#ifdef HOOK
+	uint64_t sleeping_bag_client_rename = DUMPER_METHOD( DUMPER_CLASS( "SleepingBag" ), "ClientRename" );
 
-	std::cout << "hooked!\n";
+	if ( sleeping_bag_client_rename ) {
+		uint8_t* jmp = FIND_PATTERN( sleeping_bag_client_rename, 128, "\x5F\xE9\xCC\xCC\xCC\xCC" );
 
-	while ( true ) {
-		Sleep( 1 );
+		if ( IsValidPtr( jmp ) ) {
+			void* hook_addr = relative_32( jmp + 1, 1 );
 
-		if ( resolved_projectile_shoot && resolved_projectile_update && resolved_projectile_attack ) {
-			std::cout << "removing hook!\n";
+			if ( IsValidPtr( hook_addr ) ) {
+				hook_t base_entity_server_rpc_object_hook( hook_addr, hk_base_entity_server_rpc_object, ( void** )&o_base_entity_server_rpc_object );
+				base_entity_server_rpc_object_hook.create();
+				base_entity_server_rpc_object_hook.enable();
 
-			base_entity_server_rpc_object_hook.remove();
-			break;
+				std::cout << "Hooked!\n";
+
+				while ( true ) {
+					Sleep( 1 );
+
+					if ( resolved_projectile_shoot && resolved_projectile_update && resolved_projectile_attack ) {
+						std::cout << "Removing Hook!\n";
+
+						base_entity_server_rpc_object_hook.remove();
+						break;
+					}
+				}
+			}
 		}
-	}*/
+	}
+#endif
 
 	il2cpp::il2cpp_class_t* player_input_class = DUMPER_CLASS( "PlayerInput" );
 	il2cpp::il2cpp_class_t* input_state_class = nullptr;
@@ -1239,41 +1266,6 @@ void dumper::produce() {
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Buttons", buttons_class );
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Buttons (static)", buttons_static_class );
 
-	int64_t pets_offset = -1;
-
-	uint64_t buttons_pets_setter = buttons_pets_command->set();
-
-	if ( buttons_pets_setter ) {
-		uint64_t address = buttons_pets_setter;
-		uint64_t limit = 0x1000;
-		uint64_t len = 0;
-
-		uint32_t last_disps[ 2 ]{};
-		uint32_t last_disps_ct = 0;
-
-		while ( len < limit ) {
-			uint8_t* inst = ( uint8_t* )address + len;
-
-			hde64s hs;
-			uint64_t instr_len = hde64_disasm( inst, &hs );
-
-			if ( hs.flags & F_ERROR ) {
-				break;
-			}
-
-			if ( hs.opcode == 0x8B ) {
-				if ( hs.disp.disp32 != 0xB8 ) {
-					if ( hs.disp.disp32 > 0 && hs.disp.disp32 < 0x1000 ) {
-						pets_offset = hs.disp.disp32;
-						break;
-					}
-				}
-			}
-
-			len += instr_len;
-		}
-	}
-
 	int64_t get_build_menu_method_offset = -1;
 
 	il2cpp::il2cpp_class_t* hammer_class = DUMPER_CLASS( "Hammer" );
@@ -1353,48 +1345,6 @@ void dumper::produce() {
 			if ( get_method ) {
 				resource_ref_get = get_method->get_fn_ptr<uint64_t>();
 			}
-		}
-	}
-
-	uint64_t base_projectile_launch_projectile = DUMPER_METHOD( DUMPER_CLASS( "BaseProjectile" ), "LaunchProjectile" );
-	int64_t get_aimcone_method_offset = -1;
-
-	if ( base_projectile_launch_projectile ) {
-		uint64_t address = base_projectile_launch_projectile;
-		uint64_t limit = 0x1000;
-		uint64_t len = 0;
-
-		uint32_t last_disps[ 2 ]{};
-		uint32_t last_disps_ct = 0;
-
-		while ( len < limit ) {
-			uint8_t* inst = ( uint8_t* )address + len;
-
-			hde64s hs;
-			uint64_t instr_len = hde64_disasm( inst, &hs );
-
-			if ( hs.flags & F_ERROR ) {
-				break;
-			}
-
-			if ( hs.opcode == 0x8B ) {
-				if ( last_disps_ct == 2 ) {
-					last_disps[ 0 ] = last_disps[ 1 ];  
-					last_disps[ 1 ] = hs.disp.disp32; 
-				}
-
-				else {
-					last_disps[ last_disps_ct ] = hs.disp.disp32;
-					last_disps_ct++;
-				}
-			}
-
-			if ( hs.opcode == 0xFF && hs.modrm_reg == 0x2 ) {
-				get_aimcone_method_offset = min( last_disps[ 0 ], last_disps[ 1 ] );
-				break;
-			}
-
-			len += instr_len;
 		}
 	}
 
@@ -1648,6 +1598,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( animationDelay );
 		DUMP_MEMBER_BY_NAME( noHeadshots );
 		DUMP_MEMBER_BY_NEAR_OFFSET( nextAttackTime, DUMPER_OFFSET( noHeadshots ) + 0x2 );
+		DUMP_MEMBER_BY_NEAR_OFFSET( lastTickTime, DUMPER_OFFSET( nextAttackTime ) + 0x4 );
 		DUMP_MEMBER_BY_NEAR_OFFSET( timeSinceDeploy, DUMPER_OFFSET( noHeadshots ) + 0x1A );
 	DUMPER_CLASS_END;
 
@@ -1669,38 +1620,39 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NEAR_OFFSET( hipAimConeScale, DUMPER_OFFSET( sightAimConeOffset ) + 0x4 );
 		DUMP_MEMBER_BY_NEAR_OFFSET( hipAimConeOffset, DUMPER_OFFSET( hipAimConeScale ) + 0x4 );
 	DUMPER_SECTION( "Functions" );
-	
-	il2cpp::method_info_t* base_projectile_launch_projectile_clientside = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-		FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseProjectile" ), "LaunchProjectile" ) ),
-		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-		DUMPER_VIS_DONT_CARE,
-		DUMPER_ATTR_DONT_CARE,
-		DUMPER_TYPE( "ItemDefinition" ),			
-		DUMPER_TYPE_NAMESPACE( "System", "Int32" ), 
-		DUMPER_TYPE_NAMESPACE( "System", "Single" ) 
-	);
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( UpdateAmmoDisplay, NO_FILT, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_FAMILY, METHOD_ATTRIBUTE_VIRTUAL );
 
-	DUMP_METHOD_BY_INFO_PTR( LaunchProjectileClientSide, base_projectile_launch_projectile_clientside );
+		il2cpp::method_info_t* base_projectile_launch_projectile_clientside = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseProjectile" ), "LaunchProjectile" ) ),
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			DUMPER_VIS_DONT_CARE,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE( "ItemDefinition" ),			
+			DUMPER_TYPE_NAMESPACE( "System", "Int32" ), 
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ) 
+		);
 
-	il2cpp::method_info_t* base_projectile_scale_repeat_delay = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-	    FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseProjectile" ), "BeginCycle" ) ),
-		DUMPER_TYPE_NAMESPACE( "System", "Single" ),
-		METHOD_ATTRIBUTE_PUBLIC,
-		DUMPER_ATTR_DONT_CARE,
-		DUMPER_TYPE_NAMESPACE( "System", "Single" )
-	);
+		DUMP_METHOD_BY_INFO_PTR( LaunchProjectileClientSide, base_projectile_launch_projectile_clientside );
 
-	DUMP_METHOD_BY_INFO_PTR( ScaleRepeatDelay, base_projectile_scale_repeat_delay );
+		il2cpp::method_info_t* base_projectile_scale_repeat_delay = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseProjectile" ), "BeginCycle" ) ),
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE_NAMESPACE( "System", "Single" )
+		);
 
-	if ( get_aimcone_method_offset != -1 ) {
-		uint64_t base_projectile_get_aimcone = *( uint64_t* )( ( uint64_t )dumper_klass + get_aimcone_method_offset );
+		DUMP_METHOD_BY_INFO_PTR( ScaleRepeatDelay, base_projectile_scale_repeat_delay );
 
-		if ( base_projectile_get_aimcone ) {
-			DUMP_MEMBER_BY_X( GetAimCone, DUMPER_RVA( base_projectile_get_aimcone ) );
-		}
-	}
-	
-	DUMP_METHOD_BY_RETURN_TYPE_ATTRS( UpdateAmmoDisplay, NO_FILT, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_FAMILY, METHOD_ATTRIBUTE_VIRTUAL );
+		il2cpp::virtual_method_t base_projectile_get_aimcone = SEARCH_FOR_VIRTUAL_METHOD_WITH_RETTYPE(
+			FILT_I( DUMPER_METHOD( DUMPER_CLASS( "BaseProjectile" ), "LaunchProjectile" ), 500, 0 ),
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+			0,
+			METHOD_ATTRIBUTE_PUBLIC,
+			METHOD_ATTRIBUTE_VIRTUAL
+		);
+
+		DUMP_VIRTUAL_METHOD( GetAimCone, base_projectile_get_aimcone );
 	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* base_projectile_static_class = get_inner_static_class( DUMPER_CLASS( "BaseProjectile" ) );
@@ -2095,25 +2047,27 @@ void dumper::produce() {
 
 		DUMP_METHOD_BY_INFO_PTR( GetSpeed, base_player_get_speed );
 
-		/*il2cpp::method_info_t* base_player_send_projectile_update = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+#ifdef HOOK
+		il2cpp::method_info_t* base_player_send_projectile_update = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 		    FILT( DUMPER_METHOD( DUMPER_CLASS( "Projectile" ), "AdjustVelocity" ) ),
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			DUMPER_ATTR_DONT_CARE,
-			DUMPER_TYPE_NAMESPACE( "ProtoBuf", "PlayerProjectileUpdate" )
+			protobuf_player_projectile_update_class->type()
 		);
 
 		DUMP_METHOD_BY_INFO_PTR( SendProjectileUpdate, base_player_send_projectile_update );
 
 		il2cpp::method_info_t* base_player_send_projectile_attack = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-		    FILT_N( DUMPER_METHOD( DUMPER_CLASS( "Projectile" ), "Update" ), 4 ),
+		    FILT_N( DUMPER_METHOD( DUMPER_CLASS( "Projectile" ), "Update" ), 6 ),
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			DUMPER_ATTR_DONT_CARE,
-			DUMPER_TYPE_NAMESPACE( "ProtoBuf", "PlayerProjectileAttack" )
+			protobuf_player_projectile_attack_class->type()
 		);
 
-		DUMP_METHOD_BY_INFO_PTR( SendProjectileAttack, base_player_send_projectile_attack );*/
+		DUMP_METHOD_BY_INFO_PTR( SendProjectileAttack, base_player_send_projectile_attack );
+#endif
 
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( CanBuild, 
 			FILT( DUMPER_METHOD( DUMPER_CLASS( "Hammer" ), "OnInput" ) ), 
@@ -2125,7 +2079,6 @@ void dumper::produce() {
 
 		il2cpp::method_info_t* base_player_send_client_tick_ = il2cpp::get_method_containing_function(
 			FILT_N( DUMPER_METHOD( DUMPER_CLASS( "BasePlayer" ), "ClientUpdateLocalPlayer" ), 3 ),
-			DUMPER_CLASS_NAMESPACE( "System.Diagnostics", "Stopwatch" ),
 			DUMPER_METHOD( DUMPER_CLASS_NAMESPACE( "System.Diagnostics", "Stopwatch" ), "get_ElapsedMilliseconds" )
 		); base_player_send_client_tick = base_player_send_client_tick_->get_fn_ptr<uint64_t>();
 
@@ -2140,6 +2093,15 @@ void dumper::produce() {
 		); base_player_client_input = base_player_client_input_.method->get_fn_ptr<uint64_t>();
 
 		DUMP_VIRTUAL_METHOD( ClientInput, base_player_client_input_ );
+
+		il2cpp::virtual_method_t base_player_max_health = SEARCH_FOR_VIRTUAL_METHOD_WITH_RETTYPE(
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseCombatEntity" ), "ResetState" ) ),
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+			DUMPER_ATTR_DONT_CARE,
+			METHOD_ATTRIBUTE_VIRTUAL
+		);
+
+		DUMP_VIRTUAL_METHOD( MaxHealth, base_player_max_health );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseMovement" );
@@ -2590,9 +2552,137 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( owner, DUMPER_CLASS( "BasePlayer" ) );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( sourceProjectilePrefab, DUMPER_CLASS( "Projectile" ) );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( mod, DUMPER_CLASS( "ItemModProjectile" ) );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( hitTest, hit_test_class );
+
+		void( *projectile_initialize_velocity )( uint64_t, unity::vector3_t ) = ( decltype( projectile_initialize_velocity ) )DUMPER_METHOD( dumper_klass, "InitializeVelocity" );
+		void( *projectile_launch )( uint64_t ) = ( decltype( projectile_launch ) )( game_base + 0x4B538E0 );
+		void( *projectile_on_disable )( uint64_t ) = ( decltype( projectile_on_disable ) )DUMPER_METHOD( dumper_klass, "OnDisable" );
+
+		if ( projectile_initialize_velocity && projectile_launch ) {
+			unity::game_object_t* game_object = unity::game_object_t::create( L"" );
+			game_object->add_component( dumper_klass->type() );
+
+			// Spawn the projectile super high up, so the results are always the same regardless of map
+			if ( unity::transform_t* transform = game_object->get_transform() ) {
+				transform->set_position( unity::vector3_t( 420.f, 4200.f, 420.f ) );
+			}
+
+			if ( uint64_t projectile = game_object->get_component( dumper_klass->type() ) ) {
+				projectile_initialize_velocity( projectile, unity::vector3_t( 1337.f, 1337.f, 1337.f ) );
+
+				std::vector<il2cpp::field_info_t*> floats = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "System", "Single" ), DUMPER_ATTR_DONT_CARE, DUMPER_ATTR_DONT_CARE );
+				std::vector<il2cpp::field_info_t*> vectors = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), FIELD_ATTRIBUTE_ASSEMBLY, DUMPER_ATTR_DONT_CARE );
+
+				for ( il2cpp::field_info_t* flt : floats ) {
+					float value = *( float* )( projectile + flt->offset() );
+
+					if ( value == unity::time::get_fixed_time() ) {
+						DUMP_MEMBER_BY_X( launchTime, flt->offset() );
+					}
+				}
+
+				for ( il2cpp::field_info_t* vector : vectors ) {
+					unity::vector3_t value = *( unity::vector3_t* )( projectile + vector->offset() );
+
+					if ( value == unity::vector3_t( 420.f, 4200.f, 420.f ) ) {
+						DUMP_MEMBER_BY_X( currentPosition, vector->offset() );
+					}
+
+					else if ( value == unity::vector3_t( 1337.f, 1337.f, 1337.f ) ) {
+						DUMP_MEMBER_BY_X( currentVelocity, vector->offset() );
+					}
+				}
+
+				projectile_launch( projectile );
+
+				for ( il2cpp::field_info_t* flt : floats ) {
+					float value = *( float* )( projectile + flt->offset() );
+
+					if ( FLOAT_IS_EQUAL( value, 0.09375f, 0.001f ) ) {
+						DUMP_MEMBER_BY_X( previousTraveledTime, flt->offset() );
+					}
+
+					else if ( FLOAT_IS_EQUAL( value, 0.125f, 0.001f ) ) {
+						DUMP_MEMBER_BY_X( traveledTime, flt->offset() );
+					}
+
+					else if ( FLOAT_IS_EQUAL( value, 289.436f, 0.01f ) ) {
+						DUMP_MEMBER_BY_X( traveledDistance, flt->offset() );
+					}
+
+					else if ( value == INFINITY ) {
+						DUMP_MEMBER_BY_X( maxDistance, flt->offset() );
+					}
+				}
+
+				SET_ALL_FIELDS_OF_TYPE_TO_VALUE( projectile, DUMPER_TYPE_NAMESPACE( "System", "Single" ), float, 0.f );
+
+				projectile_on_disable( projectile );
+
+				for ( il2cpp::field_info_t* flt : floats ) {
+					float value = *( float* )( projectile + flt->offset() );
+
+					if ( FLOAT_IS_EQUAL( value, 1.f, 0.01f ) ) {
+						DUMP_MEMBER_BY_X( integrity, flt->offset() );
+					}
+				}
+			}
+		}
+
+		WAIT( 'V' );
 	DUMPER_SECTION( "Functions" );
+		il2cpp::virtual_method_t projectile_calculate_effect_scale = SEARCH_FOR_VIRTUAL_METHOD_WITH_RETTYPE(
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "Projectile" ), "Update" ) ),
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+			0,
+			METHOD_ATTRIBUTE_FAMILY,
+			METHOD_ATTRIBUTE_VIRTUAL
+		); 
+
+		DUMP_VIRTUAL_METHOD( CalculateEffectScale, projectile_calculate_effect_scale );
+
+		il2cpp::method_info_t* projectile_set_effect_scale = il2cpp::get_method_containing_function(
+			FILT_N( DUMPER_METHOD( DUMPER_CLASS( "Projectile" ), "Update" ), 2 ),
+			DUMPER_METHOD( DUMPER_CLASS( "ScaleRenderer" ), "SetScale" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( SetEffectScale, projectile_set_effect_scale );
+
+		il2cpp::method_info_t* projectile_update_velocity = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT_I( DUMPER_METHOD( DUMPER_CLASS( "Projectile" ), "Update" ), projectile_set_effect_scale->get_fn_ptr<uint64_t>(), 1 ),
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_PRIVATE,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE_NAMESPACE( "System", "Single" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( UpdateVelocity, projectile_update_velocity );
+
+		il2cpp::il2cpp_type_t* param_types[] = {
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Behaviour" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Action" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+		};
+
+		il2cpp::method_info_t* invoke_handler_invoke = il2cpp::get_method_by_return_type_and_param_types(
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "GlassPane" ), "OnDisable" ) ),
+			DUMPER_CLASS( "InvokeHandler" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			METHOD_ATTRIBUTE_STATIC,
+			param_types, 
+			_countof( param_types )
+		);
+
+		il2cpp::method_info_t* projectile_retire = il2cpp::get_method_containing_function(
+			FILT_N( DUMPER_METHOD( DUMPER_CLASS( "Projectile" ), "Update" ), 2 ),
+			invoke_handler_invoke->get_fn_ptr<uint64_t>()
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( Retire, projectile_retire );
+
 		il2cpp::method_info_t* projectile_do_hit = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_SIZE(
-		    NO_FILT,
+			FILT_N( DUMPER_METHOD( DUMPER_CLASS( "Projectile" ), "Update" ), 5 ),
 			0,
 			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
 			METHOD_ATTRIBUTE_PRIVATE,
@@ -2652,6 +2742,7 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_PTR( "PunchEntry", punch_entry_class );
 	DUMPER_SECTION( "Offsets" );
 		void( *held_entity_add_punch )( uint64_t, unity::vector3_t, float ) = ( decltype( held_entity_add_punch ) )DUMPER_METHOD( held_entity_class, "AddPunch" );
+
 		if ( held_entity_add_punch ) {
 			unity::game_object_t* game_object = unity::game_object_t::create( L"" );
 			game_object->add_component( held_entity_class->type() );

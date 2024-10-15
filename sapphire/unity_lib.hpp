@@ -105,6 +105,11 @@ namespace unity {
 			return get_component_f( this, il2cpp::type_get_object( type ) );
 		}
 
+		transform_t* get_transform() {
+			static transform_t* ( *get_transform_f )( game_object_t* ) = ( decltype( get_transform_f ) )il2cpp::resolve_icall( "UnityEngine.GameObject::get_transform()" );
+			return get_transform_f( this );
+		}
+
 		void dont_destroy_on_load() {
 			static void( *dont_destroy_on_load_f )( game_object_t* ) = ( decltype( dont_destroy_on_load_f ) )il2cpp::resolve_icall( "UnityEngine.Object::DontDestroyOnLoad(UnityEngine.Object)" );
 			return dont_destroy_on_load_f( this );
@@ -128,6 +133,11 @@ namespace unity {
 			get_position_injected_f( this, &result );
 			return result;
 		}
+
+		void set_position( vector3_t position ) {
+			static void( *set_position_injected_f )( transform_t*, vector3_t* ) = ( decltype( set_position_injected_f ) )il2cpp::resolve_icall( "UnityEngine.Transform::set_position_Injected(UnityEngine.Vector3&)" );
+			set_position_injected_f( this, &position );
+		}
 	};
 
 	class camera_t : public component_t {
@@ -135,6 +145,14 @@ namespace unity {
 		static camera_t* get_main() {
 			static camera_t*( *get_main_f )() = ( decltype( get_main_f ) )il2cpp::resolve_icall( "UnityEngine.Camera::get_main()" );
 			return get_main_f();
+		}
+	};
+
+	class time {
+	public:
+		static float get_fixed_time() {
+			static float( *get_fixed_time_f )( ) = ( decltype( get_fixed_time_f ) )il2cpp::resolve_icall( "UnityEngine.Time::get_fixedTime()" );
+			return get_fixed_time_f();
 		}
 	};
 }

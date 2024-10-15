@@ -1845,7 +1845,7 @@ namespace il2cpp
 		return functions_in_function;
 	}
 
-	inline il2cpp::method_info_t* get_method_containing_function( method_filter_t filter, il2cpp_class_t* klass, uint64_t method ) {
+	inline il2cpp::method_info_t* get_method_containing_function( method_filter_t filter, uint64_t function ) {
 		std::vector<functions_in_function_t> function_tree = get_functions_in_function_tree( filter );
 
 		for ( uint32_t i = 0; i < function_tree.size(); i++ ) {
@@ -1856,11 +1856,7 @@ namespace il2cpp
 				if ( !child_function )
 					continue;
 
-				il2cpp::method_info_t* method = klass->method_from_addr( child_function );
-				if ( !method )
-					continue;
-
-				if ( method->get_fn_ptr<uint64_t>() == child_function )
+				if ( child_function == function )
 					return il2cpp::method_info_t::from_addr( functions_in_function.parent );
 			}
 		}
@@ -1993,6 +1989,42 @@ namespace il2cpp
 
 			return virtual_method_t( method, method_offsets.at( i ) );
 		}	
+
+		return virtual_method_t( nullptr, 0 );
+	}
+
+	inline virtual_method_t get_virtual_method_by_return_type( method_filter_t filter, il2cpp_class_t* klass, il2cpp_type_t* ret_type, int param_ct, int wanted_vis, int wanted_flags ) {
+		std::vector<uint32_t> method_offsets = get_virtual_method_offsets( filter );
+
+		for ( uint32_t i = 0; i < method_offsets.size(); i++ ) {
+			uint64_t deref_addr = ( uint64_t )klass + method_offsets.at( i );
+			if ( !IsValidPtr( deref_addr ) )
+				continue;
+
+			il2cpp::method_info_t* method = il2cpp::method_info_t::from_addr( *( uint64_t* )( deref_addr ) );
+			if ( !method )
+				continue;
+
+			if ( method->klass() != klass )
+				continue;
+
+			uint32_t count = method->param_count();
+			if ( count != param_ct )
+				continue;
+
+			il2cpp::il2cpp_type_t* ret = method->return_type();
+			if ( !ret || strcmp( ret->name(), ret_type->name() ) != 0 )
+				continue;
+
+			int vis = method->flags() & METHOD_ATTRIBUTE_MEMBER_ACCESS_MASK;
+			if ( wanted_vis && vis != wanted_vis )
+				continue;
+
+			if ( wanted_flags && !( method->flags() & wanted_flags ) )
+				continue;
+
+			return virtual_method_t( method, method_offsets.at( i ) );
+		}
 
 		return virtual_method_t( nullptr, 0 );
 	}
