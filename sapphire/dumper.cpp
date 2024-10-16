@@ -3503,8 +3503,8 @@ void dumper::produce() {
 		rust::console_system::command* tickrate_cl_command = rust::console_system::client::find( system_c::string_t::create_string( L"player.tickrate_cl" ) );
 
 		if ( tickrate_cl_command ) {
-			DUMP_MEMBER_BY_X( clientTickRate_setter, DUMPER_RVA( tickrate_cl_command->get() ) );
-			DUMP_MEMBER_BY_X( clientTickRate_getter, DUMPER_RVA( tickrate_cl_command->set() ) );
+			DUMP_MEMBER_BY_X( clientTickRate_getter, DUMPER_RVA( tickrate_cl_command->get() ) );
+			DUMP_MEMBER_BY_X( clientTickRate_setter, DUMPER_RVA( tickrate_cl_command->set() ) );
 		}
 	DUMPER_CLASS_END;
 
