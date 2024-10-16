@@ -1598,7 +1598,6 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( animationDelay );
 		DUMP_MEMBER_BY_NAME( noHeadshots );
 		DUMP_MEMBER_BY_NEAR_OFFSET( nextAttackTime, DUMPER_OFFSET( noHeadshots ) + 0x2 );
-		DUMP_MEMBER_BY_NEAR_OFFSET( lastTickTime, DUMPER_OFFSET( nextAttackTime ) + 0x4 );
 		DUMP_MEMBER_BY_NEAR_OFFSET( timeSinceDeploy, DUMPER_OFFSET( noHeadshots ) + 0x1A );
 	DUMPER_CLASS_END;
 
@@ -2555,10 +2554,20 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( hitTest, hit_test_class );
 
 		void( *projectile_initialize_velocity )( uint64_t, unity::vector3_t ) = ( decltype( projectile_initialize_velocity ) )DUMPER_METHOD( dumper_klass, "InitializeVelocity" );
-		void( *projectile_launch )( uint64_t ) = ( decltype( projectile_launch ) )( game_base + 0x4B538E0 );
+
+		il2cpp::method_info_t* projectile_launch_method = il2cpp::get_method_by_return_type_attrs(
+			FILT_N( DUMPER_METHOD( DUMPER_CLASS( "BaseProjectile" ), "LaunchProjectile" ), 2),
+			DUMPER_CLASS( "Projectile" ),
+			DUMPER_CLASS_NAMESPACE( "System", "Void" ),
+			DUMPER_ATTR_DONT_CARE,
+			METHOD_ATTRIBUTE_ASSEM,
+			0
+		);
+
+		void( *projectile_launch )( uint64_t ) = ( decltype( projectile_launch ) )projectile_launch_method->get_fn_ptr<uint64_t>();
 		void( *projectile_on_disable )( uint64_t ) = ( decltype( projectile_on_disable ) )DUMPER_METHOD( dumper_klass, "OnDisable" );
 
-		if ( projectile_initialize_velocity && projectile_launch ) {
+		if ( projectile_initialize_velocity && IsValidPtr( projectile_launch ) && projectile_on_disable ) {
 			unity::game_object_t* game_object = unity::game_object_t::create( L"" );
 			game_object->add_component( dumper_klass->type() );
 
@@ -2571,7 +2580,8 @@ void dumper::produce() {
 				projectile_initialize_velocity( projectile, unity::vector3_t( 1337.f, 1337.f, 1337.f ) );
 
 				std::vector<il2cpp::field_info_t*> floats = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "System", "Single" ), DUMPER_ATTR_DONT_CARE, DUMPER_ATTR_DONT_CARE );
-				std::vector<il2cpp::field_info_t*> vectors = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), FIELD_ATTRIBUTE_ASSEMBLY, DUMPER_ATTR_DONT_CARE );
+				std::vector<il2cpp::field_info_t*> vectors = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), DUMPER_ATTR_DONT_CARE, DUMPER_ATTR_DONT_CARE );
+				std::vector<il2cpp::field_info_t*> internal_vectors = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), FIELD_ATTRIBUTE_ASSEMBLY, DUMPER_ATTR_DONT_CARE );
 
 				for ( il2cpp::field_info_t* flt : floats ) {
 					float value = *( float* )( projectile + flt->offset() );
@@ -2581,15 +2591,15 @@ void dumper::produce() {
 					}
 				}
 
-				for ( il2cpp::field_info_t* vector : vectors ) {
+				for ( il2cpp::field_info_t* vector : internal_vectors ) {
 					unity::vector3_t value = *( unity::vector3_t* )( projectile + vector->offset() );
 
-					if ( value == unity::vector3_t( 420.f, 4200.f, 420.f ) ) {
-						DUMP_MEMBER_BY_X( currentPosition, vector->offset() );
+					if ( value == unity::vector3_t( 1337.f, 1337.f, 1337.f ) ) {
+						DUMP_MEMBER_BY_X( currentVelocity, vector->offset() );
 					}
 
-					else if ( value == unity::vector3_t( 1337.f, 1337.f, 1337.f ) ) {
-						DUMP_MEMBER_BY_X( currentVelocity, vector->offset() );
+					else if ( value == unity::vector3_t( 420.f, 4200.f, 420.f ) ) {
+						DUMP_MEMBER_BY_X( currentPosition, vector->offset() );
 					}
 				}
 
@@ -2598,20 +2608,36 @@ void dumper::produce() {
 				for ( il2cpp::field_info_t* flt : floats ) {
 					float value = *( float* )( projectile + flt->offset() );
 
-					if ( FLOAT_IS_EQUAL( value, 0.09375f, 0.001f ) ) {
-						DUMP_MEMBER_BY_X( previousTraveledTime, flt->offset() );
-					}
-
-					else if ( FLOAT_IS_EQUAL( value, 0.125f, 0.001f ) ) {
-						DUMP_MEMBER_BY_X( traveledTime, flt->offset() );
+					if ( value == INFINITY ) {
+						DUMP_MEMBER_BY_X( maxDistance, flt->offset() );
 					}
 
 					else if ( FLOAT_IS_EQUAL( value, 289.436f, 0.01f ) ) {
 						DUMP_MEMBER_BY_X( traveledDistance, flt->offset() );
 					}
 
-					else if ( value == INFINITY ) {
-						DUMP_MEMBER_BY_X( maxDistance, flt->offset() );
+					else if ( FLOAT_IS_EQUAL( value, 0.125f, 0.001f ) ) {
+						DUMP_MEMBER_BY_X( traveledTime, flt->offset() );
+					}
+
+					else if ( FLOAT_IS_EQUAL( value, 0.09375f, 0.001f ) ) {
+						DUMP_MEMBER_BY_X( previousTraveledTime, flt->offset() );
+					}
+				}
+
+				for ( il2cpp::field_info_t* vector : vectors ) {
+					unity::vector3_t value = *( unity::vector3_t* )( projectile + vector->offset() );
+
+					if ( VECTOR_IS_EQUAL( value, unity::vector3_t( 420.f, 4200.f, 420.f ), 0.01 ) ) {
+						DUMP_MEMBER_BY_X( sentPosition, vector->offset() );
+					}
+
+					else if ( VECTOR_IS_EQUAL( value, unity::vector3_t( 545.344f, 4325.31f, 545.344f ), 0.01f ) ) {
+						DUMP_MEMBER_BY_X( previousPosition, vector->offset() );
+					}
+
+					else if ( VECTOR_IS_EQUAL( value, unity::vector3_t( 1337.f, 1336.08f, 1337.f ), 0.01f ) ) {
+						DUMP_MEMBER_BY_X( previousVelocity, vector->offset() );
 					}
 				}
 
@@ -2628,8 +2654,6 @@ void dumper::produce() {
 				}
 			}
 		}
-
-		WAIT( 'V' );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::virtual_method_t projectile_calculate_effect_scale = SEARCH_FOR_VIRTUAL_METHOD_WITH_RETTYPE(
 			FILT( DUMPER_METHOD( DUMPER_CLASS( "Projectile" ), "Update" ) ),
