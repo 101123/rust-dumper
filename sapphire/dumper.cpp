@@ -1175,6 +1175,12 @@ void dumper::produce() {
 
 	CHECK_RESOLVED_VALUE( VALUE_METHOD, "AimConeUtil.GetModifiedAimConeDirection", aimcone_util_get_modified_aimcone_direction );
 
+	il2cpp::il2cpp_class_t* convar_graphics_class = il2cpp::search_for_class_by_method_return_type_name( "UnityEngine.FullScreenMode", METHOD_ATTRIBUTE_PRIVATE, METHOD_ATTRIBUTE_STATIC );
+	il2cpp::il2cpp_class_t* convar_graphics_static_class = get_inner_static_class( convar_graphics_class );
+
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "ConVar.Graphics", convar_graphics_class );
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "ConVar.Graphics (static)", convar_graphics_static_class );
+
 	il2cpp::il2cpp_class_t* convar_admin_class = nullptr;
 	il2cpp::il2cpp_class_t* convar_admin_static_class = nullptr;
 
@@ -1619,7 +1625,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NEAR_OFFSET( hipAimConeScale, DUMPER_OFFSET( sightAimConeOffset ) + 0x4 );
 		DUMP_MEMBER_BY_NEAR_OFFSET( hipAimConeOffset, DUMPER_OFFSET( hipAimConeScale ) + 0x4 );
 	DUMPER_SECTION( "Functions" );
-		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( UpdateAmmoDisplay, NO_FILT, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_FAMILY, METHOD_ATTRIBUTE_VIRTUAL );
+		DUMP_METHOD_BY_NAME( LaunchProjectile );
 
 		il2cpp::method_info_t* base_projectile_launch_projectile_clientside = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 			FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseProjectile" ), "LaunchProjectile" ) ),
@@ -1652,6 +1658,16 @@ void dumper::produce() {
 		);
 
 		DUMP_VIRTUAL_METHOD( GetAimCone, base_projectile_get_aimcone );
+
+		il2cpp::virtual_method_t base_projectile_update_ammo_display = SEARCH_FOR_VIRTUAL_METHOD_WITH_RETTYPE(
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseProjectile" ), "ProcessSpectatorViewmodelEvent" ) ),
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			0,
+			METHOD_ATTRIBUTE_FAMILY,
+			METHOD_ATTRIBUTE_VIRTUAL
+		);
+
+		DUMP_VIRTUAL_METHOD( UpdateAmmoDisplay, base_projectile_update_ammo_display );
 	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* base_projectile_static_class = get_inner_static_class( DUMPER_CLASS( "BaseProjectile" ) );
@@ -2443,9 +2459,10 @@ void dumper::produce() {
 		DUMP_METHOD_BY_INFO_PTR( GetWaterLevel, water_level_get_water_level );
 	DUMPER_CLASS_END;
 
-	il2cpp::il2cpp_class_t* convar_graphics_class = il2cpp::search_for_class_by_method_return_type_name( "UnityEngine.FullScreenMode", METHOD_ATTRIBUTE_PRIVATE, METHOD_ATTRIBUTE_STATIC );
-
-	DUMPER_CLASS_BEGIN_FROM_PTR( "ConVar_Graphics", convar_graphics_class );
+	DUMPER_CLASS_BEGIN_FROM_PTR( "ConVar_Graphics_Static", convar_graphics_static_class );
+	DUMPER_SECTION( "Offsets" );
+		il2cpp::field_info_t* fov = il2cpp::get_static_field_if_value_is<uint32_t>( dumper_klass, convar_graphics_class->name(), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( uint32_t value ) { return value != 0; } );
+		DUMP_MEMBER_BY_X( _fov, fov->offset() );
 	DUMPER_SECTION( "Functions" );
 		rust::console_system::command* fov_command = rust::console_system::client::find( system_c::string_t::create_string( L"graphics.fov" ) );
 
@@ -2453,14 +2470,6 @@ void dumper::produce() {
 			DUMP_MEMBER_BY_X( _fov_getter, DUMPER_RVA( fov_command->get() ) );
 			DUMP_MEMBER_BY_X( _fov_setter, DUMPER_RVA( fov_command->set() ) );
 		}
-	DUMPER_CLASS_END;
-
-	il2cpp::il2cpp_class_t* convar_graphics_static_class = get_inner_static_class( convar_graphics_class );
-
-	DUMPER_CLASS_BEGIN_FROM_PTR( "ConVar_Graphics_Static", convar_graphics_static_class );
-	DUMPER_SECTION( "Offsets" );
-		il2cpp::field_info_t* fov = il2cpp::get_static_field_if_value_is<uint32_t>( dumper_klass, convar_graphics_class->name(), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( uint32_t value ) { return value != 0; } );
-		DUMP_MEMBER_BY_X( _fov, fov->offset() );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseFishingRod" );
@@ -3476,12 +3485,27 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* admin_time = il2cpp::get_static_field_if_value_is<uint32_t>( dumper_klass, "<System.Single>", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( uint32_t value ) { return value != 0; } );
 		DUMP_MEMBER_BY_X( admintime, admin_time->offset() );
+	DUMPER_SECTION( "Functions" );
+		rust::console_system::command* admintime_command = rust::console_system::client::find( system_c::string_t::create_string( L"global.admintime" ) );
+
+		if ( admintime_command ) {
+			DUMP_MEMBER_BY_X( admintime_getter, DUMPER_RVA( admintime_command->get() ) );
+			DUMP_MEMBER_BY_X( admintime_setter, DUMPER_RVA( admintime_command->set() ) );
+		}
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "ConVar_Player_Static", convar_player_static_class );
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* client_tick_interval = il2cpp::get_static_field_if_value_is<uint32_t>( dumper_klass, "<System.Single>", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( uint32_t value ) { return value != 0; } );
 		DUMP_MEMBER_BY_X( clientTickInterval, client_tick_interval->offset() );
+
+	DUMPER_SECTION( "Functions" );
+		rust::console_system::command* tickrate_cl_command = rust::console_system::client::find( system_c::string_t::create_string( L"player.tickrate_cl" ) );
+
+		if ( tickrate_cl_command ) {
+			DUMP_MEMBER_BY_X( clientTickRate_setter, DUMPER_RVA( tickrate_cl_command->get() ) );
+			DUMP_MEMBER_BY_X( clientTickRate_getter, DUMPER_RVA( tickrate_cl_command->set() ) );
+		}
 	DUMPER_CLASS_END;
 
 	fclose( outfile_handle );
