@@ -440,6 +440,10 @@ void dumper::hk_base_entity_server_rpc_object( rust::base_entity* base_entity, s
 				SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( player_projectile_update, DUMPER_TYPE_NAMESPACE( "System", "Single" ), float );
 				SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( player_projectile_update, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), float );
 			}
+
+			DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( ShouldPool, "System.Boolean", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE ); 
+		DUMPER_SECTION( "Functions" );
+			DUMP_METHOD_BY_NAME( Dispose );
 		DUMPER_CLASS_END;
 
 		resolved_projectile_update = true;
@@ -2830,6 +2834,8 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ViewModel" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( instance, DUMPER_CLASS( "BaseViewModel" ) ); 
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_NAME( Play );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "MedicalTool" );
