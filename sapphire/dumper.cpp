@@ -3514,6 +3514,11 @@ void dumper::produce() {
 		}
 	DUMPER_CLASS_END;
 
+	DUMPER_CLASS_BEGIN_FROM_NAME( "ColliderInfo" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( flags );
+	DUMPER_CLASS_END;
+
 	fclose( outfile_handle );
 	fclose( outfile_log_handle );
 }
