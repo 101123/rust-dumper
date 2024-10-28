@@ -1850,6 +1850,7 @@ void dumper::produce() {
 			if ( player_inventory_initialize ) {
 				unity::game_object_t* game_object = unity::game_object_t::create( L"" );
 				game_object->add_component( dumper_klass->type() );
+				game_object->add_component( DUMPER_TYPE( "PlayerLoot" ) );
 
 				if ( uint64_t player_inventory = game_object->get_component( dumper_klass->type() ) ) {
 					player_inventory_initialize( player_inventory, nullptr );
