@@ -3176,6 +3176,17 @@ void dumper::produce() {
 
 		DUMP_METHOD_BY_INFO_PTR( UInt64, network_netwrite_itemid );
 
+		il2cpp::method_info_t* network_netwrite_string = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT_N( DUMPER_METHOD( DUMPER_CLASS_NAMESPACE( "Rust.UI.ServerAdmin", "ServerAdminUI" ), "RefreshUGC" ), 2 ),
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE_NAMESPACE( "System", "String" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( String, network_netwrite_string );
+
 		il2cpp::method_info_t* network_netwrite_send = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 			FILT_N( DUMPER_METHOD( DUMPER_CLASS( "BaseEntity" ), "ServerRPC" ), 2 ),
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
