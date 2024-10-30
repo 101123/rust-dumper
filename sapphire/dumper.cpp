@@ -3523,6 +3523,11 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( flags );
 	DUMPER_CLASS_END;
 
+	DUMPER_CLASS_BEGIN_FROM_NAME( "CodeLock" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( hasCode, "System.Boolean", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
+	DUMPER_CLASS_END;
+
 	fclose( outfile_handle );
 	fclose( outfile_log_handle );
 }
