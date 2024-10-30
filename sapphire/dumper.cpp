@@ -1680,6 +1680,9 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* created_projectiles = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "Projectile", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* value ) { return value != nullptr; } );
 		DUMP_MEMBER_BY_X( createdProjectiles, created_projectiles->offset() );
+	DUMPER_SECTION( "Functions" );
+		il2cpp::method_info_t* _cctor = il2cpp::get_method_by_name( dumper_klass, ".cctor" );
+		DUMP_METHOD_BY_INFO_PTR( cctor, _cctor );
 	DUMPER_CLASS_END;
 
 	uint64_t( *main_camera_trace )( float, uint64_t, float ) = nullptr;
