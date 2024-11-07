@@ -137,6 +137,7 @@
 #define DUMP_METHOD_BY_RETURN_TYPE_METHOD_ATTRIBUTE_SIZE(NAME, filter, ret_type, method_attr, wanted_vis, wanted_attrs, want_or_ignore, idx ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_return_type_and_param_types_size( filter, idx, dumper_klass, ret_type, wanted_vis, wanted_attrs, nullptr, 0, method_attr, want_or_ignore )->get_fn_ptr<uint64_t>() ) )
 
 #define DUMP_METHOD_BY_NAME( NAME ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_name(dumper_klass, #NAME)->get_fn_ptr<uint64_t>()));
+#define DUMP_METHOD_BY_NAME_STR( NAME, method_name ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_name( dumper_klass, method_name )->get_fn_ptr<uint64_t>()));
 #define DUMP_METHOD_BY_PARAM_NAME( NAME, method_name, param_name, param_idx ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_param_name( NO_FILT, dumper_klass, method_name, param_name, param_idx )->get_fn_ptr<uint64_t>() ) ) 
 
 #define DUMP_VIRTUAL_METHOD( NAME, virtual_method ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( virtual_method.method->get_fn_ptr<uint64_t>( ) ) ); dumper::write_to_file( "\tconstexpr const static size_t %s_vtableoff = 0x%x;\n", #NAME, virtual_method.offset )
@@ -622,9 +623,9 @@ int get_button_offset( const wchar_t* button_command ) {
 #define FLOAT_IS_EQUAL( a, b, c ) abs( a - b ) < c
 #define VECTOR_IS_EQUAL( a, b, c ) abs( a.distance( b ) ) < c 
 
-#define SERVER_IP L"216.146.25.119" 
+#define SERVER_IP L"103.214.71.31" 
 #define SERVER_PORT 28015
-#define WORLD_SIZE 2000
+#define WORLD_SIZE 4000
 
 void dumper::produce() {
 	game_base = ( uint64_t ) ( GetModuleHandleA( "GameAssembly.dll" ) );
@@ -740,7 +741,7 @@ void dumper::produce() {
 
 	il2cpp::method_info_t* console_system_run = SEARCH_FOR_METHOD_IN_METHOD_WITH_RETTYPE_PARAM_TYPES(
 		console_system_class,
-		FILT( DUMPER_METHOD( DUMPER_CLASS( "TweakUI" ), "Update" ) ),
+		FILT( DUMPER_METHOD( DUMPER_CLASS( "QuickCraftButton" ), "OnPointerClick" ) ),
 		DUMPER_TYPE_NAMESPACE( "System", "String" ),
 		METHOD_ATTRIBUTE_PUBLIC,
 		METHOD_ATTRIBUTE_STATIC,
@@ -915,7 +916,7 @@ void dumper::produce() {
 				while ( true ) {
 					Sleep( 1 );
 
-					if ( resolved_projectile_shoot && resolved_projectile_update && resolved_projectile_attack ) {
+					if ( GetAsyncKeyState( 'V' ) || ( resolved_projectile_shoot && resolved_projectile_update && resolved_projectile_attack ) ) {
 						std::cout << "Removing Hook!\n";
 
 						base_entity_server_rpc_object_hook.remove();
@@ -1276,73 +1277,6 @@ void dumper::produce() {
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Buttons", buttons_class );
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Buttons (static)", buttons_static_class );
 
-	int64_t get_build_menu_method_offset = -1;
-
-	il2cpp::il2cpp_class_t* hammer_class = DUMPER_CLASS( "Hammer" );
-
-	uint64_t hammer_on_input = DUMPER_METHOD( hammer_class, "OnInput" );
-	uint64_t hammer_open_context_menu = hammer_on_input;
-
-	if ( hammer_on_input ) {
-		il2cpp::method_info_t* open_context_menu = il2cpp::get_method_by_return_type_attrs(
-			FILT( hammer_on_input ),
-			hammer_class,
-			DUMPER_CLASS_NAMESPACE( "System", "Void" ),
-			METHOD_ATTRIBUTE_PRIVATE,
-			DUMPER_ATTR_DONT_CARE
-		);
-
-		if ( open_context_menu ) {
-			hammer_open_context_menu = open_context_menu->get_fn_ptr<uint64_t>();
-		}
-	}
-
-	if ( hammer_open_context_menu ) {
-		uint64_t address = hammer_open_context_menu;
-		uint64_t limit = 0x1000;
-		uint64_t len = 0;
-
-		uint32_t last_disps[ 2 ]{};
-		uint32_t last_disps_ct = 0;
-
-		while ( len < limit ) {
-			uint8_t* inst = ( uint8_t* )address + len;
-
-			hde64s hs;
-			uint64_t instr_len = hde64_disasm( inst, &hs );
-
-			if ( hs.flags & F_ERROR ) {
-				break;
-			}
-
-			if ( hs.opcode == 0x8B ) {
-				if ( last_disps_ct == 2 ) {
-					last_disps[ 0 ] = last_disps[ 1 ];
-					last_disps[ 1 ] = hs.disp.disp32;
-				}
-
-				else {
-					last_disps[ last_disps_ct ] = hs.disp.disp32;
-					last_disps_ct++;
-				}
-			}
-
-			if ( hs.opcode == 0xFF && hs.modrm_reg == 0x2 ) {
-				get_build_menu_method_offset = min( last_disps[ 0 ], last_disps[ 1 ] );
-				break;
-			}
-
-			len += instr_len;
-		}
-	}
-
-	il2cpp::il2cpp_class_t* building_block_class = DUMPER_CLASS( "BuildingBlock" );
-	uint64_t building_block_get_build_menu = 0;
-
-	if ( building_block_class && get_build_menu_method_offset != -1 ) {
-		building_block_get_build_menu = *( uint64_t* )( ( uint64_t )building_block_class + get_build_menu_method_offset );
-	}
-
 	il2cpp::il2cpp_class_t* scriptable_object_ref_class = DUMPER_CLASS( "ScriptableObjectRef" );
 	uint64_t resource_ref_get = 0;
 
@@ -1358,79 +1292,58 @@ void dumper::produce() {
 		}
 	}
 
-	int64_t base_melee_do_attack_offset = -1;
-	int64_t base_melee_process_attack_offset = -1;
+	il2cpp::il2cpp_class_t* vehicle_module_storage_class = DUMPER_CLASS( "VehicleModuleStorage" );
+	il2cpp::il2cpp_type_t* list_game_options_type = nullptr;
 
-	il2cpp::il2cpp_class_t* base_melee_class = DUMPER_CLASS( "BaseMelee" );
+	if ( vehicle_module_storage_class ) {
+		il2cpp::method_info_t* get_menu_options = il2cpp::get_method_by_name( vehicle_module_storage_class, "GetMenuOptions" );
 
-	uint64_t base_melee_on_viewmodel_event = DUMPER_METHOD( base_melee_class, "OnViewmodelEvent" );
-
-	if ( base_melee_on_viewmodel_event ) {
-		uint64_t address = base_melee_on_viewmodel_event;
-		uint64_t limit = 0x1000;
-		uint64_t len = 0;
-
-		uint32_t last_disps[ 2 ]{};
-		uint32_t last_disps_ct = 0;
-
-		while ( len < limit ) {
-			uint8_t* inst = ( uint8_t* )address + len;
-
-			hde64s hs;
-			uint64_t instr_len = hde64_disasm( inst, &hs );
-
-			if ( hs.flags & F_ERROR ) {
-				break;
-			}
-
-			if ( hs.opcode == 0xFF && hs.modrm_reg == 0x2 ) {
-				base_melee_do_attack_offset = hs.disp.disp32;
-				break;
-			}
-
-			len += instr_len;
+		if ( get_menu_options ) {
+			list_game_options_type = get_menu_options->get_param( 0 );
 		}
 	}
 
-	uint64_t base_melee_do_attack = 0;
-	if ( base_melee_class && base_melee_do_attack_offset != -1 ) {
-		base_melee_do_attack = *( uint64_t* )( ( uint64_t )base_melee_class + base_melee_do_attack_offset );
-	}
+	il2cpp::method_info_t* open_context_menu = il2cpp::get_method_by_return_type_attrs(
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "Hammer" ), "OnInput" ) ),
+			DUMPER_CLASS( "Hammer" ),
+			DUMPER_CLASS_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_PRIVATE,
+			DUMPER_ATTR_DONT_CARE
+	);
 
-	if ( base_melee_do_attack ) {
-		uint64_t address = base_melee_do_attack;
-		uint64_t limit = 0x1000;
-		uint64_t len = 0;
+	il2cpp::il2cpp_type_t* building_block_get_build_menu_params[] = { DUMPER_TYPE( "BasePlayer" ), DUMPER_TYPE_NAMESPACE( "System", "Action" ) };
 
-		uint32_t valid_calls = 0;
+	il2cpp::virtual_method_t building_block_get_build_menu = il2cpp::get_virtual_method_by_return_type_and_param_types(
+		FILT_I( open_context_menu->get_fn_ptr<uint64_t>(), 500, 0 ),
+		DUMPER_CLASS( "BuildingBlock" ),
+		list_game_options_type,
+		METHOD_ATTRIBUTE_PUBLIC,
+		DUMPER_ATTR_DONT_CARE,
+		building_block_get_build_menu_params,
+		_countof( building_block_get_build_menu_params )
+	);
 
-		while ( len < limit ) {
-			uint8_t* inst = ( uint8_t* )address + len;
+	il2cpp::virtual_method_t base_melee_do_attack = il2cpp::get_virtual_method_by_return_type_and_param_types(
+		FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseMelee" ), "OnViewmodelEvent" ) ),
+		DUMPER_CLASS( "BaseMelee" ),
+		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+		DUMPER_ATTR_DONT_CARE,
+		DUMPER_ATTR_DONT_CARE,
+		nullptr,
+		0
+	);
 
-			hde64s hs;
-			uint64_t instr_len = hde64_disasm( inst, &hs );
+	il2cpp::il2cpp_type_t* base_melee_process_attack_params[] = { hit_test_class->type() }; 
 
-			if ( hs.flags & F_ERROR ) {
-				break;
-			}
-			
-			// We want the third valid call
-			if ( hs.opcode == 0xFF && hs.modrm_reg == 0x2 && hs.disp.disp32 ) {
-				valid_calls++;
-
-				if ( valid_calls == 3 ) {
-					base_melee_process_attack_offset = hs.disp.disp32;
-				}
-			}
-
-			len += instr_len;
-		}
-	}
-
-	uint64_t base_melee_process_attack = 0;
-	if ( base_melee_class && base_melee_process_attack_offset != -1 ) {
-		base_melee_process_attack = *( uint64_t* )( ( uint64_t )base_melee_class + base_melee_process_attack_offset );
-	}
+	il2cpp::virtual_method_t base_melee_process_attack = il2cpp::get_virtual_method_by_return_type_and_param_types(
+		FILT_I( base_melee_do_attack.method->get_fn_ptr<uint64_t>(), 1000, 0  ),
+		DUMPER_CLASS( "BaseMelee" ),
+		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+		METHOD_ATTRIBUTE_FAMILY,
+		METHOD_ATTRIBUTE_VIRTUAL,
+		base_melee_process_attack_params,
+		_countof( base_melee_process_attack_params )
+	);
 
 	il2cpp::il2cpp_class_t* base_networkable_static_class = get_inner_static_class( DUMPER_CLASS( "BaseNetworkable" ) );
 	il2cpp::il2cpp_class_t* base_networkable_entity_realm_class = nullptr;
@@ -1806,7 +1719,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( maxDistance );
 		DUMP_MEMBER_BY_NAME( gathering );
 	DUMPER_SECTION( "Functions" );
-		DUMP_MEMBER_BY_X( ProcessAttack, DUMPER_RVA( base_melee_process_attack ) );
+		DUMP_MEMBER_BY_X( ProcessAttack, DUMPER_RVA( base_melee_process_attack.method->get_fn_ptr<uint64_t>() ) );
 
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( DoThrow,
 			FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseMelee" ), "OnViewmodelEvent" ) ),
@@ -2862,13 +2775,13 @@ void dumper::produce() {
 		il2cpp::field_info_t* terrain = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "UnityEngine.Terrain", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain ) { return terrain != nullptr; } );
 		DUMP_MEMBER_BY_X( _Terrain, terrain->offset() );
 
-		il2cpp::field_info_t* position = il2cpp::get_static_field_if_value_is<unity::vector3_t>( dumper_klass, "UnityEngine.Vector3", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::vector3_t position ) { return position == unity::vector3_t( -1000.f, -500.f, -1000.f ); } );
+		il2cpp::field_info_t* position = il2cpp::get_static_field_if_value_is<unity::vector3_t>( dumper_klass, "UnityEngine.Vector3", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::vector3_t position ) { return position == unity::vector3_t( -2000.f, -500.f, -2000.f ); } );
 		DUMP_MEMBER_BY_X( Position, position->offset() );
 
-		il2cpp::field_info_t* size = il2cpp::get_static_field_if_value_is<unity::vector3_t>( dumper_klass, "UnityEngine.Vector3", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::vector3_t size ) { return size == unity::vector3_t( 2000.f, 1000.f, 2000.f ); } );
+		il2cpp::field_info_t* size = il2cpp::get_static_field_if_value_is<unity::vector3_t>( dumper_klass, "UnityEngine.Vector3", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::vector3_t size ) { return size == unity::vector3_t( 4000.f, 1000.f, 4000.f ); } );
 		DUMP_MEMBER_BY_X( Size, size->offset() );
 
-		il2cpp::field_info_t* one_over_size = il2cpp::get_static_field_if_value_is<unity::vector3_t>( dumper_klass, "UnityEngine.Vector3", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::vector3_t one_over_size ) { return one_over_size == unity::vector3_t( 0.0005f, 0.001f, 0.0005f ); } );
+		il2cpp::field_info_t* one_over_size = il2cpp::get_static_field_if_value_is<unity::vector3_t>( dumper_klass, "UnityEngine.Vector3", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::vector3_t one_over_size ) { return one_over_size.x == ( 1.f / ( float )WORLD_SIZE ); } );
 		DUMP_MEMBER_BY_X( OneOverSize, one_over_size->offset() );
 
 		il2cpp::field_info_t* terrain_collision = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "TerrainCollision", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain_collision ) { return terrain_collision != nullptr; } );
@@ -2996,11 +2909,11 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( grade );
 	DUMPER_SECTION( "Functions" );
 
-	if ( building_block_get_build_menu ) {
-		DUMP_MEMBER_BY_X( GetBuildMenu, DUMPER_RVA( building_block_get_build_menu ) );
+	if ( uint64_t get_build_menu = building_block_get_build_menu.method->get_fn_ptr<uint64_t>() ) {
+		DUMP_MEMBER_BY_X( GetBuildMenu, DUMPER_RVA( get_build_menu ) );
 
 		il2cpp::method_info_t* building_block_has_upgrade_privilege = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			FILT_N( building_block_get_build_menu, 3 ),
+			FILT_N( get_build_menu, 3 ),
 			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
 			METHOD_ATTRIBUTE_PRIVATE,
 			DUMPER_ATTR_DONT_CARE,
@@ -3012,7 +2925,7 @@ void dumper::produce() {
 		DUMP_METHOD_BY_INFO_PTR( HasUpgradePrivilege, building_block_has_upgrade_privilege );
 
 		il2cpp::method_info_t* building_block_can_afford_upgrade = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			FILT_I( building_block_get_build_menu, building_block_has_upgrade_privilege->get_fn_ptr<uint64_t>(), 3 ),
+			FILT_I( get_build_menu, building_block_has_upgrade_privilege->get_fn_ptr<uint64_t>(), 3 ),
 			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
 			METHOD_ATTRIBUTE_PRIVATE,
 			DUMPER_ATTR_DONT_CARE,
