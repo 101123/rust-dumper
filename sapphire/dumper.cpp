@@ -1802,71 +1802,6 @@ void dumper::produce() {
 		DUMP_METHOD_BY_RETURN_TYPE_STR( FindItemsByItemID, FILT_N( DUMPER_METHOD( DUMPER_CLASS( "SellOrderEntry" ), "UpdateNotifications" ), 2 ), searchBuf, 1 );
 	DUMPER_CLASS_END;
 
-	il2cpp::field_info_t* _buttons = nullptr;
-
-	DUMPER_CLASS_BEGIN_FROM_PTR( "InputMessage", input_message_class );
-	DUMPER_SECTION( "Offsets" );
-		_buttons = il2cpp::get_field_from_field_type_class( input_message_class, DUMPER_CLASS_NAMESPACE( "System", "Int32" ) );
-		DUMP_MEMBER_BY_X( buttons, _buttons->offset() );
-	DUMPER_CLASS_END;
-
-	DUMPER_CLASS_BEGIN_FROM_PTR( "InputState", input_state_class );
-	DUMPER_SECTION( "Offsets" );
-		il2cpp::method_info_t* input_state_flip_method = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			NO_FILT,
-			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-			METHOD_ATTRIBUTE_PUBLIC,
-			DUMPER_ATTR_DONT_CARE,
-			input_message_class->type()
-		);
-
-		if ( input_state_flip_method ) {
-			void( *input_state_flip )( uint8_t*, uint8_t* ) = ( decltype( input_state_flip ) )input_state_flip_method->get_fn_ptr<void*>();
-
-			if ( input_state_flip ) {
-				std::vector<il2cpp::field_info_t*> fields = il2cpp::get_fields_of_type( dumper_klass, input_message_class->type(), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
-
-				if ( fields.size() == 2 ) {
-					uint8_t input_message_a[ 128 ]{};
-					uint8_t input_message_b[ 128 ]{};
-
-					uint8_t input_state[ 256 ]{};
-
-					*( uint64_t* )( input_state + fields.at( 0 )->offset() ) = ( uint64_t )&input_message_a;
-					*( uint64_t* )( input_state + fields.at( 1 )->offset() ) = ( uint64_t )&input_message_b;
-
-					uint8_t input_message_c[ 128 ]{};
-
-					*( uint32_t* )( input_message_c + _buttons->offset() ) = 1337;
-
-					input_state_flip( input_state, input_message_c );
-
-					for ( uint32_t i = 0; i < 2; i++ ) {
-						uint64_t input_message = *( uint64_t* )( input_state + fields.at( i )->offset() );
-
-						if ( input_message ) {
-							uint32_t buttons = *( uint32_t* )( input_message + _buttons->offset() );
-
-							if ( buttons == 1337 ) {
-								DUMP_MEMBER_BY_X( current, fields.at( i )->offset() );
-
-								uint32_t previous_index = i == 0 ? 1 : 0;
-								DUMP_MEMBER_BY_X( previous, fields.at( previous_index )->offset() );
-								break;
-							}
-						}
-					}
-				}
-			}
-		}
-	DUMPER_CLASS_END;
-
-	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerInput" );
-	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( state, input_state_class );
-		DUMP_MEMBER_BY_NEAR_OFFSET( bodyAngles, DUMPER_OFFSET( state ) + 0x1C );
-	DUMPER_CLASS_END;
-
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerEyes" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( viewOffset, "PlayerEyes" ); // Contains PlayerEyes.EncryptedValue<Vector3>
@@ -2195,11 +2130,13 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_X( Entity, entity->offset() );
 	DUMPER_CLASS_END;
 
+	size_t input_state_offset = -1;
 	size_t model_state_offset = -1;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "PlayerTick", player_tick_class );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( inputState, input_message_class );
+		input_state_offset = inputState_Offset;
 
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( modelState, model_state_class );
 		model_state_offset = modelState_Offset;
@@ -2242,6 +2179,99 @@ void dumper::produce() {
 		DUMP_VIRTUAL_METHOD( WriteToStreamDelta, player_tick_write_to_stream_delta );
 	DUMPER_CLASS_END;
 
+	il2cpp::field_info_t* _buttons = nullptr;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "InputMessage", input_message_class );
+	DUMPER_SECTION( "Offsets" );
+		_buttons = il2cpp::get_field_from_field_type_class( input_message_class, DUMPER_CLASS_NAMESPACE( "System", "Int32" ) );
+		DUMP_MEMBER_BY_X( buttons, _buttons->offset() );
+
+		if ( local_player_get_entity && last_sent_tick_offset != -1 && input_state_offset != -1 ) {
+			uint64_t local_player = local_player_get_entity();
+
+			if ( local_player ) {
+				uint64_t last_sent_tick = *( uint64_t* )( local_player + last_sent_tick_offset );
+
+				if ( last_sent_tick ) {
+					uint64_t input_state = *( uint64_t* )( last_sent_tick + input_state_offset );
+
+					if ( input_state ) {
+						std::vector<il2cpp::field_info_t*> vectors = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+
+						for ( il2cpp::field_info_t* vector : vectors ) {
+							unity::vector3_t value = *( unity::vector3_t* )( input_state + vector->offset() );
+
+							if ( value.magnitude() > 0.1f ) {
+								DUMP_MEMBER_BY_X( aimAngles, vector->offset() );
+							}
+
+							else {
+								DUMP_MEMBER_BY_X( mouseDelta, vector->offset() );
+							}
+						}
+					}
+				}
+			}
+		}
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "InputState", input_state_class );
+	DUMPER_SECTION( "Offsets" );
+		il2cpp::method_info_t* input_state_flip_method = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			NO_FILT,
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			input_message_class->type()
+		);
+
+		if ( input_state_flip_method ) {
+			void( *input_state_flip )( uint8_t*, uint8_t* ) = ( decltype( input_state_flip ) )input_state_flip_method->get_fn_ptr<void*>();
+
+			if ( input_state_flip ) {
+				std::vector<il2cpp::field_info_t*> fields = il2cpp::get_fields_of_type( dumper_klass, input_message_class->type(), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+
+				if ( fields.size() == 2 ) {
+					uint8_t input_message_a[ 128 ]{};
+					uint8_t input_message_b[ 128 ]{};
+
+					uint8_t input_state[ 256 ]{};
+
+					*( uint64_t* )( input_state + fields.at( 0 )->offset() ) = ( uint64_t )&input_message_a;
+					*( uint64_t* )( input_state + fields.at( 1 )->offset() ) = ( uint64_t )&input_message_b;
+
+					uint8_t input_message_c[ 128 ]{};
+
+					*( uint32_t* )( input_message_c + _buttons->offset() ) = 1337;
+
+					input_state_flip( input_state, input_message_c );
+
+					for ( uint32_t i = 0; i < 2; i++ ) {
+						uint64_t input_message = *( uint64_t* )( input_state + fields.at( i )->offset() );
+
+						if ( input_message ) {
+							uint32_t buttons = *( uint32_t* )( input_message + _buttons->offset() );
+
+							if ( buttons == 1337 ) {
+								DUMP_MEMBER_BY_X( current, fields.at( i )->offset() );
+
+								uint32_t previous_index = i == 0 ? 1 : 0;
+								DUMP_MEMBER_BY_X( previous, fields.at( previous_index )->offset() );
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerInput" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( state, input_state_class );
+		DUMP_MEMBER_BY_NEAR_OFFSET( bodyAngles, DUMPER_OFFSET( state ) + 0x1C );
+	DUMPER_CLASS_END;
+
 	DUMPER_CLASS_BEGIN_FROM_PTR( "ModelState", model_state_class );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( waterLevel, DUMPER_CLASS_NAMESPACE( "System", "Single" ) );
@@ -2257,12 +2287,22 @@ void dumper::produce() {
 
 					if ( model_state ) {
 						std::vector<il2cpp::field_info_t*> ints = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "System", "Int32" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+						std::vector<il2cpp::field_info_t*> vectors = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
 
 						for ( il2cpp::field_info_t* _int : ints ) {
 							int value = *( int* )( model_state + _int->offset() );
 
 							if ( value ) {
 								DUMP_MEMBER_BY_X( flags, _int->offset() );
+								break;
+							}
+						}
+
+						for ( il2cpp::field_info_t* vector : vectors ) {
+							unity::vector3_t value = *( unity::vector3_t* )( model_state + vector->offset() );
+
+							if ( value.magnitude() > 0.1f ) {
+								DUMP_MEMBER_BY_X( lookDir, vector->offset() );
 								break;
 							}
 						}
