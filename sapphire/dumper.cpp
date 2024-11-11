@@ -3106,6 +3106,8 @@ void dumper::produce() {
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "Network_NetWrite", network_netwrite_class );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( Data, "System.Byte[]" );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_INFO_PTR( UInt8, network_netwrite_packet_id );
 
