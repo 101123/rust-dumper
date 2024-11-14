@@ -1393,7 +1393,7 @@ void dumper::produce() {
 
 		system_buffer_list_class = _vals->type()->klass();
 	DUMPER_SECTION( "Functions" );
-		const char* param_types[] = {
+		const char* try_get_value_params[] = {
 			networkable_id_class->name(),
 			"BaseNetworkable&"
 		};
@@ -1404,12 +1404,52 @@ void dumper::produce() {
 			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			DUMPER_ATTR_DONT_CARE,
-			param_types,
-			_countof( param_types )
+			try_get_value_params,
+			_countof( try_get_value_params )
 		);
 
 		DUMP_METHOD_BY_INFO_PTR( TryGetValue, try_get_value );
 		DUMP_MEMBER_BY_X( TryGetValue_methodinfo, DUMPER_RVA( find_value_in_data_section( try_get_value ) ) );
+
+		il2cpp::il2cpp_type_t* add_params[] = {
+				networkable_id_class->type(),
+				DUMPER_TYPE( "BaseNetworkable" ),
+		};
+
+		il2cpp::method_info_t* add = il2cpp::get_method_by_return_type_and_param_types(
+			NO_FILT,
+			dumper_klass,
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			add_params,
+			_countof( add_params )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( Add, add );
+		DUMP_MEMBER_BY_X( Add_methodinfo, DUMPER_RVA( find_value_in_data_section( add ) ) );
+
+		// Remove is resolved by getting the largest method out of bool fn(TKey key) methods, these are Contains, ContainsKey, & Remove. Contain & ContainsKey have the same function pointer though, so use that if this breaks
+		// 
+		il2cpp::il2cpp_type_t* remove_params[] = {
+				networkable_id_class->type()
+		};
+
+		il2cpp::method_info_t* remove = il2cpp::get_method_by_return_type_and_param_types_size(
+			NO_FILT,
+			0,
+			dumper_klass,
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			remove_params,
+			_countof( remove_params ),
+			nullptr, 
+			false
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( Remove, remove );
+		DUMP_MEMBER_BY_X( Remove_methodinfo, DUMPER_RVA( find_value_in_data_section( remove ) ) );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "System_BufferList", system_buffer_list_class );

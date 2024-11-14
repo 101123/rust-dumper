@@ -126,7 +126,7 @@ namespace dumper
 		uint64_t current_address = data_section.address;
 		uint64_t end_address = data_section.address + data_section.size;
 
-		while ( current_address != end_address ) {
+		while ( current_address < end_address ) {
 			uint64_t _value = *( uint64_t* )( current_address );
 			if ( _value == ( uint64_t )value ) {
 				return current_address;
