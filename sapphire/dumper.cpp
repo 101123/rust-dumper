@@ -1392,6 +1392,24 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_X( vals, _vals->offset() );
 
 		system_buffer_list_class = _vals->type()->klass();
+	DUMPER_SECTION( "Functions" );
+		const char* param_types[] = {
+			networkable_id_class->name(),
+			"BaseNetworkable&"
+		};
+
+		il2cpp::method_info_t* try_get_value = il2cpp::get_method_by_return_type_and_param_types_str(
+			NO_FILT,
+			dumper_klass,
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			param_types,
+			_countof( param_types )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( TryGetValue, try_get_value );
+		DUMP_MEMBER_BY_X( TryGetValue_methodinfo, DUMPER_RVA( find_value_in_data_section( try_get_value ) ) );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "System_BufferList", system_buffer_list_class );
@@ -2810,6 +2828,8 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( meshFilter, "UnityEngine.MeshFilter" ); // <MeshFilter>k__BackingField
 	DUMPER_CLASS_END;
 
+	unity::component_t* _terrain_texturing = nullptr;
+
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainMeta" );
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* terrain = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "UnityEngine.Terrain", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain ) { return terrain != nullptr; } );
@@ -2836,7 +2856,7 @@ void dumper::produce() {
 		il2cpp::field_info_t* terrain_topology_map = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "TerrainTopologyMap", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain_topology_map ) { return terrain_topology_map != nullptr; } );
 		DUMP_MEMBER_BY_X( TopologyMap, terrain_topology_map->offset() );
 
-		il2cpp::field_info_t* terrain_texturing = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "TerrainTexturing", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain_texturing ) { return terrain_texturing != nullptr; } );
+		il2cpp::field_info_t* terrain_texturing = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "TerrainTexturing", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, [&_terrain_texturing]( unity::component_t* terrain_texturing ) { if ( terrain_texturing != nullptr ) { _terrain_texturing = terrain_texturing;  return terrain_texturing != nullptr; } } );
 		DUMP_MEMBER_BY_X( Texturing, terrain_texturing->offset() );
 	DUMPER_CLASS_END;
 
@@ -2863,13 +2883,33 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( num, "System.Int32" );
 	DUMPER_CLASS_END;
 
-	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainTopologyMap" );
-	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( shoreVectors, "Vector4[]" );
-	DUMPER_CLASS_END;
-
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainTexturing" );
 	DUMPER_SECTION( "Offsets" );
+		if ( _terrain_texturing != nullptr ) {
+			std::vector<il2cpp::field_info_t*> ints = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "System", "Int32" ), FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
+			std::vector<il2cpp::field_info_t*> floats = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "System", "Single" ), FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
+
+			for ( il2cpp::field_info_t* _int : ints ) {
+				int value = *( int* )( _terrain_texturing + _int->offset() );
+
+				if ( value > 100 ) {
+					DUMP_MEMBER_BY_X( shoreMapSize, _int->offset() );
+				}
+			}
+
+			for ( il2cpp::field_info_t* flt : floats ) {
+				float value = *( float* )( _terrain_texturing + flt->offset() );
+
+				if ( value == WORLD_SIZE ) {
+					DUMP_MEMBER_BY_X( terrainSize, flt->offset() );
+				}
+
+				else {
+					DUMP_MEMBER_BY_X( shoreDistanceScale, flt->offset() );
+				}
+			}
+		}
+
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( shoreVectors, "Vector4[]" );
 	DUMPER_CLASS_END;
 
