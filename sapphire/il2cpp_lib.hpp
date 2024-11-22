@@ -278,6 +278,7 @@ namespace il2cpp
 	CREATE_TYPE( class_get_parent, il2cpp_class_t* ( * )( il2cpp_class_t* klass ) );
 	CREATE_TYPE( class_get_interfaces, il2cpp_class_t* ( * )( void*, void** ) );
 	CREATE_TYPE( class_get_image, il2cpp_image_t* ( * )( void* ) );
+	CREATE_TYPE( class_get_flags, uint32_t( * )( void* ) );
 
 	// Methods.
 	CREATE_TYPE( method_get_param_count, uint32_t( * )( void* ) );
@@ -574,6 +575,13 @@ namespace il2cpp
 			virtual_invoke_data_t* vtable = ( virtual_invoke_data_t* )( ( uint64_t )this + 0x128 );
 			return &vtable[ index ];
 		}
+
+		uint32_t flags() {
+			if ( !this )
+				return 0;
+
+			return class_get_flags( this );
+		}
 	};
 
 	struct image_global_metadata_t {
@@ -786,6 +794,25 @@ namespace il2cpp
 				return T();
 
 			return *( T* )( this );
+		}
+
+		uint32_t get_vtable_offset() {
+			if ( !this )
+				return 0;
+
+			il2cpp_class_t* klass = this->klass();
+			if ( !klass )
+				return 0;
+
+			for ( uint32_t i = 0; i < klass->vtable_count(); i++ ) {
+				virtual_invoke_data_t* virtual_invoke_data = klass->get_vtable_entry( i );
+				if ( virtual_invoke_data->method != this )
+					continue;
+
+				return ( uint64_t )virtual_invoke_data - ( uint64_t )klass;
+			}
+
+			return 0;
 		}
 	};
 
@@ -2041,7 +2068,7 @@ namespace il2cpp
 		return nullptr;
 	}
 	
-	inline field_info_t* get_field_if_type_contains( il2cpp_class_t* klass, const char* search, int wanted_vis = 0, int flags = 0 )
+	inline field_info_t* get_field_if_type_contains( il2cpp_class_t* klass, const char* search, int wanted_vis = 0, int flags = 0, int type_flags =0 )
 	{
 		const auto get_field_if_type_contains = [ = ] ( field_info_t* field ) -> bool {
 			const char* name = field->type( )->name( );
@@ -2051,6 +2078,9 @@ namespace il2cpp
 			int fl = field->flags( );
 			int vis = fl & FIELD_ATTRIBUTE_FIELD_ACCESS_MASK;
 			if ( ( wanted_vis && ( vis != wanted_vis ) ) || ( flags && !( fl & flags ) ) )
+				return false;
+
+			if ( type_flags && !( field->type()->klass()->flags() & type_flags ) )
 				return false;
 
 			return strstr( name, search ) != nullptr;
@@ -2286,6 +2316,7 @@ namespace il2cpp
 		ASSIGN_TYPE( class_get_parent );
 		ASSIGN_TYPE( class_get_interfaces );
 		ASSIGN_TYPE( class_get_image );
+		ASSIGN_TYPE( class_get_flags );
 
 		// Methods.
 		ASSIGN_TYPE( method_get_param_count );

@@ -3134,6 +3134,7 @@ void dumper::produce() {
 	DUMPER_CLASS_END;
 
 	il2cpp::field_info_t* _cl = nullptr;
+	uint64_t on_network_message = 0;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "Network_Net", network_net_class );
 	DUMPER_SECTION( "Offsets" );
@@ -3148,6 +3149,20 @@ void dumper::produce() {
 		uint64_t client = _cl->static_get_value<uint64_t>();
 
 		if ( client ) {
+			il2cpp::field_info_t* callback_handler_field = il2cpp::get_field_if_type_contains( dumper_klass, "%", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, TYPE_ATTRIBUTE_INTERFACE );
+
+			if ( callback_handler_field ) {
+				uint64_t callback_handler = *( uint64_t* )( client + callback_handler_field->offset() );
+
+				if ( IsValidPtr( callback_handler ) ) {
+					uint64_t klass = *( uint64_t* )( callback_handler );
+
+					if ( IsValidPtr( klass ) ) {
+						on_network_message = *( uint64_t* )( klass + 0x1C8 );
+					}
+				}
+			}
+
 			std::vector<il2cpp::field_info_t*> ints = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "System", "Int32" ), DUMPER_ATTR_DONT_CARE, DUMPER_ATTR_DONT_CARE );
 			std::vector<il2cpp::field_info_t*> strings = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "System", "String" ), DUMPER_ATTR_DONT_CARE, DUMPER_ATTR_DONT_CARE );
 
@@ -3573,6 +3588,15 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( hasCode, "System.Boolean", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
 	DUMPER_CLASS_END;
+
+	if ( on_network_message ) {
+		DUMPER_CLASS_BEGIN_FROM_NAME( "Client" );
+		DUMPER_SECTION( "Functions" );
+			il2cpp::method_info_t* method = il2cpp::method_info_t::from_addr( on_network_message );
+			il2cpp::virtual_method_t virtual_method( method, method->get_vtable_offset() );
+			DUMP_VIRTUAL_METHOD( OnNetworkMessage, virtual_method );
+		DUMPER_CLASS_END;
+	}
 
 	fclose( outfile_handle );
 	fclose( outfile_log_handle );
