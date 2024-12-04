@@ -1314,7 +1314,7 @@ void dumper::produce() {
 	il2cpp::il2cpp_type_t* building_block_get_build_menu_params[] = { DUMPER_TYPE( "BasePlayer" ), DUMPER_TYPE_NAMESPACE( "System", "Action" ) };
 
 	il2cpp::virtual_method_t building_block_get_build_menu = il2cpp::get_virtual_method_by_return_type_and_param_types(
-		FILT_I( open_context_menu->get_fn_ptr<uint64_t>(), 500, 0 ),
+		FILT_I( open_context_menu->get_fn_ptr<uint64_t>(), 1000, 0 ),
 		DUMPER_CLASS( "BuildingBlock" ),
 		list_game_options_type,
 		METHOD_ATTRIBUTE_PUBLIC,
@@ -2018,7 +2018,8 @@ void dumper::produce() {
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 			METHOD_ATTRIBUTE_ASSEM,
 			METHOD_ATTRIBUTE_VIRTUAL,
-			input_state_class->type()
+			input_state_class->type(),
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
 		); base_player_client_input = base_player_client_input_.method->get_fn_ptr<uint64_t>();
 
 		DUMP_VIRTUAL_METHOD( ClientInput, base_player_client_input_ );
@@ -3587,6 +3588,8 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "CodeLock" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( hasCode, "System.Boolean", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
+		DUMP_MEMBER_BY_NEAR_OFFSET( hasAuth, DUMPER_OFFSET( hasCode ) + 0x1 );
+		DUMP_MEMBER_BY_NEAR_OFFSET( hasGuestAuth, DUMPER_OFFSET( hasCode ) + 0x2 );
 	DUMPER_CLASS_END;
 
 	if ( on_network_message ) {
