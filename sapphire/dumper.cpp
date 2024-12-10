@@ -671,12 +671,12 @@ void dumper::produce() {
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Network.BaseNetwork", network_base_network_class );
 
 	const char* send_methods[] = { "Reliable", "ReliableUnordered", "Unreliable" };
-	il2cpp::il2cpp_class_t* network_send_method_class = il2cpp::search_for_class_containing_field_names( send_methods, 3 );
+	il2cpp::il2cpp_class_t* network_send_method_class = il2cpp::search_for_class_containing_field_names( send_methods, _countof( send_methods ) );
 
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Network.SendMethod", network_send_method_class );
 
 	const char* priorities[] = { "Immediate", "Normal" };
-	il2cpp::il2cpp_class_t* network_priority_class = il2cpp::search_for_class_containing_field_names( priorities, 2 );
+	il2cpp::il2cpp_class_t* network_priority_class = il2cpp::search_for_class_containing_field_names( priorities, _countof( priorities ) );
 
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Network.Priority", network_priority_class );
 
@@ -991,12 +991,12 @@ void dumper::produce() {
 		"System.Boolean"
 	};
 
-	il2cpp::il2cpp_class_t* player_tick_class = il2cpp::search_for_class_containing_field_types_str( player_tick_field_types, 7 );
+	il2cpp::il2cpp_class_t* player_tick_class = il2cpp::search_for_class_containing_field_types_str( player_tick_field_types, _countof( player_tick_field_types ) );
 
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "PlayerTick", player_tick_class );
 
 	const char* model_state_flags[] = { "OnPhone", "HeadLook", "HasParachute" };
-	il2cpp::il2cpp_class_t* model_state_flag_class = il2cpp::search_for_class_containing_field_names( model_state_flags, 3 );
+	il2cpp::il2cpp_class_t* model_state_flag_class = il2cpp::search_for_class_containing_field_names( model_state_flags, _countof( model_state_flags ) );
 	il2cpp::il2cpp_class_t* model_state_class = get_outer_class( model_state_flag_class );
 
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "ModelState.Flag", model_state_flag_class );
@@ -1078,6 +1078,7 @@ void dumper::produce() {
 
 	il2cpp::il2cpp_class_t* invisible_vending_machine_class = DUMPER_CLASS( "InvisibleVendingMachine" );
 	il2cpp::il2cpp_class_t* base_networkable_load_info_class = nullptr;
+	il2cpp::il2cpp_class_t* protobuf_entity_class = nullptr;
 
 	if ( invisible_vending_machine_class ) {
 		il2cpp::method_info_t* invisible_vending_machine_load = il2cpp::get_method_by_return_type_attrs( NO_FILT, invisible_vending_machine_class, DUMPER_CLASS_NAMESPACE( "System", "Void" ), METHOD_ATTRIBUTE_VIRTUAL, METHOD_ATTRIBUTE_PUBLIC, 1 );
@@ -1087,12 +1088,17 @@ void dumper::produce() {
 
 			if ( param_type ) {
 				base_networkable_load_info_class = param_type->klass();
+
+				if ( base_networkable_load_info_class ) {
+					protobuf_entity_class = il2cpp::get_field_if_type_contains( base_networkable_load_info_class, "%" )->type()->klass();
+				}
 			}
 		}
 	}
 
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "InvisibleVendingMachine", invisible_vending_machine_class );
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "BaseNetworkable.LoadInfo", base_networkable_load_info_class );
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "ProtoBuf.Entity", protobuf_entity_class );
 
 	il2cpp::il2cpp_class_t* hide_if_aiming_class = DUMPER_CLASS( "HideIfAiming" );
 	il2cpp::il2cpp_class_t* effect_class = nullptr;
@@ -1410,46 +1416,6 @@ void dumper::produce() {
 
 		DUMP_METHOD_BY_INFO_PTR( TryGetValue, try_get_value );
 		DUMP_MEMBER_BY_X( TryGetValue_methodinfo, DUMPER_RVA( find_value_in_data_section( try_get_value ) ) );
-
-		il2cpp::il2cpp_type_t* add_params[] = {
-				networkable_id_class->type(),
-				DUMPER_TYPE( "BaseNetworkable" ),
-		};
-
-		il2cpp::method_info_t* add = il2cpp::get_method_by_return_type_and_param_types(
-			NO_FILT,
-			dumper_klass,
-			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-			METHOD_ATTRIBUTE_PUBLIC,
-			DUMPER_ATTR_DONT_CARE,
-			add_params,
-			_countof( add_params )
-		);
-
-		DUMP_METHOD_BY_INFO_PTR( Add, add );
-		DUMP_MEMBER_BY_X( Add_methodinfo, DUMPER_RVA( find_value_in_data_section( add ) ) );
-
-		// Remove is resolved by getting the largest method out of bool fn(TKey key) methods, these are Contains, ContainsKey, & Remove. Contain & ContainsKey have the same function pointer though, so use that if this breaks
-		// 
-		il2cpp::il2cpp_type_t* remove_params[] = {
-				networkable_id_class->type()
-		};
-
-		il2cpp::method_info_t* remove = il2cpp::get_method_by_return_type_and_param_types_size(
-			NO_FILT,
-			0,
-			dumper_klass,
-			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
-			METHOD_ATTRIBUTE_PUBLIC,
-			DUMPER_ATTR_DONT_CARE,
-			remove_params,
-			_countof( remove_params ),
-			nullptr, 
-			false
-		);
-
-		DUMP_METHOD_BY_INFO_PTR( Remove, remove );
-		DUMP_MEMBER_BY_X( Remove_methodinfo, DUMPER_RVA( find_value_in_data_section( remove ) ) );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "System_BufferList", system_buffer_list_class );
@@ -3109,7 +3075,7 @@ void dumper::produce() {
 		"System.Collections.Generic.Dictionary<System.String,System.UInt32>",
 	};
 
-	il2cpp::il2cpp_class_t* string_pool_class = il2cpp::search_for_class_containing_field_types_str( string_pool_field_types, 2 );
+	il2cpp::il2cpp_class_t* string_pool_class = il2cpp::search_for_class_containing_field_types_str( string_pool_field_types, _countof( string_pool_field_types ) );
 	
 	if ( string_pool_class ) {
 		DUMPER_CLASS_BEGIN_FROM_PTR( "StringPool", string_pool_class );
@@ -3593,12 +3559,40 @@ void dumper::produce() {
 	DUMPER_CLASS_END;
 
 	if ( on_network_message ) {
+		uint64_t create_or_update_entity = 0;
+
 		DUMPER_CLASS_BEGIN_FROM_NAME( "Client" );
 		DUMPER_SECTION( "Functions" );
 			il2cpp::method_info_t* method = il2cpp::method_info_t::from_addr( on_network_message );
 			il2cpp::virtual_method_t virtual_method( method, method->get_vtable_offset() );
 			DUMP_VIRTUAL_METHOD( OnNetworkMessage, virtual_method );
+
+			il2cpp::method_info_t* client_create_or_update_entity = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+				FILT_N( on_network_message, 3 ),
+				DUMPER_TYPE( "BaseEntity" ),
+				METHOD_ATTRIBUTE_PRIVATE,
+				DUMPER_ATTR_DONT_CARE,
+				protobuf_entity_class->type(),
+				DUMPER_TYPE_NAMESPACE( "System", "Int64" )
+			); create_or_update_entity = client_create_or_update_entity->get_fn_ptr<uint64_t>();
+
+			DUMP_METHOD_BY_INFO_PTR( CreateOrUpdateEntity, client_create_or_update_entity );
 		DUMPER_CLASS_END;
+
+		if ( create_or_update_entity ) {
+			DUMPER_CLASS_BEGIN_FROM_NAME( "BaseNetworkable" );
+			DUMPER_SECTION( "Functions" );
+				il2cpp::virtual_method_t base_networkable_load = SEARCH_FOR_VIRTUAL_METHOD_WITH_RETTYPE_PARAM_TYPES(
+					FILT_I( create_or_update_entity, 1000, 1 ),
+					DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+					DUMPER_ATTR_DONT_CARE,
+					DUMPER_ATTR_DONT_CARE,
+					base_networkable_load_info_class->type()
+				); 
+
+				DUMP_VIRTUAL_METHOD( Load, base_networkable_load );
+			DUMPER_CLASS_END;
+		}
 	}
 
 	fclose( outfile_handle );
