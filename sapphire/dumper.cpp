@@ -3558,6 +3558,19 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NEAR_OFFSET( hasGuestAuth, DUMPER_OFFSET( hasCode ) + 0x2 );
 	DUMPER_CLASS_END;
 
+	DUMPER_CLASS_BEGIN_FROM_NAME( "AutoTurret" );
+	DUMPER_SECTION( "Functions" );
+		il2cpp::method_info_t* auto_turret_is_authed = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT_N( DUMPER_METHOD( DUMPER_CLASS( "AutoTurret" ), "GetMenuOptions" ), 2 ),
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE_NAMESPACE( "System", "UInt64" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( IsAuthed, auto_turret_is_authed );
+	DUMPER_CLASS_END;
+
 	if ( on_network_message ) {
 		uint64_t create_or_update_entity = 0;
 
