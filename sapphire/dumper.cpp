@@ -640,6 +640,27 @@ void dumper::produce() {
 	dumper::write_to_file( "#include <cstdint>\n\n" );
 	dumper::write_game_assembly();
 
+	il2cpp::il2cpp_class_t* xmas_refill_class = DUMPER_CLASS( "XMasRefill" );
+	il2cpp::il2cpp_class_t* network_message_class = nullptr;
+	il2cpp::il2cpp_class_t* network_netread_class = nullptr;
+
+	if ( xmas_refill_class ) {
+		il2cpp::method_info_t* xmas_refill_on_rpc_message = il2cpp::get_method_by_return_type_attrs( 
+			NO_FILT, xmas_refill_class, DUMPER_CLASS_NAMESPACE( "System", "Boolean" ), METHOD_ATTRIBUTE_VIRTUAL, METHOD_ATTRIBUTE_PUBLIC, 3 );
+
+		if ( xmas_refill_on_rpc_message ) {
+			network_message_class = xmas_refill_on_rpc_message->get_param( 2 )->klass();
+
+			if ( network_message_class ) {
+				network_netread_class = get_class_by_field_in_class( network_message_class, "System.String", 2 );
+			}
+		}
+	}
+
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "XMasRefill", xmas_refill_class );
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Network.Message", network_message_class );
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Network.NetRead", network_netread_class );
+
 	il2cpp::method_info_t* network_netwrite_packet_id = SEARCH_FOR_METHOD_IN_METHOD_WITH_RETTYPE_PARAM_TYPES(
 		WILDCARD_VALUE( il2cpp::il2cpp_class_t* ),
 		FILT_N( DUMPER_METHOD( DUMPER_CLASS( "BaseEntity" ), "ServerRPC" ), 2 ),
@@ -3165,6 +3186,17 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( priority, network_priority_class );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( connections, network_connections_list_class );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( connection, network_connection_class );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "Network_Message", network_message_class );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( type, ".Type" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( read, network_netread_class );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "Network_NetRead", network_netread_class );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( Data, "System.Byte[]" );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "Network_NetWrite", network_netwrite_class );
