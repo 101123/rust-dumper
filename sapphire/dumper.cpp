@@ -1304,6 +1304,29 @@ void dumper::produce() {
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Buttons", buttons_class );
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Buttons (static)", buttons_static_class );
 
+	il2cpp::il2cpp_class_t* item_manager_class = nullptr;
+	il2cpp::il2cpp_class_t* item_manager_static_class = nullptr;
+
+	il2cpp::method_info_t* item_manager_find_item_definition = SEARCH_FOR_METHOD_IN_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		WILDCARD_VALUE( il2cpp::il2cpp_class_t* ),
+		FILT( DUMPER_METHOD( DUMPER_CLASS( "IndustrialConveyor/ItemFilter" ), "set_TargetItemName" ) ),
+		DUMPER_TYPE( "ItemDefinition" ),
+		METHOD_ATTRIBUTE_PUBLIC,
+		METHOD_ATTRIBUTE_STATIC,
+		DUMPER_TYPE_NAMESPACE( "System", "String" ),
+	);
+
+	if ( item_manager_find_item_definition ) {
+		item_manager_class = item_manager_find_item_definition->klass();
+
+		if ( item_manager_class ) {
+			item_manager_static_class = get_inner_static_class( item_manager_class );
+		}
+	}
+
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "ItemManager", item_manager_class );
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "ItemManager (static)", item_manager_static_class );
+
 	il2cpp::il2cpp_class_t* scriptable_object_ref_class = DUMPER_CLASS( "ScriptableObjectRef" );
 	uint64_t resource_ref_get = 0;
 
@@ -3639,6 +3662,18 @@ void dumper::produce() {
 			DUMPER_CLASS_END;
 		}
 	}
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "ItemManager_Static", item_manager_static_class );
+	DUMPER_SECTION( "Offsets" );
+		il2cpp::field_info_t* item_list = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "List<ItemDefinition>", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* item_list ) { return item_list != nullptr; } );
+		DUMP_MEMBER_BY_X( itemList, item_list->offset() );
+
+		il2cpp::field_info_t* item_dictionary = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "Dictionary<System.Int32,ItemDefinition>", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* item_dictionary ) { return item_dictionary != nullptr; } );
+		DUMP_MEMBER_BY_X( itemDictionary, item_dictionary->offset() );
+
+		il2cpp::field_info_t* item_dictionary_by_name = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "Dictionary<System.String,ItemDefinition>", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* item_dictionary_by_name ) { return item_dictionary_by_name != nullptr; } );
+		DUMP_MEMBER_BY_X( itemDictionaryByName, item_dictionary_by_name->offset() );
+	DUMPER_CLASS_END;
 
 	fclose( outfile_handle );
 	fclose( outfile_log_handle );
