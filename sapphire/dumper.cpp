@@ -1936,6 +1936,55 @@ void dumper::produce() {
 		player_belt_get_active_item = ( decltype( player_belt_get_active_item ) )( game_base + GetActiveItem_Offset );
 	DUMPER_CLASS_END;
 
+	il2cpp::il2cpp_class_t* pet_command_desc_class = DUMPER_CLASS( "PetCommandList/PetCommandDesc" );
+	il2cpp::il2cpp_class_t* local_player_static_class = il2cpp::search_for_class_by_field_types( pet_command_desc_class->type(), 0, FIELD_ATTRIBUTE_PUBLIC, FIELD_ATTRIBUTE_STATIC );
+	il2cpp::il2cpp_class_t* local_player_class = get_outer_class( local_player_static_class );
+
+	uint64_t( *local_player_get_entity )( ) = nullptr;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "LocalPlayer", local_player_class );
+	DUMPER_SECTION( "Functions" );
+		il2cpp::method_info_t* local_player_item_command = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "FrequencyConfig" ), "Confirm" ) ),
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			METHOD_ATTRIBUTE_STATIC,
+			item_id_class->type(),
+			DUMPER_TYPE_NAMESPACE( "System", "String" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( ItemCommand, local_player_item_command );
+
+		il2cpp::method_info_t* local_player_move_item = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "ItemIcon" ), "OnDroppedValue" ) ),
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			METHOD_ATTRIBUTE_STATIC,
+			item_id_class->type(),
+			item_container_id_class->type(),
+			DUMPER_TYPE_NAMESPACE( "System", "Int32" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Int32" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( MoveItem, local_player_move_item );
+
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( get_Entity,
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "EggHuntNote" ), "Update" ) ),
+			DUMPER_CLASS( "BasePlayer" ),
+			0,
+			METHOD_ATTRIBUTE_PUBLIC,
+			METHOD_ATTRIBUTE_STATIC
+		);
+
+		local_player_get_entity = ( decltype( local_player_get_entity ) )( game_base + get_Entity_Offset );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "LocalPlayer_Static", local_player_static_class );
+	DUMPER_SECTION( "Offsets" );
+		il2cpp::field_info_t* entity = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "BasePlayer", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* entity ) { return entity != nullptr; } );
+		DUMP_MEMBER_BY_X( Entity, entity->offset() );
+	DUMPER_CLASS_END;
+
 	size_t player_model_offset = -1;
 	size_t last_sent_tick_offset = -1;
 	size_t belt_offset = -1;
@@ -1969,6 +2018,22 @@ void dumper::produce() {
 
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( Belt, player_belt_class );
 		belt_offset = Belt_Offset;
+
+		if ( local_player_get_entity && last_sent_tick_offset != -1 ) {
+			uint64_t local_player = local_player_get_entity();
+
+			if ( local_player ) {			
+				std::vector<il2cpp::field_info_t*> base_entities = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE( "BaseEntity" ), FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
+
+				for ( il2cpp::field_info_t* base_entity : base_entities ) {
+					rust::base_entity* value = *( rust::base_entity** )( local_player + base_entity->offset() );
+
+					if ( value == ( rust::base_entity* )local_player ) {
+						DUMP_MEMBER_BY_X( _lookingAtEntity, base_entity->offset() );
+					}
+				}	
+			}
+		}
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_NAME( ChatMessage );
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( IsOnGround, NO_FILT, DUMPER_CLASS_NAMESPACE( "System", "Boolean" ), 0, METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_VIRTUAL );
@@ -2148,55 +2213,6 @@ void dumper::produce() {
 		DUMP_METHOD_BY_INFO_PTR( Update, main_camera_update );
 
 		DUMP_MEMBER_BY_X( Trace, DUMPER_RVA( ( uint64_t )main_camera_trace ) );
-	DUMPER_CLASS_END;
-
-	il2cpp::il2cpp_class_t* pet_command_desc_class = DUMPER_CLASS( "PetCommandList/PetCommandDesc" );
-	il2cpp::il2cpp_class_t* local_player_static_class = il2cpp::search_for_class_by_field_types( pet_command_desc_class->type(), 0, FIELD_ATTRIBUTE_PUBLIC, FIELD_ATTRIBUTE_STATIC );
-	il2cpp::il2cpp_class_t* local_player_class = get_outer_class( local_player_static_class );
-
-	uint64_t( *local_player_get_entity )( ) = nullptr;
-
-	DUMPER_CLASS_BEGIN_FROM_PTR( "LocalPlayer", local_player_class );
-	DUMPER_SECTION( "Functions" );
-		il2cpp::method_info_t* local_player_item_command = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			FILT( DUMPER_METHOD( DUMPER_CLASS( "FrequencyConfig" ), "Confirm" ) ),
-			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-			METHOD_ATTRIBUTE_PUBLIC,
-			METHOD_ATTRIBUTE_STATIC,
-			item_id_class->type(),
-			DUMPER_TYPE_NAMESPACE( "System", "String" )
-		);
-
-		DUMP_METHOD_BY_INFO_PTR( ItemCommand, local_player_item_command );
-
-		il2cpp::method_info_t* local_player_move_item = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-		    FILT( DUMPER_METHOD( DUMPER_CLASS( "ItemIcon" ), "OnDroppedValue" ) ),
-			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-			METHOD_ATTRIBUTE_PUBLIC,
-			METHOD_ATTRIBUTE_STATIC,
-			item_id_class->type(),
-			item_container_id_class->type(),
-			DUMPER_TYPE_NAMESPACE( "System", "Int32" ),
-			DUMPER_TYPE_NAMESPACE( "System", "Int32" )
-		);
-
-		DUMP_METHOD_BY_INFO_PTR( MoveItem, local_player_move_item );
-
-		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( get_Entity, 
-		    FILT( DUMPER_METHOD( DUMPER_CLASS( "EggHuntNote" ), "Update" ) ),
-			DUMPER_CLASS( "BasePlayer" ),
-			0,
-			METHOD_ATTRIBUTE_PUBLIC,
-			METHOD_ATTRIBUTE_STATIC 
-		);
-
-		local_player_get_entity = ( decltype( local_player_get_entity ) )( game_base + get_Entity_Offset );
-	DUMPER_CLASS_END;
-
-	DUMPER_CLASS_BEGIN_FROM_PTR( "LocalPlayer_Static", local_player_static_class );
-	DUMPER_SECTION( "Offsets" );
-		il2cpp::field_info_t* entity = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "BasePlayer", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* entity ) { return entity != nullptr; } );
-		DUMP_MEMBER_BY_X( Entity, entity->offset() );
 	DUMPER_CLASS_END;
 
 	size_t input_state_offset = -1;
