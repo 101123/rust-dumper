@@ -9,7 +9,8 @@
 
 namespace dumper
 {
-	void produce( );
+	void produce();
+	void produce_unity();
 	void write_game_assembly();
 
 	void dump_call( uint64_t function, uint32_t limit, uint32_t depth = 0 );
@@ -17,6 +18,7 @@ namespace dumper
 	extern FILE* outfile_handle;
 	extern FILE* outfile_log_handle;
 	extern uint64_t game_base;
+	extern uint64_t unity_base;
 
 	char* clean_klass_name( const char* klass_name );
 	char* clean_inner_klass_name( il2cpp::il2cpp_class_t* klass );

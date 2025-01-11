@@ -68,6 +68,7 @@
 #define DUMPER_ATTR_DONT_CARE 0
 
 #define DUMPER_RVA( X ) X - dumper::game_base
+#define DUMPER_RVA_UNITY( X ) X - dumper::unity_base
 #define DUMPER_CLASS( name ) il2cpp::get_class_by_name( name )
 #define DUMPER_CLASS_NAMESPACE( namespaze, name ) il2cpp::get_class_by_name( name, namespaze )
 #define DUMPER_METHOD( klass, name ) il2cpp::get_method_by_name( klass, name )->get_fn_ptr< uint64_t >()
@@ -139,6 +140,7 @@
 #define DUMP_METHOD_BY_NAME( NAME ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_name(dumper_klass, #NAME)->get_fn_ptr<uint64_t>()));
 #define DUMP_METHOD_BY_NAME_STR( NAME, method_name ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_name( dumper_klass, method_name )->get_fn_ptr<uint64_t>()));
 #define DUMP_METHOD_BY_PARAM_NAME( NAME, method_name, param_name, param_idx ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_param_name( NO_FILT, dumper_klass, method_name, param_name, param_idx )->get_fn_ptr<uint64_t>() ) ) 
+#define DUMP_METHOD_BY_ICALL( NAME, ICALL ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA_UNITY( il2cpp::resolve_icall( ICALL ) ) );
 
 #define DUMP_VIRTUAL_METHOD( NAME, virtual_method ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( virtual_method.method->get_fn_ptr<uint64_t>( ) ) ); dumper::write_to_file( "\tconstexpr const static size_t %s_vtableoff = 0x%x;\n", #NAME, virtual_method.offset )
 
@@ -211,6 +213,7 @@ void dump_fn_to_file( const char* label, uint8_t* address ) {
 FILE* dumper::outfile_handle = nullptr;
 FILE* dumper::outfile_log_handle = nullptr;
 uint64_t dumper::game_base = 0;
+uint64_t dumper::unity_base = 0;
 
 void dumper::write_to_file( const char* format, ... )
 {
@@ -627,8 +630,81 @@ int get_button_offset( const wchar_t* button_command ) {
 #define SERVER_PORT 28015
 #define WORLD_SIZE 4000
 
+void dumper::produce_unity() {
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Object", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( Destroy, "UnityEngine.Object::Destroy(UnityEngine.Object,System.Single)" );
+		DUMP_METHOD_BY_ICALL( DestroyImmediate, "UnityEngine.Object::DestroyImmediate(UnityEngine.Object,System.Boolean)" );
+		DUMP_METHOD_BY_ICALL( DontDestroyOnLoad, "UnityEngine.Object::DontDestroyOnLoad(UnityEngine.Object)" );
+		DUMP_METHOD_BY_ICALL( FindObjectFromInstanceID, "UnityEngine.Object::FindObjectFromInstanceID(System.Int32)" );
+		DUMP_METHOD_BY_ICALL( GetName, "UnityEngine.Object::GetName(UnityEngine.Object)" );
+		DUMP_METHOD_BY_ICALL( get_hideFlags, "UnityEngine.Object::get_hideFlags()" );
+		DUMP_METHOD_BY_ICALL( set_hideFlags, "UnityEngine.Object::set_hideFlags(UnityEngine.HideFlags)" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "GameObject", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( Internal_AddComponentWithType, "UnityEngine.GameObject::Internal_AddComponentWithType(System.Type)" );
+		DUMP_METHOD_BY_ICALL( GetComponent, "UnityEngine.GameObject::GetComponent(System.Type)" );
+		DUMP_METHOD_BY_ICALL( GetComponentCount, "UnityEngine.GameObject::GetComponentCount()" );
+		DUMP_METHOD_BY_ICALL( GetComponentInChildren, "UnityEngine.GameObject::GetComponentInChildren(System.Type,System.Boolean)" );
+		DUMP_METHOD_BY_ICALL( GetComponentInParent, "UnityEngine.GameObject::GetComponentInParent(System.Type,System.Boolean)" );
+		DUMP_METHOD_BY_ICALL( GetComponentsInternal, "UnityEngine.GameObject::GetComponentsInternal(System.Type,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Object)" );
+		DUMP_METHOD_BY_ICALL( Internal_CreateGameObject, "UnityEngine.GameObject::Internal_CreateGameObject(UnityEngine.GameObject,System.String)" );
+		DUMP_METHOD_BY_ICALL( get_layer, "UnityEngine.GameObject::get_layer()" );
+		DUMP_METHOD_BY_ICALL( get_tag, "UnityEngine.GameObject::get_tag()" );
+		DUMP_METHOD_BY_ICALL( get_transform, "UnityEngine.GameObject::get_transform()" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Component", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( get_gameObject, "UnityEngine.Component::get_gameObject()" );
+		DUMP_METHOD_BY_ICALL( get_transform, "UnityEngine.Component::get_transform()" );
+	DUMPER_CLASS_END;
+	
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Transform", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( GetChild, "UnityEngine.Transform::GetChild(System.Int32)" );
+		DUMP_METHOD_BY_ICALL( GetParent, "UnityEngine.Transform::GetParent()" );
+		DUMP_METHOD_BY_ICALL( GetRoot, "UnityEngine.Transform::GetRoot()" );
+		DUMP_METHOD_BY_ICALL( InverseTransformDirection_Injected, "UnityEngine.Transform::InverseTransformDirection_Injected(UnityEngine.Vector3&,UnityEngine.Vector3&)" );
+		DUMP_METHOD_BY_ICALL( InverseTransformPoint_Injected, "UnityEngine.Transform::InverseTransformPoint_Injected(UnityEngine.Vector3&,UnityEngine.Vector3&)" );
+		DUMP_METHOD_BY_ICALL( InverseTransformVector_Injected, "UnityEngine.Transform::InverseTransformVector_Injected(UnityEngine.Vector3&,UnityEngine.Vector3&)" );
+		DUMP_METHOD_BY_ICALL( SetLocalPositionAndRotation_Injected, "UnityEngine.Transform::SetLocalPositionAndRotation_Injected(UnityEngine.Vector3&,UnityEngine.Quaternion&)" );
+		DUMP_METHOD_BY_ICALL( SetPositionAndRotation_Injected, "UnityEngine.Transform::SetPositionAndRotation_Injected(UnityEngine.Vector3&,UnityEngine.Quaternion&)" );
+		DUMP_METHOD_BY_ICALL( TransformDirection_Injected, "UnityEngine.Transform::TransformDirection_Injected(UnityEngine.Vector3&,UnityEngine.Vector3&)" );
+		DUMP_METHOD_BY_ICALL( TransformPoint_Injected, "UnityEngine.Transform::TransformPoint_Injected(UnityEngine.Vector3&,UnityEngine.Vector3&)" );
+		DUMP_METHOD_BY_ICALL( TransformVector_Injected, "UnityEngine.Transform::TransformVector_Injected(UnityEngine.Vector3&,UnityEngine.Vector3&)" );
+		DUMP_METHOD_BY_ICALL( get_childCount, "UnityEngine.Transform::get_childCount()" );
+		DUMP_METHOD_BY_ICALL( get_eulerAngles, "UnityEngine.Transform::get_childCount()" );
+		DUMP_METHOD_BY_ICALL( get_localPosition_Injected, "UnityEngine.Transform::get_localPosition_Injected(UnityEngine.Vector3&)" );
+		DUMP_METHOD_BY_ICALL( get_localRotation_Injected, "UnityEngine.Transform::get_localRotation_Injected(UnityEngine.Quaternion&)" );
+		DUMP_METHOD_BY_ICALL( get_localScale_Injected, "UnityEngine.Transform::get_localScale_Injected(UnityEngine.Vector3&)" );
+		DUMP_METHOD_BY_ICALL( get_lossyScale_Injected, "UnityEngine.Transform::get_lossyScale_Injected(UnityEngine.Vector3&)" );
+		DUMP_METHOD_BY_ICALL( get_position_Injected, "UnityEngine.Transform::get_position_Injected(UnityEngine.Vector3&)" );
+		DUMP_METHOD_BY_ICALL( get_rotation_Injected, "UnityEngine.Transform::get_rotation_Injected(UnityEngine.Quaternion&)" );
+		DUMP_METHOD_BY_ICALL( set_localPosition_Injected, "UnityEngine.Transform::set_localPosition_Injected(UnityEngine.Vector3&)" );
+		DUMP_METHOD_BY_ICALL( set_localRotation_Injected, "UnityEngine.Transform::set_localRotation_Injected(UnityEngine.Quaternion&)" );
+		DUMP_METHOD_BY_ICALL( set_localScale_Injected, "UnityEngine.Transform::set_localScale_Injected(UnityEngine.Vector3&)" );
+		DUMP_METHOD_BY_ICALL( set_position_Injected, "UnityEngine.Transform::set_position_Injected(UnityEngine.Vector3&)" );
+		DUMP_METHOD_BY_ICALL( set_rotation_Injected, "UnityEngine.Transform::set_rotation_Injected(UnityEngine.Quaternion&)" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Time", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( get_deltaTime, "UnityEngine.Time::get_deltaTime()" );
+		DUMP_METHOD_BY_ICALL( get_fixedDeltaTime, "UnityEngine.Time::get_fixedDeltaTime()" );
+		DUMP_METHOD_BY_ICALL( get_fixedTime, "UnityEngine.Time::get_fixedTime()" );
+		DUMP_METHOD_BY_ICALL( get_frameCount, "UnityEngine.Time::get_frameCount()" );
+		DUMP_METHOD_BY_ICALL( get_realtimeSinceStartup, "UnityEngine.Time::get_realtimeSinceStartup()" );
+		DUMP_METHOD_BY_ICALL( get_smoothDeltaTime, "UnityEngine.Time::get_smoothDeltaTime()" );
+		DUMP_METHOD_BY_ICALL( get_time, "UnityEngine.Time::get_time()" );
+	DUMPER_CLASS_END;
+}
+
 void dumper::produce() {
 	game_base = ( uint64_t ) ( GetModuleHandleA( "GameAssembly.dll" ) );
+	unity_base = ( uint64_t )( GetModuleHandleA( "UnityPlayer.dll" ) );
 	outfile_handle = fopen( "C:\\dumps\\output.h", "w" );
 	if ( !outfile_handle )
 		return;
@@ -639,6 +715,7 @@ void dumper::produce() {
 
 	dumper::write_to_file( "#include <cstdint>\n\n" );
 	dumper::write_game_assembly();
+	dumper::produce_unity();
 
 	il2cpp::il2cpp_class_t* xmas_refill_class = DUMPER_CLASS( "XMasRefill" );
 	il2cpp::il2cpp_class_t* network_message_class = nullptr;
