@@ -139,6 +139,7 @@
 
 #define DUMP_METHOD_BY_NAME( NAME ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_name(dumper_klass, #NAME)->get_fn_ptr<uint64_t>()));
 #define DUMP_METHOD_BY_NAME_STR( NAME, method_name ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_name( dumper_klass, method_name )->get_fn_ptr<uint64_t>()));
+#define DUMP_METHOD_BY_NAME_STR_ARG_CT( NAME, method_name, arg_count ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_name( dumper_klass, method_name, arg_count )->get_fn_ptr<uint64_t>()));
 #define DUMP_METHOD_BY_PARAM_NAME( NAME, method_name, param_name, param_idx ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( il2cpp::get_method_by_param_name( NO_FILT, dumper_klass, method_name, param_name, param_idx )->get_fn_ptr<uint64_t>() ) ) 
 #define DUMP_METHOD_BY_ICALL( NAME, ICALL ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA_UNITY( il2cpp::resolve_icall( ICALL ) ) );
 
@@ -632,6 +633,8 @@ int get_button_offset( const wchar_t* button_command ) {
 
 void dumper::produce_unity() {
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Object", "UnityEngine" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( m_CachedPtr );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_ICALL( Destroy, "UnityEngine.Object::Destroy(UnityEngine.Object,System.Single)" );
 		DUMP_METHOD_BY_ICALL( DestroyImmediate, "UnityEngine.Object::DestroyImmediate(UnityEngine.Object,System.Boolean)" );
@@ -699,6 +702,67 @@ void dumper::produce_unity() {
 		DUMP_METHOD_BY_ICALL( get_realtimeSinceStartup, "UnityEngine.Time::get_realtimeSinceStartup()" );
 		DUMP_METHOD_BY_ICALL( get_smoothDeltaTime, "UnityEngine.Time::get_smoothDeltaTime()" );
 		DUMP_METHOD_BY_ICALL( get_time, "UnityEngine.Time::get_time()" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Material", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( CreateWithMaterial, "UnityEngine.Material::CreateWithMaterial(UnityEngine.Material,UnityEngine.Material)" );
+		DUMP_METHOD_BY_ICALL( CreateWithShader, "UnityEngine.Material::CreateWithShader(UnityEngine.Material,UnityEngine.Shader)" );	
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "MaterialPropertyBlock", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( SetFloatImpl, "UnityEngine.MaterialPropertyBlock::SetFloatImpl(System.Int32,System.Single)" );
+		DUMP_METHOD_BY_ICALL( SetTextureImpl, "UnityEngine.MaterialPropertyBlock::SetTextureImpl(System.Int32,UnityEngine.Texture)" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Shader", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( PropertyToID, "UnityEngine.Shader::PropertyToID(System.String)" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "CommandBuffer", "UnityEngine.Rendering" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_NAME_STR( ctor, ".ctor" );
+		DUMP_METHOD_BY_ICALL( Clear, "UnityEngine.Rendering.CommandBuffer::Clear()" );
+		DUMP_METHOD_BY_ICALL( ClearRenderTarget_Injected, "UnityEngine.Rendering.CommandBuffer::ClearRenderTarget_Injected(UnityEngine.Rendering.RTClearFlags,UnityEngine.Color&,System.Single,System.UInt32)" );
+		DUMP_METHOD_BY_ICALL( SetViewport_Injected, "UnityEngine.Rendering.CommandBuffer::SetViewport_Injected(UnityEngine.Rect&)" );
+		DUMP_METHOD_BY_ICALL( SetViewProjectionMatrices_Injected, "UnityEngine.Rendering.CommandBuffer::SetViewProjectionMatrices_Injected(UnityEngine.Matrix4x4&,UnityEngine.Matrix4x4&)" );
+		DUMP_METHOD_BY_ICALL( EnableScissorRect_Injected, "UnityEngine.Rendering.CommandBuffer::EnableScissorRect_Injected(UnityEngine.Rect&)" );
+		DUMP_METHOD_BY_ICALL( DisableScissorRect, "UnityEngine.Rendering.CommandBuffer::DisableScissorRect()" );
+		DUMP_METHOD_BY_ICALL( Internal_DrawProceduralIndexedIndirect_Injected, "UnityEngine.Rendering.CommandBuffer::Internal_DrawProceduralIndexedIndirect_Injected()" );
+	DUMPER_CLASS_END; 
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "ComputeBuffer", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_NAME_STR_ARG_CT( ctor, ".ctor", 5 );
+		DUMP_METHOD_BY_ICALL( get_count, "UnityEngine.ComputeBuffer::get_count()" );
+		DUMP_METHOD_BY_NAME( Release );
+		DUMP_METHOD_BY_ICALL( InternalSetNativeData, "UnityEngine.ComputeBuffer::InternalSetNativeData(System.IntPtr,System.Int32,System.Int32,System.Int32,System.Int32)" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "GraphicsBuffer", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_NAME_STR_ARG_CT( ctor, ".ctor", 3 );
+		DUMP_METHOD_BY_ICALL( get_count, "UnityEngine.GraphicsBuffer::get_count()" );
+		DUMP_METHOD_BY_NAME_STR_ARG_CT( Dispose, "Dispose", 0 );
+		DUMP_METHOD_BY_ICALL( InternalSetNativeData, "UnityEngine.GraphicsBuffer::InternalSetNativeData(System.IntPtr,System.Int32,System.Int32,System.Int32,System.Int32)" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Event", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_NAME( get_current );
+		DUMP_METHOD_BY_ICALL( get_type, "UnityEngine.Event::get_type()" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Graphics", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( ExecuteCommandBuffer, "UnityEngine.Graphics::ExecuteCommandBuffer(UnityEngine.Rendering.CommandBuffer)" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Matrix4x4", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( Ortho_Injected, "UnityEngine.Matrix4x4::Ortho_Injected(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,UnityEngine.Matrix4x4&)" );
 	DUMPER_CLASS_END;
 }
 
