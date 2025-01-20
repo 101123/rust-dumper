@@ -708,10 +708,12 @@ void dumper::produce_unity() {
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_ICALL( CreateWithMaterial, "UnityEngine.Material::CreateWithMaterial(UnityEngine.Material,UnityEngine.Material)" );
 		DUMP_METHOD_BY_ICALL( CreateWithShader, "UnityEngine.Material::CreateWithShader(UnityEngine.Material,UnityEngine.Shader)" );	
+		DUMP_METHOD_BY_ICALL( SetBufferImpl, "UnityEngine.Material::SetBufferImpl(System.Int32,UnityEngine.ComputeBuffer)" );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "MaterialPropertyBlock", "UnityEngine" );
 	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_NAME_STR( ctor, ".ctor" );
 		DUMP_METHOD_BY_ICALL( SetFloatImpl, "UnityEngine.MaterialPropertyBlock::SetFloatImpl(System.Int32,System.Single)" );
 		DUMP_METHOD_BY_ICALL( SetTextureImpl, "UnityEngine.MaterialPropertyBlock::SetTextureImpl(System.Int32,UnityEngine.Texture)" );
 	DUMPER_CLASS_END;
@@ -719,6 +721,19 @@ void dumper::produce_unity() {
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Shader", "UnityEngine" );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_ICALL( PropertyToID, "UnityEngine.Shader::PropertyToID(System.String)" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Texture", "UnityEngine" );
+		DUMP_METHOD_BY_ICALL( set_filterMode, "UnityEngine.Texture::set_filterMode(UnityEngine.FilterMode)" );
+		DUMP_METHOD_BY_ICALL( GetNativeTexturePtr, "UnityEngine.Texture::GetNativeTexturePtr()" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Texture2D", "UnityEngine" );
+		DUMP_METHOD_BY_NAME_STR_ARG_CT( ctor, ".ctor", 9 );
+		DUMP_METHOD_BY_ICALL( Internal_CreateImpl, "UnityEngine.Texture2D::Internal_CreateImpl(UnityEngine.Texture2D,System.Int32,System.Int32,System.Int32,UnityEngine.Experimental.Rendering.GraphicsFormat,UnityEngine.TextureColorSpace,UnityEngine.Experimental.Rendering.TextureCreationFlags,System.IntPtr,System.String)" );
+		DUMP_METHOD_BY_ICALL( GetRawImageDataSize, "UnityEngine.Texture2D::GetRawImageDataSize()" );
+		DUMP_METHOD_BY_ICALL( GetWritableImageData, "UnityEngine.Texture2D::GetWritableImageData(System.Int32)" );
+		DUMP_METHOD_BY_ICALL( ApplyImpl, "UnityEngine.Texture2D::ApplyImpl(System.Boolean,System.Boolean)" );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "CommandBuffer", "UnityEngine.Rendering" );
@@ -763,6 +778,24 @@ void dumper::produce_unity() {
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Matrix4x4", "UnityEngine" );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_ICALL( Ortho_Injected, "UnityEngine.Matrix4x4::Ortho_Injected(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,UnityEngine.Matrix4x4&)" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "AssetBundle", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( LoadFromFile_Internal, "UnityEngine.AssetBundle::LoadFromFile_Internal(System.String,System.UInt32,System.UInt64)" );
+		DUMP_METHOD_BY_ICALL( LoadAsset_Internal, "UnityEngine.AssetBundle::LoadAsset_Internal(System.String,System.Type)" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Screen", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( get_width, "UnityEngine.Screen::get_width()" );
+		DUMP_METHOD_BY_ICALL( get_height, "UnityEngine.Screen::get_height()" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Input", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( get_mousePosition_Injected, "UnityEngine.Input::get_mousePosition_Injected(UnityEngine.Vector3&)" );
+		DUMP_METHOD_BY_ICALL( get_mouseScrollDelta_Injected, "UnityEngine.Input::get_mouseScrollDelta_Injected(UnityEngine.Vector2&)" );
 	DUMPER_CLASS_END;
 }
 
@@ -1468,6 +1501,12 @@ void dumper::produce() {
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "ItemManager", item_manager_class );
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "ItemManager (static)", item_manager_static_class );
 
+	il2cpp::il2cpp_class_t* base_player_class = DUMPER_CLASS( "BasePlayer" );
+	il2cpp::il2cpp_class_t* base_player_static_class = get_inner_static_class( base_player_class );
+
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "BasePlayer", base_player_class );
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "BasePlayer (static)", base_player_static_class );
+
 	il2cpp::il2cpp_class_t* scriptable_object_ref_class = DUMPER_CLASS( "ScriptableObjectRef" );
 	uint64_t resource_ref_get = 0;
 
@@ -2132,6 +2171,12 @@ void dumper::produce() {
 
 	uint64_t base_player_send_client_tick = 0;
 	uint64_t base_player_client_input = 0;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "BasePlayer_Static", base_player_static_class );
+	DUMPER_SECTION( "Offsets" );
+		il2cpp::field_info_t* visible_player_list = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "<System.UInt64,BasePlayer>", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* visible_player_list ) { return visible_player_list != nullptr; } );
+		DUMP_MEMBER_BY_X( visiblePlayerList, visible_player_list->offset() );
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BasePlayer" );
 	DUMPER_SECTION( "Offsets" );
