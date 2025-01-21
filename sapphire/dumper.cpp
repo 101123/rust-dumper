@@ -723,6 +723,20 @@ void dumper::produce_unity() {
 		DUMP_METHOD_BY_ICALL( PropertyToID, "UnityEngine.Shader::PropertyToID(System.String)" );
 	DUMPER_CLASS_END;
 
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Mesh", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( Internal_Create, "UnityEngine.Mesh::Internal_Create(UnityEngine.Mesh)" );
+		DUMP_METHOD_BY_ICALL( MarkDynamicImpl, "UnityEngine.Mesh::MarkDynamicImpl()" );
+		DUMP_METHOD_BY_ICALL( ClearImpl, "UnityEngine.Mesh::ClearImpl(System.Boolean)" );
+		DUMP_METHOD_BY_ICALL( set_subMeshCount, "UnityEngine.Mesh::set_subMeshCount(System.Int32)" );
+		DUMP_METHOD_BY_ICALL( SetVertexBufferParamsFromPtr, "UnityEngine.Mesh::SetVertexBufferParamsFromPtr" );
+		DUMP_METHOD_BY_ICALL( SetIndexBufferParams, "UnityEngine.Mesh::SetIndexBufferParams" );
+		DUMP_METHOD_BY_ICALL( InternalSetVertexBufferData, "UnityEngine.Mesh::InternalSetVertexBufferData" );
+		DUMP_METHOD_BY_ICALL( InternalSetIndexBufferData, "UnityEngine.Mesh::InternalSetIndexBufferData" );
+		DUMP_METHOD_BY_ICALL( SetAllSubMeshesAtOnceFromNativeArray, "UnityEngine.Mesh::SetAllSubMeshesAtOnceFromNativeArray" );
+		DUMP_METHOD_BY_ICALL( UploadMeshDataImpl, "UnityEngine.Mesh::UploadMeshDataImpl(System.Boolean)" );
+	DUMPER_CLASS_END;
+
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Texture", "UnityEngine" );
 		DUMP_METHOD_BY_ICALL( set_filterMode, "UnityEngine.Texture::set_filterMode(UnityEngine.FilterMode)" );
 		DUMP_METHOD_BY_ICALL( GetNativeTexturePtr, "UnityEngine.Texture::GetNativeTexturePtr()" );
@@ -746,6 +760,7 @@ void dumper::produce_unity() {
 		DUMP_METHOD_BY_ICALL( EnableScissorRect_Injected, "UnityEngine.Rendering.CommandBuffer::EnableScissorRect_Injected(UnityEngine.Rect&)" );
 		DUMP_METHOD_BY_ICALL( DisableScissorRect, "UnityEngine.Rendering.CommandBuffer::DisableScissorRect()" );
 		DUMP_METHOD_BY_ICALL( Internal_DrawProceduralIndexedIndirect_Injected, "UnityEngine.Rendering.CommandBuffer::Internal_DrawProceduralIndexedIndirect_Injected()" );
+		DUMP_METHOD_BY_ICALL( Internal_DrawMesh_Injected, "UnityEngine.Rendering.CommandBuffer::Internal_DrawMesh_Injected(UnityEngine.Mesh,UnityEngine.Matrix4x4&,UnityEngine.Material,System.Int32,System.Int32,UnityEngine.MaterialPropertyBlock)" )
 	DUMPER_CLASS_END; 
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "ComputeBuffer", "UnityEngine" );
@@ -768,6 +783,8 @@ void dumper::produce_unity() {
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_NAME( get_current );
 		DUMP_METHOD_BY_ICALL( get_type, "UnityEngine.Event::get_type()" );
+		DUMP_METHOD_BY_ICALL( PopEvent, "UnityEngine.Event::PopEvent(UnityEngine.Event)" );
+		DUMP_METHOD_BY_ICALL( Internal_Use, "UnityEngine.Event::Internal_Use()" );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Graphics", "UnityEngine" );
@@ -796,6 +813,12 @@ void dumper::produce_unity() {
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_ICALL( get_mousePosition_Injected, "UnityEngine.Input::get_mousePosition_Injected(UnityEngine.Vector3&)" );
 		DUMP_METHOD_BY_ICALL( get_mouseScrollDelta_Injected, "UnityEngine.Input::get_mouseScrollDelta_Injected(UnityEngine.Vector2&)" );
+		DUMP_METHOD_BY_ICALL( GetMouseButtonDown, "UnityEngine.Input::GetMouseButtonDown(System.Int32)" );
+		DUMP_METHOD_BY_ICALL( GetMouseButtonUp, "UnityEngine.Input::GetMouseButtonUp(System.Int32)" );
+		DUMP_METHOD_BY_ICALL( GetMouseButton, "UnityEngine.Input::GetMouseButton(System.Int32)" );
+		DUMP_METHOD_BY_ICALL( GetKeyDownInt, "UnityEngine.Input::GetKeyDownInt(UnityEngine.KeyCode)" );
+		DUMP_METHOD_BY_ICALL( GetKeyUpInt, "UnityEngine.Input::GetKeyUpInt(UnityEngine.KeyCode)" );
+		DUMP_METHOD_BY_ICALL( GetKeyInt, "UnityEngine.Input::GetKeyInt(UnityEngine.KeyCode)" );
 	DUMPER_CLASS_END;
 }
 
