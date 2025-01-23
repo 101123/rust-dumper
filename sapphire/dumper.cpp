@@ -76,7 +76,16 @@
 #define DUMPER_TYPE( name ) DUMPER_CLASS( name )->type()
 #define DUMPER_TYPE_NAMESPACE( namespaze, name ) DUMPER_CLASS_NAMESPACE( namespaze, name )->type()
 
-#define DUMPER_PTR_CLASS_NAME( dump_name, klass_ptr ) dumper::write_to_file( "#define " dump_name "_ClassName \"%s\"\n\n", clean_inner_klass_name( klass_ptr ) );
+#define DUMPER_PTR_CLASS_NAME(dump_name, klass_ptr) \
+    dumper::write_to_file( \
+        "#define " dump_name "_ClassName \"%s\"\n", \
+        clean_inner_klass_name(klass_ptr) \
+    ); \
+    dumper::write_to_file( \
+        "#define " dump_name "_ClassNameShort \"%s\"\n\n", \
+        klass_ptr->name() \
+    );
+
 #define DUMPER_SECTION( dump_name ) dumper::write_to_file( "\t\n// " dump_name "\n" );
 #define DUMPER_CLASS_HEADER( klass_name ) dumper::write_to_file( "namespace %s {\n", dumper::clean_klass_name( klass_name ) );
 
