@@ -2381,8 +2381,21 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ProjectileWeaponMod" );
 	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( repeatDelay );
 		DUMP_MEMBER_BY_NAME( projectileVelocity );
+		DUMP_MEMBER_BY_NAME( projectileDamage );
+		DUMP_MEMBER_BY_NAME( projectileDistance );
+		DUMP_MEMBER_BY_NAME( aimsway );
+		DUMP_MEMBER_BY_NAME( aimswaySpeed );
 		DUMP_MEMBER_BY_NAME( recoil );
+		DUMP_MEMBER_BY_NAME( sightAimCone );
+		DUMP_MEMBER_BY_NAME( hipAimCone );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "ProjectileWeaponMod/Modifier" );
+		DUMP_MEMBER_BY_NAME( enabled );
+		DUMP_MEMBER_BY_NAME( scalar );
+		DUMP_MEMBER_BY_NAME( offset );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "ConsoleSystem", console_system_class );
