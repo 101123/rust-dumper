@@ -1598,7 +1598,7 @@ void dumper::produce() {
 	il2cpp::il2cpp_type_t* base_melee_process_attack_params[] = { hit_test_class->type() }; 
 
 	il2cpp::virtual_method_t base_melee_process_attack = il2cpp::get_virtual_method_by_return_type_and_param_types(
-		FILT_I( base_melee_do_attack.method->get_fn_ptr<uint64_t>(), 1000, 0  ),
+		FILT_I( base_melee_do_attack.method->get_fn_ptr<uint64_t>(), 2000, 0  ),
 		DUMPER_CLASS( "BaseMelee" ),
 		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 		METHOD_ATTRIBUTE_FAMILY,
