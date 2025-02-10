@@ -1738,8 +1738,12 @@ void dumper::produce() {
 	}
 
 	if ( interpolator_class ) {
+		il2cpp::field_info_t* _list = il2cpp::get_field_if_type_contains( interpolator_class, "System.Collections.Generic.List" );
+		il2cpp::il2cpp_class_t* transform_snapshot_class = _list->type()->klass()->get_generic_argument_at( 0 );
+
 		DUMPER_CLASS_BEGIN_FROM_PTR( "Interpolator", interpolator_class );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( List, "System.Collections.Generic.List" );
+		DUMP_MEMBER_BY_X( list, _list->offset() );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( last, transform_snapshot_class );
 		DUMPER_CLASS_END;
 	}
 
