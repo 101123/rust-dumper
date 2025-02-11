@@ -3932,8 +3932,11 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_X( itemDictionaryByName, item_dictionary_by_name->offset() );
 	DUMPER_CLASS_END;
 
-	DUMPER_CLASS_BEGIN_FROM_PTR( "ConVar_Server_Static", convar_server_static_class );
-	DUMPER_SECTION( "Offsets" );
+	DUMP_CLASS_NAME( "ConVar_Server_Static", convar_server_static_class );
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "ServerAdminUGCEntry", "Rust.UI.ServerAdmin" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_NAME( ReceivedDataFromServer );
 	DUMPER_CLASS_END;
 
 	fclose( outfile_handle );
