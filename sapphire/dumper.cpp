@@ -1419,6 +1419,12 @@ void dumper::produce() {
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "ConVar.Graphics", convar_graphics_class );
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "ConVar.Graphics (static)", convar_graphics_static_class );
 
+	il2cpp::il2cpp_class_t* convar_server_class = il2cpp::search_for_class_by_method_return_type_name( "Rust.Era", METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC );
+	il2cpp::il2cpp_class_t* convar_server_static_class = get_inner_static_class( convar_server_class );
+
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "ConVar.Server", convar_server_class );
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "ConVar.Server (static)", convar_server_static_class );
+
 	il2cpp::il2cpp_class_t* convar_admin_class = nullptr;
 	il2cpp::il2cpp_class_t* convar_admin_static_class = nullptr;
 
@@ -3924,6 +3930,10 @@ void dumper::produce() {
 
 		il2cpp::field_info_t* item_dictionary_by_name = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "Dictionary<System.String,ItemDefinition>", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* item_dictionary_by_name ) { return item_dictionary_by_name != nullptr; } );
 		DUMP_MEMBER_BY_X( itemDictionaryByName, item_dictionary_by_name->offset() );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "ConVar_Server_Static", convar_server_static_class );
+	DUMPER_SECTION( "Offsets" );
 	DUMPER_CLASS_END;
 
 	fclose( outfile_handle );
