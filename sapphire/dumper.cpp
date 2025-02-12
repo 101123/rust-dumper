@@ -1718,6 +1718,7 @@ void dumper::produce() {
 		position_lerp_class = position_lerp->type( )->klass( );
 
 	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_NAME_STR_ARG_CT( ServerRPC, "ServerRPC", 1 );
 
 		DUMP_METHOD_BY_INFO_PTR( FindBone, SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 			NO_FILT, 
