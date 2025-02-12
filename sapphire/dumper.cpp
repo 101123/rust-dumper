@@ -656,6 +656,7 @@ void dumper::produce_unity() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "GameObject", "UnityEngine" );
 	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( SetActive, "UnityEngine.GameObject::SetActive(System.Boolean)" );
 		DUMP_METHOD_BY_ICALL( Internal_AddComponentWithType, "UnityEngine.GameObject::Internal_AddComponentWithType(System.Type)" );
 		DUMP_METHOD_BY_ICALL( GetComponent, "UnityEngine.GameObject::GetComponent(System.Type)" );
 		DUMP_METHOD_BY_ICALL( GetComponentCount, "UnityEngine.GameObject::GetComponentCount()" );
@@ -672,6 +673,11 @@ void dumper::produce_unity() {
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_ICALL( get_gameObject, "UnityEngine.Component::get_gameObject()" );
 		DUMP_METHOD_BY_ICALL( get_transform, "UnityEngine.Component::get_transform()" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Behaviour", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( set_enabled, "UnityEngine.Behaviour::set_enabled(System.Boolean)" );
 	DUMPER_CLASS_END;
 	
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Transform", "UnityEngine" );
@@ -2263,6 +2269,7 @@ void dumper::produce() {
 			}
 		}
 	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_NAME( OnViewModeChanged );
 		DUMP_METHOD_BY_NAME( ChatMessage );
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( IsOnGround, NO_FILT, DUMPER_CLASS_NAMESPACE( "System", "Boolean" ), 0, METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_VIRTUAL );
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GetHeldItemID, NO_FILT, item_id_class, 0, METHOD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
