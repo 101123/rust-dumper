@@ -1042,6 +1042,20 @@ void dumper::produce() {
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "ConsoleSystem.Arg", console_system_arg_class );
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Facepunch.Network.SteamNetworking", facepunch_network_steam_networking_class );
 
+	il2cpp::method_info_t* game_physics_handle_ignore_collision = SEARCH_FOR_METHOD_IN_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		WILDCARD_VALUE( il2cpp::il2cpp_class_t* ),
+		FILT( DUMPER_METHOD( DUMPER_CLASS( "PoweredLightsDeployer" ), "OnInput" ) ),
+		DUMPER_TYPE_NAMESPACE( "System", "Int32" ),
+		METHOD_ATTRIBUTE_PUBLIC,
+		METHOD_ATTRIBUTE_STATIC,
+		DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
+		DUMPER_TYPE_NAMESPACE( "System", "Int32" )
+	);
+
+	il2cpp::il2cpp_class_t* game_physics_class = game_physics_handle_ignore_collision->klass();
+
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "GamePhysics", game_physics_class );
+
 	il2cpp::il2cpp_class_t* player_loot_class = DUMPER_CLASS( "PlayerLoot" );
 	il2cpp::il2cpp_class_t* item_class = nullptr;
 	il2cpp::il2cpp_class_t* item_id_class = nullptr;
@@ -1819,6 +1833,16 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( noHeadshots );
 		DUMP_MEMBER_BY_NEAR_OFFSET( nextAttackTime, DUMPER_OFFSET( noHeadshots ) + 0x2 );
 		DUMP_MEMBER_BY_NEAR_OFFSET( timeSinceDeploy, DUMPER_OFFSET( noHeadshots ) + 0x1A );
+	DUMPER_SECTION( "Functions" );
+		il2cpp::method_info_t* attack_entity_start_attack_cooldown = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseProjectile" ), "BeginCycle" ) ),
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_FAMILY,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE_NAMESPACE( "System", "Single" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( StartAttackCooldown, attack_entity_start_attack_cooldown );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseProjectile" );
@@ -2717,6 +2741,16 @@ void dumper::produce() {
 				}
 			}
 		}
+
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( get_iconSprite,
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "ItemPreviewIcon" ), "OnItemIconChanged" ) ),
+			DUMPER_CLASS_NAMESPACE( "UnityEngine", "Sprite" ),
+			0,
+			METHOD_ATTRIBUTE_ASSEM,
+			DUMPER_ATTR_DONT_CARE
+		);
+
 	DUMPER_CLASS_END;
 
 	auto water_level_search_types = std::vector<il2cpp::method_search_flags_t>{
@@ -3945,6 +3979,64 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "ServerAdminUGCEntry", "Rust.UI.ServerAdmin" );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_NAME( ReceivedDataFromServer );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "LoadingScreen" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( panel );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "MixerSnapshotManager" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( defaultSnapshot );
+		DUMP_MEMBER_BY_NAME( loadingSnapshot );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "MapView" );
+	DUMPER_SECTION( "Functions" );
+		il2cpp::method_info_t* map_view_world_pos_to_image_pos = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "MLRSMainUI" ), "CentreMap" ) ),
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector2" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( WorldPosToImagePos, map_view_world_pos_to_image_pos );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "GamePhysics", game_physics_class )
+	DUMPER_SECTION( "Functions" );
+		il2cpp::method_info_t* game_physics_trace = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_STR(
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "CameraMan" ), "FocusOnTarget" ) ),
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			METHOD_ATTRIBUTE_STATIC,
+			"UnityEngine.Ray",
+			"System.Single",
+			"UnityEngine.RaycastHit&",
+			"System.Single",
+			"System.Int32",
+			"UnityEngine.QueryTriggerInteraction",
+			"BaseEntity"
+		);
+		DUMP_METHOD_BY_INFO_PTR( Trace, game_physics_trace );
+
+		il2cpp::method_info_t* game_physics_line_of_sight_internal = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT_N( DUMPER_METHOD( DUMPER_CLASS( "BasePlayer" ), "GetMenuOptions" ), 3 ),
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+			METHOD_ATTRIBUTE_PRIVATE,
+			METHOD_ATTRIBUTE_STATIC,
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Int32" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+			DUMPER_TYPE( "BaseEntity" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( LineOfSightInternal, game_physics_line_of_sight_internal );
 	DUMPER_CLASS_END;
 
 	fclose( outfile_handle );
