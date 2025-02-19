@@ -998,7 +998,19 @@ void dumper::produce() {
 		DUMPER_TYPE_NAMESPACE( "System", "String" ),
 	);
 
+	il2cpp::il2cpp_class_t* console_system_index_client_class = console_system_index_client_find->klass();
+
 	CHECK_RESOLVED_VALUE( VALUE_METHOD, "ConsoleSystem.Index.Client::Find", console_system_index_client_find );
+
+	std::string console_system_index_class_name = std::string( console_system_index_client_class->type()->name() );
+	console_system_index_class_name = console_system_index_class_name.substr( 0, console_system_index_class_name.find_last_of( '.' ) );
+	std::replace( console_system_index_class_name.begin(), console_system_index_class_name.end(), '.', '/' );
+
+	il2cpp::il2cpp_class_t* console_system_index_class = DUMPER_CLASS( console_system_index_class_name.c_str() );
+	il2cpp::il2cpp_class_t* console_system_index_static_class = get_inner_static_class( console_system_index_class );
+
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "ConsoleSystem.Index", console_system_index_class );
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "ConsoleSystem.Index (static)", console_system_index_static_class );
 
 	rust::console_system::get_override_offset = 
 		il2cpp::get_field_if_type_contains( console_system_command_class, "System.Func<System.String>" )->offset();
@@ -2068,6 +2080,11 @@ void dumper::produce() {
 		DUMP_METHOD_BY_RETURN_TYPE_STR( FindItemsByItemID, FILT_N( DUMPER_METHOD( DUMPER_CLASS( "SellOrderEntry" ), "UpdateNotifications" ), 3 ), searchBuf, 1 );
 	DUMPER_CLASS_END;
 
+	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerLoot" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( containers, item_container_class->name() );
+	DUMPER_CLASS_END;
+
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerInventory" );
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::method_info_t* player_inventory_initialize_method = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
@@ -2116,6 +2133,8 @@ void dumper::produce() {
 				}
 			}
 		}		
+
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( loot, DUMPER_CLASS( "PlayerLoot" ) );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_INFO_PTR( Initialize, player_inventory_initialize_method );
 
@@ -2143,6 +2162,16 @@ void dumper::produce() {
 			METHOD_ATTRIBUTE_PUBLIC, 
 			DUMPER_ATTR_DONT_CARE 
 		);
+
+		il2cpp::method_info_t* player_eyes_set_rotation = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseMountable" ), "PlayerMounted" ) ),
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Quaternion" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( set_rotation, player_eyes_set_rotation );
 
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( HeadForward,
 			FILT( DUMPER_METHOD( DUMPER_CLASS( "AttackHeliUIDialog" ), "Update" ) ),
@@ -2294,6 +2323,7 @@ void dumper::produce() {
 			}
 		}
 	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_NAME( Menu_AssistPlayer );
 		DUMP_METHOD_BY_NAME( OnViewModeChanged );
 		DUMP_METHOD_BY_NAME( ChatMessage );
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( IsOnGround, NO_FILT, DUMPER_CLASS_NAMESPACE( "System", "Boolean" ), 0, METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_VIRTUAL );
@@ -2339,6 +2369,38 @@ void dumper::produce() {
 			0, 
 			METHOD_ATTRIBUTE_PUBLIC, 
 			DUMPER_ATTR_DONT_CARE 
+		);
+
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GetMounted,
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "WaypointRace" ), "Update" ) ),
+			DUMPER_CLASS( "BaseMountable" ),
+			0,
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE
+		);
+
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GetHeldEntity,
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "Crosshair" ), "Update" ) ),
+			DUMPER_CLASS( "HeldEntity" ),
+			0,
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE
+		);
+
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( get_inventory,
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "SelectedItem" ), "Update" ) ),
+			DUMPER_CLASS( "PlayerInventory" ),
+			0,
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE
+		);
+
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( get_eyes,
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "LiquidWeaponEffects" ), "FixedUpdate" ) ),
+			DUMPER_CLASS( "PlayerEyes" ),
+			0,
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE
 		);
 
 		il2cpp::method_info_t* base_player_send_client_tick_ = il2cpp::get_method_containing_function(
@@ -2402,6 +2464,17 @@ void dumper::produce() {
 		);
 
 		DUMP_VIRTUAL_METHOD( DoFixedUpdate, player_walk_movement_do_fixed_update );
+
+		il2cpp::virtual_method_t player_walk_movement_frame_update = SEARCH_FOR_VIRTUAL_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "BasePlayer" ), "ClientUpdateLocalPlayer" ) ),
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE( "BasePlayer" ),
+			model_state_class->type()
+		);
+
+		DUMP_VIRTUAL_METHOD( FrameUpdate, player_walk_movement_frame_update );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BuildingPrivlidge" );
@@ -2453,6 +2526,12 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_PTR( "ConsoleSystem_Command", console_system_command_class );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( AllowRunFromServer );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "ConsoleSystem_Index_Static", console_system_index_static_class );
+	DUMPER_SECTION( "Offsets" );
+		il2cpp::field_info_t* all = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, console_system_command_class->type()->name(), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* all ) { return all != nullptr; } );
+		DUMP_MEMBER_BY_X( All, all->offset() );
 	DUMPER_CLASS_END;
 
 	DUMP_CLASS_NAME( "ConsoleSystem_Arg", console_system_arg_class );
@@ -3154,6 +3233,14 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( useViewModelCamera );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( model, DUMPER_CLASS( "Model" ) );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( get_ActiveModel,
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "ViewmodelEditor" ), "Update" ) ),
+			DUMPER_CLASS( "BaseViewModel" ),
+			0,
+			METHOD_ATTRIBUTE_PUBLIC,
+			METHOD_ATTRIBUTE_STATIC
+		);
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ViewModel" );
@@ -4037,6 +4124,93 @@ void dumper::produce() {
 		);
 
 		DUMP_METHOD_BY_INFO_PTR( LineOfSightInternal, game_physics_line_of_sight_internal );
+
+		il2cpp::method_info_t* game_physics_verify = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT_N( DUMPER_METHOD( DUMPER_CLASS( "SoundSource" ), "DoOcclusionCheck" ), 2 ),
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			METHOD_ATTRIBUTE_STATIC,
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "RaycastHit" ),
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
+			DUMPER_TYPE( "BaseEntity" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( Verify, game_physics_verify );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "DDraw", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		il2cpp::method_info_t* unity_engine_ddraw_sphere = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "PoweredLightsDeployer" ), "OnInput" ) ),
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			METHOD_ATTRIBUTE_STATIC,
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Color" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( Sphere, unity_engine_ddraw_sphere );
+
+		il2cpp::method_info_t* unity_engine_ddraw_line = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "PoweredLightsDeployer" ), "OnInput" ) ),
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			METHOD_ATTRIBUTE_STATIC,
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Color" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( Line, unity_engine_ddraw_line );
+	DUMPER_CLASS_END;
+
+	il2cpp::method_info_t* raycast_hit_ex_get_entity = SEARCH_FOR_METHOD_IN_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		WILDCARD_VALUE( il2cpp::il2cpp_class_t* ),
+		FILT( DUMPER_METHOD( DUMPER_CLASS( "CameraMan" ), "FocusOnTarget" ) ),
+		DUMPER_TYPE( "BaseEntity" ),
+		METHOD_ATTRIBUTE_PUBLIC,
+		METHOD_ATTRIBUTE_STATIC,
+		DUMPER_TYPE_NAMESPACE( "UnityEngine", "RaycastHit" )
+	);
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "RaycastHitEx", raycast_hit_ex_get_entity->klass() );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_INFO_PTR( GetEntity, raycast_hit_ex_get_entity );
+	DUMPER_CLASS_END;
+
+	il2cpp::method_info_t* on_parent_destroying_ex_broadcast_on_parent_destroying = SEARCH_FOR_METHOD_IN_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		WILDCARD_VALUE( il2cpp::il2cpp_class_t* ),
+		FILT( DUMPER_METHOD( DUMPER_CLASS( "EffectRecycle" ), "Recycle" ) ),
+		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+		METHOD_ATTRIBUTE_PUBLIC,
+		METHOD_ATTRIBUTE_STATIC,
+		DUMPER_TYPE_NAMESPACE( "UnityEngine", "GameObject" )
+	);
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "OnParentDestroyingEx", on_parent_destroying_ex_broadcast_on_parent_destroying->klass() );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_INFO_PTR( BroadcastOnParentDestroying, on_parent_destroying_ex_broadcast_on_parent_destroying );
+	DUMPER_CLASS_END;
+
+	il2cpp::method_info_t* console_network_client_run_on_server = SEARCH_FOR_METHOD_IN_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		WILDCARD_VALUE( il2cpp::il2cpp_class_t* ),
+		FILT( DUMPER_METHOD( DUMPER_CLASS_NAMESPACE( "Rust.UI.ServerAdmin", "ServerAdminUI" ), "OnEnable" ) ),
+		DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+		METHOD_ATTRIBUTE_PUBLIC,
+		METHOD_ATTRIBUTE_STATIC,
+		DUMPER_TYPE_NAMESPACE( "System", "String" )
+	);
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "ConsoleNetwork", console_network_client_run_on_server->klass() );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_INFO_PTR( ClientRunOnServer, console_network_client_run_on_server );
 	DUMPER_CLASS_END;
 
 	fclose( outfile_handle );
