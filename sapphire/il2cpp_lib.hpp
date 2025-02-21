@@ -2285,6 +2285,33 @@ namespace il2cpp
 		return nullptr;
 	}
 
+	template <typename T, typename C>
+	inline field_info_t* get_static_field_if_value_is( il2cpp_class_t* klass, il2cpp_type_t* type, int wanted_vis, int flags, C compare )
+	{
+		flags |= FIELD_ATTRIBUTE_STATIC;
+
+		if ( !klass->static_field_data() )
+			return nullptr;
+
+		void* iter = nullptr;
+		while ( field_info_t* field = klass->fields( &iter ) ) {
+			if ( field->type() != type )
+				continue;
+
+			int fl = field->flags();
+			int vis = fl & FIELD_ATTRIBUTE_FIELD_ACCESS_MASK;
+			if ( ( wanted_vis && ( vis != wanted_vis ) ) || ( flags && !( fl & flags ) ) )
+				continue;
+
+			T value = field->static_get_value<T>();
+
+			if ( compare( value ) )
+				return field;
+		}
+
+		return nullptr;
+	}
+
 	inline void init( )
 	{
 		ASSIGN_TYPE( domain_get );

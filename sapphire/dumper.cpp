@@ -1738,6 +1738,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( bounds );
 		DUMP_MEMBER_BY_NAME( model );
 		DUMP_MEMBER_BY_NAME( flags );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( triggers, "List<TriggerBase>" );
 
 		auto position_lerp = il2cpp::get_field_if_type_contains( dumper_klass, "%", FIELD_ATTRIBUTE_ASSEMBLY, DUMPER_ATTR_DONT_CARE );
 		DUMP_MEMBER_BY_X( positionLerp, position_lerp->offset( ) );
@@ -1817,6 +1818,9 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( displayName );
 		DUMP_MEMBER_BY_NAME( iconSprite );
 		DUMP_MEMBER_BY_NAME( category );
+		DUMP_MEMBER_BY_NAME( stackable );
+		DUMP_MEMBER_BY_NAME( rarity );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( ItemModWearable, DUMPER_CLASS( "ItemModWearable" ) );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "RecoilProperties" );
@@ -1869,6 +1873,8 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( recoil );
 		DUMP_MEMBER_BY_NAME( aimconeCurve );
 		DUMP_MEMBER_BY_NAME( aimCone );		
+		DUMP_MEMBER_BY_NAME( noAimingWhileCycling );
+		DUMP_MEMBER_BY_NAME( isBurstWeapon );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( cachedModHash, "System.UInt32" );
 		DUMP_MEMBER_BY_NEAR_OFFSET( sightAimConeScale, DUMPER_OFFSET( cachedModHash ) + 0x4 ); 
 		DUMP_MEMBER_BY_NEAR_OFFSET( sightAimConeOffset, DUMPER_OFFSET( sightAimConeScale ) + 0x4 );
@@ -2050,7 +2056,10 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( damageProperties );
 		DUMP_MEMBER_BY_NAME( maxDistance );
+		DUMP_MEMBER_BY_NAME( attackRadius );
+		DUMP_MEMBER_BY_NAME( blockSprintOnAttack );
 		DUMP_MEMBER_BY_NAME( gathering );
+		DUMP_MEMBER_BY_NAME( canThrowAsProjectile );
 	DUMPER_SECTION( "Functions" );
 		DUMP_MEMBER_BY_X( ProcessAttack, DUMPER_RVA( base_melee_process_attack.method->get_fn_ptr<uint64_t>() ) );
 
@@ -2294,6 +2303,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( eyes, "PlayerEyes" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( playerRigidbody, "UnityEngine.Rigidbody" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_MULTIPLE( userID, "BasePlayer", "<System.UInt64>" );
+		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( UserIDString, "System.String", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( inventory, "PlayerInventory" );
 		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( _displayName, "System.String", FIELD_ATTRIBUTE_FAMILY, DUMPER_ATTR_DONT_CARE );
 		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( _lookingAt, "UnityEngine.GameObject", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
@@ -2322,6 +2332,13 @@ void dumper::produce() {
 				}	
 			}
 		}
+
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( currentGesture, DUMPER_CLASS( "GestureConfig" ) );
+		DUMP_MEMBER_BY_NAME( weaponMoveSpeedScale );
+		DUMP_MEMBER_BY_NAME( clothingBlocksAiming );
+		DUMP_MEMBER_BY_NAME( clothingMoveSpeedReduction );
+		DUMP_MEMBER_BY_NAME( clothingWaterSpeedBonus );
+		DUMP_MEMBER_BY_NAME( equippingBlocked );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_NAME( Menu_AssistPlayer );
 		DUMP_METHOD_BY_NAME( OnViewModeChanged );
@@ -2434,6 +2451,7 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseMovement" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( adminCheat, DUMPER_CLASS_NAMESPACE( "System", "Boolean" ) );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( Owner, DUMPER_CLASS( "BasePlayer" ) );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerWalkMovement" );
@@ -2492,6 +2510,7 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "HackableLockedCrate" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( timerText );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( hackSeconds, DUMPER_CLASS_NAMESPACE( "System", "Single" ) );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ProjectileWeaponMod" );
@@ -2884,7 +2903,12 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" )
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( CurrentState, "CatchState" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( currentBobber, "FishingBobber" );
+		DUMP_MEMBER_BY_NAME( MaxCastDistance );
+		DUMP_MEMBER_BY_NAME( BobberPreview );
 		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( clientStrainAmountNormalised, "System.Single", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( strainGainMod, DUMPER_CLASS( "SoundModulation/Modulator" ) );
+		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( aimAnimationReady, "System.Boolean", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
+
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( UpdateLineRenderer, NO_FILT, DUMPER_CLASS_NAMESPACE( "System", "Void" ), 0, METHOD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
 
@@ -2954,6 +2978,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( projectileVelocitySpread );
 		DUMP_MEMBER_BY_NAME( useCurve );
 		DUMP_MEMBER_BY_NAME( spreadScalar );
+		DUMP_MEMBER_BY_NAME( category );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "Projectile" );
@@ -3155,14 +3180,26 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( item, DUMPER_CLASS( "ItemDefinition" ) );
 	DUMPER_CLASS_END;
 
+	DUMPER_CLASS_BEGIN_FROM_PTR( "Planner_Static", get_inner_static_class( DUMPER_CLASS( "Planner" ) ) );
+	DUMPER_SECTION( "Offsets" );
+		il2cpp::field_info_t* _guide = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "Planner.%", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* guide ) { return guide != nullptr; } );
+		DUMP_MEMBER_BY_X( guide, _guide->offset() );
+	DUMPER_CLASS_END;
+
 	DUMPER_CLASS_BEGIN_FROM_NAME( "Planner" );
 	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( currentConstruction, DUMPER_CLASS( "Construction" ) );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( _currentConstruction, DUMPER_CLASS( "Construction" ) );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "Construction" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( holdToPlaceDuration );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( grades, "ConstructionGrade[]" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "BuildingBlock" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( blockDefinition, DUMPER_CLASS( "Construction" ) );
 	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* held_entity_class = DUMPER_CLASS( "HeldEntity" );
@@ -3229,10 +3266,18 @@ void dumper::produce() {
 		}
 	DUMPER_CLASS_END;
 
+	DUMPER_CLASS_BEGIN_FROM_NAME( "IronSights" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( zoomFactor );
+		DUMP_MEMBER_BY_NAME( ironsightsOverride );
+	DUMPER_CLASS_END;
+
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseViewModel" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( useViewModelCamera );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( ironSights, DUMPER_CLASS( "IronSights" ) );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( model, DUMPER_CLASS( "Model" ) );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( lower, DUMPER_CLASS( "ViewmodelLower" ) );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( get_ActiveModel,
 			FILT( DUMPER_METHOD( DUMPER_CLASS( "ViewmodelEditor" ), "Update" ) ),
@@ -3269,9 +3314,6 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainMeta" );
 	DUMPER_SECTION( "Offsets" );
-		il2cpp::field_info_t* terrain = il2cpp::get_static_field_if_value_is<unity::component_t*>( dumper_klass, "UnityEngine.Terrain", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::component_t* terrain ) { return terrain != nullptr; } );
-		DUMP_MEMBER_BY_X( _Terrain, terrain->offset() );
-
 		il2cpp::field_info_t* position = il2cpp::get_static_field_if_value_is<unity::vector3_t>( dumper_klass, "UnityEngine.Vector3", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::vector3_t position ) { return position == unity::vector3_t( -2000.f, -500.f, -2000.f ); } );
 		DUMP_MEMBER_BY_X( Position, position->offset() );
 
@@ -3578,6 +3620,10 @@ void dumper::produce() {
 					if ( !wcscmp( value->str, SERVER_IP ) ) {
 						DUMP_MEMBER_BY_X( ConnectedAddress, string->offset() );
 					}
+
+					else {
+						DUMP_MEMBER_BY_X( ServerName, string->offset() );
+					}
 				}
 			}
 		}
@@ -3834,6 +3880,7 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PatrolHelicopter" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( mainRotor );
+		DUMP_MEMBER_BY_NAME( weakspots );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "Chainsaw" );
@@ -3942,6 +3989,8 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseMountable" );
 	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( pitchClamp );
+		DUMP_MEMBER_BY_NAME( yawClamp );
 		DUMP_MEMBER_BY_NAME( canWieldItems );
 	DUMPER_CLASS_END;
 
@@ -4000,6 +4049,13 @@ void dumper::produce() {
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "AutoTurret" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( authorizedPlayers, "HashSet<%" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( lastYaw, DUMPER_CLASS_NAMESPACE( "UnityEngine", "Quaternion" ) );
+		DUMP_MEMBER_BY_NAME( muzzlePos );
+		DUMP_MEMBER_BY_NAME( gun_yaw );
+		DUMP_MEMBER_BY_NAME( gun_pitch );
+		DUMP_MEMBER_BY_NAME( sightRange );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* auto_turret_is_authed = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 			FILT_N( DUMPER_METHOD( DUMPER_CLASS( "AutoTurret" ), "GetMenuOptions" ), 2 ),
@@ -4213,6 +4269,70 @@ void dumper::produce() {
 		DUMP_METHOD_BY_INFO_PTR( ClientRunOnServer, console_network_client_run_on_server );
 	DUMPER_CLASS_END;
 
+	DUMPER_CLASS_BEGIN_FROM_NAME( "ThrownWeapon" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( maxThrowVelocity );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "MapInterface" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( scrollRectZoom );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "ScrollRectZoom" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( zoom );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "MapView" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( scrollRect );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "StorageContainer" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( inventorySlots );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerCorpse" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( clientClothing, item_container_class );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "TimedExplosive" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( explosionRadius );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "SmokeGrenade_Static", get_inner_static_class( DUMPER_CLASS( "SmokeGrenade" ) ) );
+	DUMPER_SECTION( "Offsets" );
+		il2cpp::field_info_t* active_grenades = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "SmokeGrenade", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* active_grenades ) { return active_grenades != nullptr; } );
+		DUMP_MEMBER_BY_X( activeGrenades, active_grenades->offset() );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "SmokeGrenade" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( smokeEffectInstance, DUMPER_CLASS_NAMESPACE( "UnityEngine", "GameObject" ) );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "GrenadeWeapon" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( drop, DUMPER_CLASS_NAMESPACE( "System", "Boolean" ) );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "ViewmodelLower" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( lowerOnSprint );
+		DUMP_MEMBER_BY_NAME( lowerWhenCantAttack );
+		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( shouldLower, "System.Boolean", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
+		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( rotateAngle, "System.Single", FIELD_ATTRIBUTE_ASSEMBLY, DUMPER_ATTR_DONT_CARE );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseRidableAnimal" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( maxSpeed );
+	DUMPER_CLASS_END;
+
 	fclose( outfile_handle );
-	fclose( outfile_log_handle );
+	fclose( outfile_log_handle );	
 }
