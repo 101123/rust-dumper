@@ -639,6 +639,8 @@ int get_button_offset( const wchar_t* button_command ) {
 #define SERVER_IP L"103.214.71.31" 
 #define SERVER_PORT 28015
 #define WORLD_SIZE 4000
+#define CAMSPEED 1.0525f
+#define CAMLERP 1.0252f
 
 void dumper::produce_unity() {
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Object", "UnityEngine" );
@@ -1514,7 +1516,24 @@ void dumper::produce() {
 
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "ConVar.Player", convar_player_class );
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "ConVar.Player (static)", convar_player_static_class );
+
+	il2cpp::method_info_t* convar_client_connect = SEARCH_FOR_METHOD_IN_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		WILDCARD_VALUE( il2cpp::il2cpp_class_t* ),
+		FILT( DUMPER_METHOD( DUMPER_CLASS( "UIFriends" ), "OnInviteAccepted" ) ),
+		DUMPER_TYPE_NAMESPACE( "System", "String" ),
+		METHOD_ATTRIBUTE_PUBLIC,
+		METHOD_ATTRIBUTE_STATIC,
+		DUMPER_TYPE_NAMESPACE( "System", "String" ),
+		DUMPER_TYPE_NAMESPACE( "System", "String" ),
+		DUMPER_TYPE_NAMESPACE( "System", "Boolean" )
+	);
 	
+	il2cpp::il2cpp_class_t* convar_client_class = convar_client_connect->klass();
+	il2cpp::il2cpp_class_t* convar_client_static_class = get_inner_static_class( convar_client_class );
+
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "ConVar.Client", convar_client_class );
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "ConVar.Client (static)", convar_client_static_class );
+
 	il2cpp::il2cpp_class_t* buttons_conbutton_class = nullptr;
 	il2cpp::il2cpp_class_t* buttons_class = nullptr;
 	il2cpp::il2cpp_class_t* buttons_static_class = nullptr;
@@ -2077,6 +2096,15 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "CompoundBowWeapon" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( stringHoldDurationMax );
+		DUMP_MEMBER_BY_NAME( stringBonusVelocity );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GetStringBonusScale,
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "CompoundBowWeapon" ), "OnInput" ) ),
+			DUMPER_CLASS_NAMESPACE( "System", "Single" ),
+			0,
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE 
+		);
 	DUMPER_CLASS_END;
 
 	sprintf_s( searchBuf, "System.Collections.Generic.List<%s>", item_class->name( ) );
@@ -2087,6 +2115,16 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( itemList, searchBuf );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_RETURN_TYPE_STR( FindItemsByItemID, FILT_N( DUMPER_METHOD( DUMPER_CLASS( "SellOrderEntry" ), "UpdateNotifications" ), 3 ), searchBuf, 1 );
+			
+		il2cpp::method_info_t* item_container_get_slot = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "RepairBenchPanel" ), "Update" ) ),
+			item_class->type(),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE_NAMESPACE( "System", "Int32" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( GetSlot, item_container_get_slot );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerLoot" );
@@ -4331,6 +4369,14 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseRidableAnimal" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( maxSpeed );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "ConVar_Client_Static", convar_client_static_class );
+		il2cpp::field_info_t* _camlerp = il2cpp::get_static_field_if_value_is<float>( dumper_klass, "System.Single", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( float camlerp ) { return FLOAT_IS_EQUAL( camlerp, CAMLERP, 0.001f ); } );
+		DUMP_MEMBER_BY_X( camlerp, _camlerp->offset() );
+
+		il2cpp::field_info_t* _camspeed = il2cpp::get_static_field_if_value_is<float>( dumper_klass, "System.Single", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( float camspeed ) { return FLOAT_IS_EQUAL( camspeed, CAMSPEED, 0.001f ); } );
+		DUMP_MEMBER_BY_X( camspeed, _camspeed->offset() );
 	DUMPER_CLASS_END;
 
 	fclose( outfile_handle );
