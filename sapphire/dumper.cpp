@@ -710,6 +710,11 @@ void dumper::produce_unity() {
 		DUMP_METHOD_BY_ICALL( set_rotation_Injected, "UnityEngine.Transform::set_rotation_Injected(UnityEngine.Quaternion&)" );
 	DUMPER_CLASS_END;
 
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Camera", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( WorldToScreenPoint_Injected, "UnityEngine.Camera::WorldToScreenPoint_Injected(UnityEngine.Vector3&,UnityEngine.Camera/MonoOrStereoscopicEye,UnityEngine.Vector3&)" );
+	DUMPER_CLASS_END;
+
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Time", "UnityEngine" );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_ICALL( get_deltaTime, "UnityEngine.Time::get_deltaTime()" );
@@ -949,6 +954,27 @@ void dumper::produce() {
 	il2cpp::il2cpp_class_t* network_net_class = il2cpp::search_for_class_by_field_types( network_client_class->type(), 0, DUMPER_ATTR_DONT_CARE, FIELD_ATTRIBUTE_STATIC );
 
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Network.Net", network_net_class );
+
+	auto network_client_class_inheritors = il2cpp::get_inheriting_classes( network_client_class );
+	auto it2 = std::find_if( network_client_class_inheritors.begin(), network_client_class_inheritors.end(), []( il2cpp::il2cpp_class_t* klass ) {
+		return il2cpp::get_field_if_type_contains( klass, "%", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
+	} );
+
+	il2cpp::il2cpp_class_t* facepunch_network_raknet_client_class = it2 != network_client_class_inheritors.end() ? *it2 : nullptr;
+
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Facepunch.Network.Raknet.Client", facepunch_network_raknet_client_class );
+
+	il2cpp::virtual_method_t facepunch_network_raknet_client_is_connected = il2cpp::get_virtual_method_by_return_type_and_param_types(
+		FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseEntity" ), "ServerRPC" ) ),
+		facepunch_network_raknet_client_class,
+		DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+		DUMPER_ATTR_DONT_CARE,
+		METHOD_ATTRIBUTE_VIRTUAL,
+		nullptr,
+		0
+	);
+
+	CHECK_RESOLVED_VALUE( VALUE_METHOD, "Facepunch.Network.Raknet.Client::IsConnected", facepunch_network_raknet_client_is_connected.method );
 
 	il2cpp::il2cpp_class_t* commands_display_class = il2cpp::search_for_class_by_method_in_assembly( "Facepunch.Console", "<Find>b__0", nullptr, -1 );
 	il2cpp::il2cpp_class_t* console_system_command_class = nullptr;
@@ -1445,7 +1471,7 @@ void dumper::produce() {
 		DUMPER_TYPE_NAMESPACE( "System", "Boolean" )
 	);
 
-	CHECK_RESOLVED_VALUE( VALUE_METHOD, "AimConeUtil.GetModifiedAimConeDirection", aimcone_util_get_modified_aimcone_direction );
+	CHECK_RESOLVED_VALUE( VALUE_METHOD, "AimConeUtil::GetModifiedAimConeDirection", aimcone_util_get_modified_aimcone_direction );
 
 	il2cpp::il2cpp_class_t* convar_graphics_class = il2cpp::search_for_class_by_method_return_type_name( "UnityEngine.FullScreenMode", METHOD_ATTRIBUTE_PRIVATE, METHOD_ATTRIBUTE_STATIC );
 	il2cpp::il2cpp_class_t* convar_graphics_static_class = get_inner_static_class( convar_graphics_class );
@@ -3224,10 +3250,19 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( item, DUMPER_CLASS( "ItemDefinition" ) );
 	DUMPER_CLASS_END;
 
+	il2cpp::il2cpp_class_t* planner_guide_class = nullptr;
+
 	DUMPER_CLASS_BEGIN_FROM_PTR( "Planner_Static", get_inner_static_class( DUMPER_CLASS( "Planner" ) ) );
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* _guide = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "Planner.%", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* guide ) { return guide != nullptr; } );
 		DUMP_MEMBER_BY_X( guide, _guide->offset() );
+
+		planner_guide_class = _guide->type()->klass();
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "Planner_Guide", planner_guide_class );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( lastPlacement, "Construction.%" );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "Planner" );
@@ -3316,6 +3351,12 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( ironsightsOverride );
 	DUMPER_CLASS_END;
 
+	DUMPER_CLASS_BEGIN_FROM_NAME( "IronSightOverride" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( zoomFactor );
+		DUMP_MEMBER_BY_NAME( fovBias );
+	DUMPER_CLASS_END;
+
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseViewModel" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( useViewModelCamera );
@@ -3344,14 +3385,20 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( resetTime, "System.Single", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
 	DUMPER_CLASS_END;
 
-	DUMPER_CLASS_BEGIN_FROM_NAME( "WaterSystem" );
-	DUMPER_SECTION( "Functions" );
-		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( get_Ocean, NO_FILT, DUMPER_CLASS( "WaterBody" ), 0, METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC );
-	DUMPER_CLASS_END;
-
 	DUMPER_CLASS_BEGIN_FROM_NAME( "WaterBody" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( meshFilter, "UnityEngine.MeshFilter" ); // <MeshFilter>k__BackingField
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "WaterSystem_Static", get_inner_static_class( DUMPER_CLASS( "WaterSystem" ) ) );
+	DUMPER_SECTION( "Offsets" );
+		il2cpp::field_info_t* ocean = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "WaterBody", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* ocean ) { return ocean != nullptr; } );
+		DUMP_MEMBER_BY_X( Ocean, ocean->offset() );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "WaterSystem" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( get_Ocean, NO_FILT, DUMPER_CLASS( "WaterBody" ), 0, METHOD_ATTRIBUTE_PUBLIC, METHOD_ATTRIBUTE_STATIC );
 	DUMPER_CLASS_END;
 
 	unity::component_t* _terrain_texturing = nullptr;
@@ -3793,6 +3840,7 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TOD_Sky" );
 	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( Cycle );
 		DUMP_MEMBER_BY_NAME( Atmosphere );
 		DUMP_MEMBER_BY_NAME( Day );
 		DUMP_MEMBER_BY_NAME( Night );
@@ -4179,6 +4227,8 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( loadingSnapshot );
 	DUMPER_CLASS_END;
 
+	DUMPER_PTR_CLASS_NAME( "MapView_Static", get_inner_static_class( DUMPER_CLASS( "MapView" ) ) );
+
 	DUMPER_CLASS_BEGIN_FROM_NAME( "MapView" );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* map_view_world_pos_to_image_pos = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
@@ -4383,6 +4433,56 @@ void dumper::produce() {
 
 		il2cpp::field_info_t* _camspeed = il2cpp::get_static_field_if_value_is<float>( dumper_klass, "System.Single", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( float camspeed ) { return FLOAT_IS_EQUAL( camspeed, CAMSPEED, 0.001f ); } );
 		DUMP_MEMBER_BY_X( camspeed, _camspeed->offset() );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "SamSite" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( staticRespawn );
+		DUMP_MEMBER_BY_NAME( Flag_TargetMode );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "ServerProjectile" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( drag );
+		DUMP_MEMBER_BY_NAME( gravityModifier );
+		DUMP_MEMBER_BY_NAME( speed );
+		DUMP_MEMBER_BY_NAME( radius );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "UIFogOverlay" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( group );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "FoliageGrid" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( CellSize );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemModWearable" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( movementProperties );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "ClothingMovementProperties" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( speedReduction );
+		DUMP_MEMBER_BY_NAME( minSpeedReduction );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "GestureConfig" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( actionType );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "RCMenu" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( autoTurretFogDistance );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "Facepunch_Network_Raknet_Client", facepunch_network_raknet_client_class );
+	DUMPER_SECTION( "Functions" );
+		DUMP_VIRTUAL_METHOD( IsConnected, facepunch_network_raknet_client_is_connected );
 	DUMPER_CLASS_END;
 
 	fclose( outfile_handle );
