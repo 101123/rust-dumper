@@ -2768,8 +2768,6 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "ModelState", model_state_class );
 	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( waterLevel, DUMPER_CLASS_NAMESPACE( "System", "Single" ) );
-
 		if ( local_player_get_entity && last_sent_tick_offset != -1 ) {
 			uint64_t local_player = local_player_get_entity();
 
@@ -2781,13 +2779,23 @@ void dumper::produce() {
 
 					if ( model_state ) {
 						std::vector<il2cpp::field_info_t*> ints = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "System", "Int32" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+						std::vector<il2cpp::field_info_t*> floats = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "System", "Single" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
 						std::vector<il2cpp::field_info_t*> vectors = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
 
 						for ( il2cpp::field_info_t* _int : ints ) {
 							int value = *( int* )( model_state + _int->offset() );
 
-							if ( value & rust::model_state::e_flag::has_parachute ) {
+							if ( value & rust::model_state::e_flag::flying ) {
 								DUMP_MEMBER_BY_X( flags, _int->offset() );
+								break;
+							}
+						}
+
+						for ( il2cpp::field_info_t* _float : floats ) {
+							float value = *( int* )( model_state + _float->offset() );
+
+							if ( value > 0.f ) {
+								DUMP_MEMBER_BY_X( waterLevel, _float->offset() );
 								break;
 							}
 						}
