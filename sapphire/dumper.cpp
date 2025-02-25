@@ -2494,10 +2494,8 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerWalkMovement" );
 	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_NAME( gravityMultiplierSwimming );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( capsule, "UnityEngine.CapsuleCollider" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( ladder, DUMPER_CLASS( "TriggerLadder" ) );
-		DUMP_MEMBER_BY_NEAR_OFFSET( groundTime, DUMPER_OFFSET( capsule ) + 0x20 );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( modify, "BaseEntity.MovementModify" );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::virtual_method_t player_walk_movement_client_input = SEARCH_FOR_VIRTUAL_METHOD_WITH_RETTYPE_PARAM_TYPES(
