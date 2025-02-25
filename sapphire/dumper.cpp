@@ -2786,7 +2786,7 @@ void dumper::produce() {
 						for ( il2cpp::field_info_t* _int : ints ) {
 							int value = *( int* )( model_state + _int->offset() );
 
-							if ( value ) {
+							if ( value & rust::model_state::e_flag::has_parachute ) {
 								DUMP_MEMBER_BY_X( flags, _int->offset() );
 								break;
 							}

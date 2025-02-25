@@ -72,4 +72,28 @@ namespace rust {
 			contents_hidden = 256
 		};
 	};
+
+	class model_state {
+	public:
+		enum e_flag {
+			ducked = 1,
+			jumped = 2,
+			on_ground = 4,
+			sleeping = 8,
+			sprinting = 16,
+			on_ladder = 32,
+			flying = 64,
+			aiming = 128,
+			prone = 256,
+			mounted = 512,
+			relaxed = 1024,
+			on_phone = 2048,
+			crawling = 4096,
+			loading = 8192,
+			head_look = 16384,
+			has_parachute = 32768,
+			blocking = 65536,
+			ragdolling = 131072
+		};
+	};
 }

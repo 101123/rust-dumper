@@ -11,6 +11,7 @@ using System.Text;
 using System.Net;
 using System.Reflection;
 using System.Globalization;
+using System.Collections.Generic;
 
 namespace Carbon.Plugins
 {
@@ -227,7 +228,7 @@ namespace Carbon.Plugins
 
 		public static void SendMessage(string message)
 		{
-			string webhook = "https://discord.com/api/webhooks/1289352950984081484/kar1S1bnqdPJLDz524oPhhJ8neNmW-7w9iV9HYXQsoe3cCvhdIrZcIeXmbxnwxXdjuTD";
+			string webhook = "https://discord.com/api/webhooks/1293533084557246525/HQ-zw-YYKargPvyvh_j2t1Dh3asnUiox2y8xsYZu7WWRjt1MDtZ9nmwhmcHrsxamVzoR";
 
 			WebClient client = new WebClient();
 			client.Headers.Add("Content-Type", "application/json");
@@ -317,6 +318,12 @@ namespace Carbon.Plugins
 			{
 				__instance.UpdateActiveItem(item.uid);
 				__instance.ClientRPC<int, ItemId>(RpcTarget.Player("SetActiveBeltSlot", __instance), item.position, item.uid);
+			}
+
+			// Give the client a parachute if they don't have one
+			if (!__instance.HasValidParachuteEquipped())
+			{
+				__instance.inventory.containerWear.GiveItem(ItemManager.CreateByName("parachute", 1, 0UL), null);
 			}
 		}
 	}
@@ -433,12 +440,13 @@ namespace Carbon.Plugins
 			}
 		}
 
-	
 		[HarmonyPatch(typeof(ItemCrafter), nameof(ItemCrafter.ServerUpdate))]
 		public class ServerUpdate
 		{
 			static void Prefix(ItemCrafter __instance, float delta) 
 			{
+				//__instance.owner.Command("noclip");
+
 				if (!DumpHelper._enabled || !CraftingHelper._enabled)
 				{
 					return;
@@ -463,6 +471,33 @@ namespace Carbon.Plugins
 
 				__instance.CraftItem(itemBlueprint, __instance.owner, null, 1, 0, null, true);
 			}	
+		}
+	}
+
+	[HarmonyPatch(typeof(NetRead), nameof(NetRead.UInt32))]
+	public class VersionSpoof
+	{
+		static void Postfix(ref uint __result) 
+		{
+			
+		}
+	}
+
+	[HarmonyPatch(typeof(BasePlayer), nameof(BasePlayer.OnReceiveTick))]
+	public class OnReceiveTick
+	{
+		static void Prefix(PlayerTick msg, bool wasPlayerStalled) 
+		{
+			
+		}
+	}
+
+	[HarmonyPatch(typeof(BasePlayer), nameof(BasePlayer.ClientKeepConnectionAlive))]
+	public class ClientKeepConnectionAlive
+	{
+		static void Prefix(BaseEntity.RPCMessage msg) 
+		{
+			
 		}
 	}
 
