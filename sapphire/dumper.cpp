@@ -2115,6 +2115,7 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "FlintStrikeWeapon" );
 	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( successFraction );
 		DUMP_MEMBER_BY_NAME( strikeRecoil );
 		DUMP_MEMBER_BY_NEAR_OFFSET( _didSparkThisFrame, DUMPER_OFFSET( strikeRecoil ) + 0x8 );
 	DUMPER_CLASS_END;
@@ -3286,6 +3287,8 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "HeldEntity", held_entity_class );
 	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( ownerItemUID, item_id_class );
+
 		punches_field = il2cpp::get_field_if_type_contains( dumper_klass, "List<HeldEntity", FIELD_ATTRIBUTE_FAMILY, DUMPER_ATTR_DONT_CARE );
 		DUMP_MEMBER_BY_X( _punches, punches_field->offset() );
 
