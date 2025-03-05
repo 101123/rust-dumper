@@ -3868,6 +3868,17 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_X( instances, _instances->offset() );
 	DUMPER_CLASS_END;
 
+	DUMPER_CLASS_BEGIN_FROM_NAME( "TOD_CycleParameters" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( get_DateTime,
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "EnvSync" ), "Update" ) ),
+			DUMPER_CLASS_NAMESPACE( "System", "DateTime" ),
+			0,
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE
+		);
+	DUMPER_CLASS_END;
+
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TOD_AtmosphereParameters" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( RayleighMultiplier );
