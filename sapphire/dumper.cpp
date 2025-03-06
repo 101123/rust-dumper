@@ -154,6 +154,15 @@
 
 #define DUMP_VIRTUAL_METHOD( NAME, virtual_method ) DUMP_MEMBER_BY_X( NAME, DUMPER_RVA( virtual_method.method->get_fn_ptr<uint64_t>( ) ) ); dumper::write_to_file( "\tconstexpr const static size_t %s_vtableoff = 0x%x;\n", #NAME, virtual_method.offset )
 
+const char* format_string( const char* fmt, ... ) {
+	static char buffer[ 256 ];
+	va_list val;
+	va_start( val, fmt );
+	vsnprintf( buffer, sizeof( buffer ), fmt, val );
+	va_end( val );
+	return buffer;
+}
+
 il2cpp::il2cpp_class_t* get_outer_class( il2cpp::il2cpp_class_t * klass ) {
 	if ( !klass )
 		return nullptr;
@@ -1543,6 +1552,15 @@ void dumper::produce() {
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "ConVar.Player", convar_player_class );
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "ConVar.Player (static)", convar_player_static_class );
 
+	il2cpp::field_info_t* client_tickrate_field = il2cpp::get_field_if_type_contains( convar_player_static_class, "<System.Int32>", FIELD_ATTRIBUTE_PUBLIC, FIELD_ATTRIBUTE_STATIC );
+	il2cpp::il2cpp_class_t* encrypted_value_class = nullptr;
+
+	if ( client_tickrate_field ) {
+		encrypted_value_class = client_tickrate_field->type()->klass();
+	}
+
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "EncryptedValue<float>", encrypted_value_class );
+
 	il2cpp::method_info_t* convar_client_connect = SEARCH_FOR_METHOD_IN_METHOD_WITH_RETTYPE_PARAM_TYPES(
 		WILDCARD_VALUE( il2cpp::il2cpp_class_t* ),
 		FILT( DUMPER_METHOD( DUMPER_CLASS( "UIFriends" ), "OnInviteAccepted" ) ),
@@ -1701,12 +1719,15 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( children, "System.Collections.Generic.List<BaseEntity>", FIELD_ATTRIBUTE_PUBLIC, FIELD_ATTRIBUTE_INIT_ONLY );
 	DUMPER_CLASS_END;
 
+	il2cpp::il2cpp_class_t* hidden_value_class = nullptr;
+
 	DUMPER_CLASS_BEGIN_FROM_PTR( "BaseNetworkable_Static", base_networkable_static_class );
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* client_entities = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "BaseNetworkable", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* client_entities ) { return client_entities != nullptr; } );
 		DUMP_MEMBER_BY_X( clientEntities, client_entities->offset() );
 
 		base_networkable_entity_realm_class = client_entities->type()->klass()->get_generic_argument_at( 0 );
+		hidden_value_class = client_entities->type()->klass();
 	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* system_list_dictionary_class = nullptr;
@@ -2218,7 +2239,7 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerEyes" );
 	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( viewOffset, "PlayerEyes" ); // Contains PlayerEyes.EncryptedValue<Vector3>
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( viewOffset, format_string( "%s<UnityEngine.Vector3>", encrypted_value_class->name() ) );
 		DUMP_MEMBER_BY_NEAR_OFFSET( bodyRotation, DUMPER_OFFSET( viewOffset ) + 0x10 ); // <bodyRotation>k__BackingField
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( get_position,
@@ -2367,12 +2388,12 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( playerFlags );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( eyes, "PlayerEyes" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( playerRigidbody, "UnityEngine.Rigidbody" );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_MULTIPLE( userID, "BasePlayer", "<System.UInt64>" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( userID, format_string( "%s<System.UInt64>", encrypted_value_class->name() ) );
 		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( UserIDString, "System.String", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( inventory, "PlayerInventory" );
 		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( _displayName, "System.String", FIELD_ATTRIBUTE_FAMILY, DUMPER_ATTR_DONT_CARE );
 		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( _lookingAt, "UnityEngine.GameObject", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_MULTIPLE( lastSentTickTime, "BasePlayer", "System.Single" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( lastSentTickTime, format_string( "%s<System.Single>", encrypted_value_class->name() ) );
 
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( lastSentTick, player_tick_class );
 		last_sent_tick_offset = lastSentTick_Offset;
@@ -2444,14 +2465,16 @@ void dumper::produce() {
 
 		DUMP_METHOD_BY_INFO_PTR( SendProjectileAttack, base_player_send_projectile_attack );
 #endif
-
-		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( CanBuild, 
-			FILT( DUMPER_METHOD( DUMPER_CLASS( "Hammer" ), "OnInput" ) ), 
-			DUMPER_CLASS_NAMESPACE( "System", "Boolean" ), 
-			0, 
-			METHOD_ATTRIBUTE_PUBLIC, 
-			DUMPER_ATTR_DONT_CARE 
+		il2cpp::method_info_t* base_player_can_build = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "Hammer" ), "OnInput" ) ),
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
+			DUMPER_TYPE_NAMESPACE( "System", "Single" )
 		);
+
+		DUMP_METHOD_BY_INFO_PTR( CanBuild, base_player_can_build );
 
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GetMounted,
 			FILT( DUMPER_METHOD( DUMPER_CLASS( "WaypointRace" ), "Update" ) ),
@@ -2600,15 +2623,8 @@ void dumper::produce() {
 		DUMP_METHOD_BY_INFO_PTR( Run, console_system_run );
 	DUMPER_CLASS_END;
 
-	DUMPER_CLASS_BEGIN_FROM_PTR( "ConsoleSystem_Option", console_system_option_class );
-	DUMPER_SECTION( "Offsets" );
-
-	DUMPER_CLASS_END;
-
-	DUMPER_CLASS_BEGIN_FROM_PTR( "ConsoleSystem_Command", console_system_command_class );
-	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_NAME( AllowRunFromServer );
-	DUMPER_CLASS_END;
+	DUMPER_PTR_CLASS_NAME( "ConsoleSystem_Option", console_system_option_class );
+	DUMPER_PTR_CLASS_NAME( "ConsoleSystem_Command", console_system_command_class );
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "ConsoleSystem_Index_Static", console_system_index_static_class );
 	DUMPER_SECTION( "Offsets" );
@@ -2959,7 +2975,7 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "ConVar_Graphics_Static", convar_graphics_static_class );
 	DUMPER_SECTION( "Offsets" );
-		il2cpp::field_info_t* fov = il2cpp::get_static_field_if_value_is<uint32_t>( dumper_klass, convar_graphics_class->name(), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( uint32_t value ) { return value != 0; } );
+		il2cpp::field_info_t* fov = il2cpp::get_static_field_if_value_is<uint32_t>( dumper_klass, format_string( "%s<System.Single>", encrypted_value_class->name() ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( uint32_t value ) { return value != 0; } );
 		DUMP_MEMBER_BY_X( _fov, fov->offset() );
 	DUMPER_SECTION( "Functions" );
 		rust::console_system::command* fov_command = rust::console_system::client::find( system_c::string_t::create_string( L"graphics.fov" ) );
@@ -4497,6 +4513,19 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_PTR( "Facepunch_Network_Raknet_Client", facepunch_network_raknet_client_class );
 	DUMPER_SECTION( "Functions" );
 		DUMP_VIRTUAL_METHOD( IsConnected, facepunch_network_raknet_client_is_connected );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "EncryptedValue", encrypted_value_class );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( _value, DUMPER_CLASS_NAMESPACE( "System", "Single" ) );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( _padding, DUMPER_CLASS_NAMESPACE( "System", "Int32" ) );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "HiddenValue", hidden_value_class );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( _handle, "GCHandle" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( _accessCount, DUMPER_CLASS_NAMESPACE( "System", "Int32" ) );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( _hasValue, DUMPER_CLASS_NAMESPACE( "System", "Boolean" ) );
 	DUMPER_CLASS_END;
 
 	fclose( outfile_handle );
