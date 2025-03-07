@@ -856,11 +856,11 @@ void dumper::produce_unity() {
 void dumper::produce() {
 	game_base = ( uint64_t ) ( GetModuleHandleA( "GameAssembly.dll" ) );
 	unity_base = ( uint64_t )( GetModuleHandleA( "UnityPlayer.dll" ) );
-	outfile_handle = fopen( "C:\\dumps\\output.h", "w" );
+	outfile_handle = fopen( "C:\\dumps\\dumper_output.h", "w" );
 	if ( !outfile_handle )
 		return;
 
-	outfile_log_handle = fopen( "C:\\dumps\\output.log", "w" );
+	outfile_log_handle = fopen( "C:\\dumps\\dumper_output.log", "w" );
 	if ( !outfile_log_handle )
 		return;
 
@@ -1916,6 +1916,8 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NEAR_OFFSET( nextAttackTime, DUMPER_OFFSET( noHeadshots ) + 0x2 );
 		DUMP_MEMBER_BY_NEAR_OFFSET( timeSinceDeploy, DUMPER_OFFSET( noHeadshots ) + 0x1A );
 	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_NAME( SpectatorNotifyTick );
+
 		il2cpp::method_info_t* attack_entity_start_attack_cooldown = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 			FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseProjectile" ), "BeginCycle" ) ),
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
@@ -2426,6 +2428,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( clothingWaterSpeedBonus );
 		DUMP_MEMBER_BY_NAME( equippingBlocked );
 	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_NAME( ClientUpdateLocalPlayer )
 		DUMP_METHOD_BY_NAME( Menu_AssistPlayer );
 		DUMP_METHOD_BY_NAME( OnViewModeChanged );
 		DUMP_METHOD_BY_NAME( ChatMessage );
@@ -2548,6 +2551,19 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( ladder, DUMPER_CLASS( "TriggerLadder" ) );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( modify, "BaseEntity.MovementModify" );
 	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_NAME( BlockJump );
+		DUMP_METHOD_BY_NAME( BlockSprint );
+
+		il2cpp::method_info_t* player_walk_movement_ground_check = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "PlayerWalkMovement" ), "OnCollisionEnter" ) ),
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_PRIVATE,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Collision" ),
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( GroundCheck, player_walk_movement_ground_check );
+
 		il2cpp::virtual_method_t player_walk_movement_client_input = SEARCH_FOR_VIRTUAL_METHOD_WITH_RETTYPE_PARAM_TYPES(
 			FILT( base_player_client_input ),
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
@@ -4526,6 +4542,16 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( _handle, "GCHandle" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( _accessCount, DUMPER_CLASS_NAMESPACE( "System", "Int32" ) );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( _hasValue, DUMPER_CLASS_NAMESPACE( "System", "Boolean" ) );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "SimplePrivilege/<>c__DisplayClass3_0" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_NAME_STR( IsAuthed, "<IsAuthed>b__0" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemModRFListener" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_NAME( ConfigureClicked );
 	DUMPER_CLASS_END;
 
 	fclose( outfile_handle );
