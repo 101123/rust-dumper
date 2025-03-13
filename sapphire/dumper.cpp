@@ -2999,6 +2999,13 @@ void dumper::produce() {
 			DUMP_MEMBER_BY_X( _fov_getter, DUMPER_RVA( fov_command->get() ) );
 			DUMP_MEMBER_BY_X( _fov_setter, DUMPER_RVA( fov_command->set() ) );
 		}
+
+		rust::console_system::command* viewmodelcamera_command = rust::console_system::client::find( system_c::string_t::create_string( L"graphics.viewmodelcamera" ) );
+
+		if ( viewmodelcamera_command ) {
+			DUMP_MEMBER_BY_X( viewmodelcamera_getter, DUMPER_RVA( viewmodelcamera_command->get() ) );
+			DUMP_MEMBER_BY_X( viewmodelcamera_setter, DUMPER_RVA( viewmodelcamera_command->set() ) );
+		}
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseFishingRod" );
