@@ -67,7 +67,7 @@
 #define DUMPER_VIS_DONT_CARE 0 
 #define DUMPER_ATTR_DONT_CARE 0
 
-#define DUMPER_RVA( X ) X - dumper::game_base
+#define DUMPER_RVA( X ) X == 0 ? 0 : X - dumper::game_base
 #define DUMPER_RVA_UNITY( X ) X - dumper::unity_base
 #define DUMPER_CLASS( name ) il2cpp::get_class_by_name( name )
 #define DUMPER_CLASS_NAMESPACE( namespaze, name ) il2cpp::get_class_by_name( name, namespaze )
@@ -2979,7 +2979,7 @@ void dumper::produce() {
 		il2cpp::method_info_t* water_level_get_water_level = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 			FILT_N( DUMPER_METHOD( DUMPER_CLASS( "AmbienceWaveSounds" ), "Update" ), 2 ),
 			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
-			METHOD_ATTRIBUTE_PRIVATE,
+			METHOD_ATTRIBUTE_PUBLIC,
 			METHOD_ATTRIBUTE_STATIC,
 			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
 			DUMPER_TYPE_NAMESPACE( "System", "Boolean" )
