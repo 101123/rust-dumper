@@ -1941,6 +1941,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( recoil );
 		DUMP_MEMBER_BY_NAME( aimconeCurve );
 		DUMP_MEMBER_BY_NAME( aimCone );		
+		DUMP_MEMBER_BY_NAME( hipAimCone );
 		DUMP_MEMBER_BY_NAME( noAimingWhileCycling );
 		DUMP_MEMBER_BY_NAME( isBurstWeapon );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( cachedModHash, "System.UInt32" );
@@ -4558,6 +4559,12 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemModRFListener" );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_NAME( ConfigureClicked );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "UIFogOverlay" );
+	DUMPER_SECTION( "Offsets" );
+		il2cpp::field_info_t* instance = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "UIFogOverlay", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* instance ) { return instance != nullptr; } );
+		DUMP_MEMBER_BY_X( Instance, instance->offset() );
 	DUMPER_CLASS_END;
 
 	fclose( outfile_handle );
