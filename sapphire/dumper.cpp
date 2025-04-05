@@ -3522,7 +3522,7 @@ void dumper::produce() {
 			}
 		}
 
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( shoreVectors, "Vector4[]" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( shoreVectors, "float4" );
 	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* world_class_static_class = il2cpp::search_for_class_by_field_types( world_serialization_class->type(), 0, FIELD_ATTRIBUTE_PUBLIC, FIELD_ATTRIBUTE_STATIC );
