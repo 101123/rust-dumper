@@ -501,10 +501,10 @@ void dumper::hk_base_entity_server_rpc_object( rust::base_entity* base_entity, s
 		uint64_t protobuf_player_attack = 0;
 		uint64_t protobuf_attack = 0;
 
-		if ( IsValidPtr( protobuf_player_projectile_attack ) ) {
+		if ( is_valid_ptr( protobuf_player_projectile_attack ) ) {
 			protobuf_player_attack = *( uint64_t* )( protobuf_player_projectile_attack + protobuf_player_projectile_attack_player_attack->offset() );
 
-			if ( IsValidPtr( protobuf_player_attack ) ) {
+			if ( is_valid_ptr( protobuf_player_attack ) ) {
 				protobuf_attack = *( uint64_t* )( protobuf_player_attack + protobuf_player_attack_attack->offset() );
 			}
 		}
@@ -1199,10 +1199,10 @@ void dumper::produce() {
 	if ( sleeping_bag_client_rename ) {
 		uint8_t* jmp = FIND_PATTERN( sleeping_bag_client_rename, 128, "\x5F\xE9\xCC\xCC\xCC\xCC" );
 
-		if ( IsValidPtr( jmp ) ) {
+		if ( is_valid_ptr( jmp ) ) {
 			void* hook_addr = relative_32( jmp + 1, 1 );
 
-			if ( IsValidPtr( hook_addr ) ) {
+			if ( is_valid_ptr( hook_addr ) ) {
 				hook_t base_entity_server_rpc_object_hook( hook_addr, hk_base_entity_server_rpc_object, ( void** )&o_base_entity_server_rpc_object );
 				base_entity_server_rpc_object_hook.create();
 				base_entity_server_rpc_object_hook.enable();
@@ -3119,7 +3119,7 @@ void dumper::produce() {
 		void( *projectile_launch )( uint64_t ) = ( decltype( projectile_launch ) )projectile_launch_method->get_fn_ptr<uint64_t>();
 		void( *projectile_on_disable )( uint64_t ) = ( decltype( projectile_on_disable ) )DUMPER_METHOD( dumper_klass, "OnDisable" );
 
-		if ( projectile_initialize_velocity && IsValidPtr( projectile_launch ) && projectile_on_disable ) {
+		if ( projectile_initialize_velocity && is_valid_ptr( projectile_launch ) && projectile_on_disable ) {
 			unity::game_object_t* game_object = unity::game_object_t::create( L"" );
 			game_object->add_component( dumper_klass->type() );
 
@@ -3726,10 +3726,10 @@ void dumper::produce() {
 			if ( callback_handler_field ) {
 				uint64_t callback_handler = *( uint64_t* )( client + callback_handler_field->offset() );
 
-				if ( IsValidPtr( callback_handler ) ) {
+				if ( is_valid_ptr( callback_handler ) ) {
 					uint64_t klass = *( uint64_t* )( callback_handler );
 
-					if ( IsValidPtr( klass ) ) {
+					if ( is_valid_ptr( klass ) ) {
 						on_network_message = *( uint64_t* )( klass + 0x1C8 );
 					}
 				}

@@ -1968,7 +1968,7 @@ namespace il2cpp
 
 		for ( uint32_t i = 0; i < method_offsets.size(); i++ ) {
 			uint64_t deref_addr = ( uint64_t )klass + method_offsets.at( i );
-			if ( !IsValidPtr( deref_addr ) )
+			if ( !is_valid_ptr( deref_addr ) )
 				continue;
 
 			il2cpp::method_info_t* method = il2cpp::method_info_t::from_addr( *( uint64_t* )( deref_addr ) );
@@ -2025,7 +2025,7 @@ namespace il2cpp
 
 		for ( uint32_t i = 0; i < method_offsets.size(); i++ ) {
 			uint64_t deref_addr = ( uint64_t )klass + method_offsets.at( i );
-			if ( !IsValidPtr( deref_addr ) )
+			if ( !is_valid_ptr( deref_addr ) )
 				continue;
 
 			il2cpp::method_info_t* method = il2cpp::method_info_t::from_addr( *( uint64_t* )( deref_addr ) );
