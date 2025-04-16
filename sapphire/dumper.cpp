@@ -365,9 +365,11 @@ void dumper::dump_call( uint64_t function, uint32_t limit, uint32_t depth ) {
 	}
 }
 
+#define GA_EXPORT_RVA( x ) DUMPER_RVA( ( uint64_t )GetProcAddress( ( HMODULE )game_base, x )
+
 void dumper::write_game_assembly() {
-	PIMAGE_DOS_HEADER dos_header = ( PIMAGE_DOS_HEADER ) ( game_base );
-	PIMAGE_NT_HEADERS nt_headers = ( PIMAGE_NT_HEADERS ) ( game_base + dos_header->e_lfanew );
+	PIMAGE_DOS_HEADER dos_header = ( PIMAGE_DOS_HEADER )( game_base );
+	PIMAGE_NT_HEADERS nt_headers = ( PIMAGE_NT_HEADERS )( game_base + dos_header->e_lfanew );
 
 	uint64_t gc_handles = 0;
 	uint8_t* sig = FIND_PATTERN_IMAGE( game_base, "\x48\x8D\x05\xCC\xCC\xCC\xCC\x83\xE1\x07\xC1\xCC\x03" );
@@ -376,17 +378,22 @@ void dumper::write_game_assembly() {
 		gc_handles = DUMPER_RVA( ( uint64_t )dumper::relative_32( sig, 3 ) );
 	}
 
-	uint64_t convar_server_typeinfo = 0;
-	sig = FIND_PATTERN_IMAGE( game_base, "\xFF\xD0\xF3\x0F\xCC\xCC\xCC\xCC\xCC\xCC\x0F\x2F\xC8\x0F\x86\xCC\xCC\xCC\xCC\x48\x8B\x05\xCC\xCC\xCC\xCC\x44" );
-
-	if ( sig ) {
-		convar_server_typeinfo = DUMPER_RVA( ( uint64_t )dumper::relative_32( sig + 19, 3 ) );
-	}
-
 	dumper::write_to_file( "namespace GameAssembly {\n" );
 	dumper::write_to_file( "\tconstexpr const static size_t timestamp = 0x%x;\n", nt_headers->FileHeader.TimeDateStamp );
 	dumper::write_to_file( "\tconstexpr const static size_t gc_handles = 0x%x;\n", gc_handles );
-	dumper::write_to_file( "\tconstexpr const static size_t ConVar_Server_TypeInfo = 0x%x;\n", convar_server_typeinfo );
+	dumper::write_to_file( "\tconstexpr const static size_t il2cpp_resolve_icall = 0x%x;\n", GA_EXPORT_RVA( "il2cpp_resolve_icall" ) ) );
+	dumper::write_to_file( "\tconstexpr const static size_t il2cpp_assembly_get_image = 0x%x;\n", GA_EXPORT_RVA( "il2cpp_assembly_get_image" ) ) );
+	dumper::write_to_file( "\tconstexpr const static size_t il2cpp_class_from_name = 0x%x;\n", GA_EXPORT_RVA( "il2cpp_class_from_name" ) ) );
+	dumper::write_to_file( "\tconstexpr const static size_t il2cpp_class_get_method_from_name = 0x%x;\n", GA_EXPORT_RVA( "il2cpp_class_get_method_from_name" ) ) );
+	dumper::write_to_file( "\tconstexpr const static size_t il2cpp_class_get_type = 0x%x;\n", GA_EXPORT_RVA( "il2cpp_class_get_type" ) ) );
+	dumper::write_to_file( "\tconstexpr const static size_t il2cpp_domain_get = 0x%x;\n", GA_EXPORT_RVA( "il2cpp_domain_get" ) ) );
+	dumper::write_to_file( "\tconstexpr const static size_t il2cpp_domain_get_assemblies = 0x%x;\n", GA_EXPORT_RVA( "il2cpp_domain_get_assemblies" ) ) );
+	dumper::write_to_file( "\tconstexpr const static size_t il2cpp_gchandle_get_target = 0x%x;\n", GA_EXPORT_RVA( "il2cpp_gchandle_get_target" ) ) );
+	dumper::write_to_file( "\tconstexpr const static size_t il2cpp_gchandle_new = 0x%x;\n", GA_EXPORT_RVA( "il2cpp_gchandle_new" ) ) );
+	dumper::write_to_file( "\tconstexpr const static size_t il2cpp_gchandle_free = 0x%x;\n", GA_EXPORT_RVA( "il2cpp_gchandle_free" ) ) );
+	dumper::write_to_file( "\tconstexpr const static size_t il2cpp_method_get_name = 0x%x;\n", GA_EXPORT_RVA( "il2cpp_method_get_name" ) ) );
+	dumper::write_to_file( "\tconstexpr const static size_t il2cpp_object_new = 0x%x;\n", GA_EXPORT_RVA( "il2cpp_object_new" ) ) );
+	dumper::write_to_file( "\tconstexpr const static size_t il2cpp_type_get_object = 0x%x;\n", GA_EXPORT_RVA( "il2cpp_type_get_object" ) ) );
 	dumper::write_to_file( "}\n\n" );
 }
 
