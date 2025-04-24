@@ -382,6 +382,7 @@ void dumper::write_game_assembly() {
 	dumper::write_to_file( "\tconstexpr const static size_t timestamp = 0x%x;\n", nt_headers->FileHeader.TimeDateStamp );
 	dumper::write_to_file( "\tconstexpr const static size_t gc_handles = 0x%x;\n", gc_handles );
 	dumper::write_to_file( "\tconstexpr const static size_t il2cpp_resolve_icall = 0x%x;\n", GA_EXPORT_RVA( "il2cpp_resolve_icall" ) ) );
+	dumper::write_to_file( "\tconstexpr const static size_t il2cpp_array_new = 0x%x;\n", GA_EXPORT_RVA( "il2cpp_array_new" ) ) );
 	dumper::write_to_file( "\tconstexpr const static size_t il2cpp_assembly_get_image = 0x%x;\n", GA_EXPORT_RVA( "il2cpp_assembly_get_image" ) ) );
 	dumper::write_to_file( "\tconstexpr const static size_t il2cpp_class_from_name = 0x%x;\n", GA_EXPORT_RVA( "il2cpp_class_from_name" ) ) );
 	dumper::write_to_file( "\tconstexpr const static size_t il2cpp_class_get_method_from_name = 0x%x;\n", GA_EXPORT_RVA( "il2cpp_class_get_method_from_name" ) ) );
@@ -837,8 +838,10 @@ void dumper::produce_unity() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "AssetBundle", "UnityEngine" );
 	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( LoadFromMemory_Internal, "UnityEngine.AssetBundle::LoadFromMemory_Internal" );
 		DUMP_METHOD_BY_ICALL( LoadFromFile_Internal, "UnityEngine.AssetBundle::LoadFromFile_Internal(System.String,System.UInt32,System.UInt64)" );
 		DUMP_METHOD_BY_ICALL( LoadAsset_Internal, "UnityEngine.AssetBundle::LoadAsset_Internal(System.String,System.Type)" );
+		DUMP_METHOD_BY_ICALL( Unload, "UnityEngine.AssetBundle::Unload(System.Boolean)" );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Screen", "UnityEngine" );
@@ -857,6 +860,11 @@ void dumper::produce_unity() {
 		DUMP_METHOD_BY_ICALL( GetKeyDownInt, "UnityEngine.Input::GetKeyDownInt(UnityEngine.KeyCode)" );
 		DUMP_METHOD_BY_ICALL( GetKeyUpInt, "UnityEngine.Input::GetKeyUpInt(UnityEngine.KeyCode)" );
 		DUMP_METHOD_BY_ICALL( GetKeyInt, "UnityEngine.Input::GetKeyInt(UnityEngine.KeyCode)" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Application", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( Quit, "UnityEngine.Application::Quit(System.Int32)" );
 	DUMPER_CLASS_END;
 }
 
