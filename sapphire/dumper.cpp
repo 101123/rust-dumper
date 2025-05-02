@@ -904,18 +904,14 @@ void dumper::produce() {
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Network.Message", network_message_class );
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Network.NetRead", network_netread_class );
 
-	il2cpp::method_info_t* network_netwrite_packet_id = SEARCH_FOR_METHOD_IN_METHOD_WITH_RETTYPE_PARAM_TYPES(
-		WILDCARD_VALUE( il2cpp::il2cpp_class_t* ),
-		FILT_N( DUMPER_METHOD( DUMPER_CLASS( "BaseEntity" ), "ServerRPC" ), 2 ),
-		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-		METHOD_ATTRIBUTE_PUBLIC,
-		DUMPER_ATTR_DONT_CARE,
-		DUMPER_TYPE_NAMESPACE( "System", "Byte" ),
-	);
+	const char* network_netwrite_field_types[] = {
+		"System.Int32",
+		"Network.Priority",
+		"Network.SendMethod",
+		"System.SByte"
+	};
 
-	CHECK_RESOLVED_VALUE( VALUE_METHOD, "Network.NetWrite::PacketID", network_netwrite_packet_id );
-
-	il2cpp::il2cpp_class_t* network_netwrite_class = network_netwrite_packet_id->klass();
+	il2cpp::il2cpp_class_t* network_netwrite_class = il2cpp::search_for_class_containing_field_types_str( network_netwrite_field_types, _countof( network_netwrite_field_types ) );
 
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Network.NetWrite", network_netwrite_class );
 
@@ -2008,17 +2004,6 @@ void dumper::produce() {
 		);
 
 		DUMP_VIRTUAL_METHOD( UpdateAmmoDisplay, base_projectile_update_ammo_display );
-	DUMPER_CLASS_END;
-
-	il2cpp::il2cpp_class_t* base_projectile_static_class = get_inner_static_class( DUMPER_CLASS( "BaseProjectile" ) );
-
-	DUMPER_CLASS_BEGIN_FROM_PTR( "BaseProjectile_Static", base_projectile_static_class );
-	DUMPER_SECTION( "Offsets" );
-		il2cpp::field_info_t* created_projectiles = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "Projectile", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* value ) { return value != nullptr; } );
-		DUMP_MEMBER_BY_X( createdProjectiles, created_projectiles->offset() );
-	DUMPER_SECTION( "Functions" );
-		il2cpp::method_info_t* _cctor = il2cpp::get_method_by_name( dumper_klass, ".cctor" );
-		DUMP_METHOD_BY_INFO_PTR( cctor, _cctor );
 	DUMPER_CLASS_END;
 
 	uint64_t( *main_camera_trace )( float, uint64_t, float ) = nullptr;
@@ -4488,11 +4473,6 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( lowerWhenCantAttack );
 		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( shouldLower, "System.Boolean", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
 		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( rotateAngle, "System.Single", FIELD_ATTRIBUTE_ASSEMBLY, DUMPER_ATTR_DONT_CARE );
-	DUMPER_CLASS_END;
-
-	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseRidableAnimal" );
-	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_NAME( maxSpeed );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "ConVar_Client_Static", convar_client_static_class );
