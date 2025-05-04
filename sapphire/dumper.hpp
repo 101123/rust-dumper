@@ -19,6 +19,7 @@ namespace dumper
 	extern FILE* outfile_log_handle;
 	extern uint64_t game_base;
 	extern uint64_t unity_base;
+	extern il2cpp::il2cpp_class_t** type_info_definition_table;
 
 	char* clean_klass_name( const char* klass_name );
 	char* clean_inner_klass_name( il2cpp::il2cpp_class_t* klass );
@@ -34,7 +35,7 @@ namespace dumper
 		return nt_headers->OptionalHeader.SizeOfImage;
 	}
 
-	__forceinline BYTE* relative_32( BYTE* inst, uint32_t offset ) {
+	__forceinline uint8_t* relative_32( uint8_t* inst, uint32_t offset ) {
 		int32_t rel_offset = *( int32_t* ) ( inst + offset );
 		return ( inst + rel_offset + offset + sizeof( int32_t ) );
 	}
