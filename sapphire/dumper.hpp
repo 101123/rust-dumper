@@ -21,6 +21,9 @@ namespace dumper
 	extern uint64_t unity_base;
 	extern il2cpp::il2cpp_class_t** type_info_definition_table;
 
+	extern bool resolve_type_info_definition_table();
+	extern int get_class_type_definition_index( il2cpp::il2cpp_class_t* klass );
+
 	char* clean_klass_name( const char* klass_name );
 	char* clean_inner_klass_name( il2cpp::il2cpp_class_t* klass );
 	void write_to_file( const char* format, ... );
