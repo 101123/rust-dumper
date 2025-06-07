@@ -1825,7 +1825,7 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_PTR( "System_BufferList", system_buffer_list_class );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( count, DUMPER_CLASS_NAMESPACE( "System", "Int32" ) );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( buffer, "BaseNetworkable" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( buffer, "BaseNetworkable[]" );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "SingletonComponent", singleton_component_rust_camera_main_camera_class );
@@ -3476,7 +3476,11 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( instance, DUMPER_CLASS( "BaseViewModel" ) ); 
 	DUMPER_SECTION( "Functions" );
-		DUMP_METHOD_BY_NAME( Play );
+		il2cpp::method_info_t* play_int = il2cpp::get_method_by_param_type( NO_FILT, DUMPER_CLASS( "ViewModel" ), "Play", DUMPER_CLASS_NAMESPACE( "System", "Int32" ), 0 );
+		DUMP_METHOD_BY_INFO_PTR( PlayInt, play_int );
+
+		il2cpp::method_info_t* play_string = il2cpp::get_method_by_param_type( NO_FILT, DUMPER_CLASS( "ViewModel" ), "Play", DUMPER_CLASS_NAMESPACE( "System", "String" ), 0 );
+		DUMP_METHOD_BY_INFO_PTR( PlayString, play_string );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "MedicalTool" );

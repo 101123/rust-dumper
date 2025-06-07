@@ -1551,34 +1551,18 @@ namespace il2cpp
 		return matches.at( idx ).method;
 	}
 
-	inline method_info_t* get_method_by_param_type_name( method_filter_t filter, il2cpp_class_t* klass, const char* name, int param_ct, uint32_t flags )
-	{
-		void* iter = nullptr;
-
-		const auto get_method_by_param_type_name = [ = ] ( method_info_t* method ) -> bool {
-			uint32_t count = method->param_count( );
-			if ( count != param_ct )
+	inline method_info_t* get_method_by_param_type( method_filter_t filter, il2cpp_class_t* klass, const char* method_name, il2cpp_class_t* param_type, int param_idx ) {
+		const auto get_method_by_param_type_idx = [=]( method_info_t* method ) -> bool {
+			if ( method->param_count() < param_idx + 1 )
 				return false;
 
-			for ( uint32_t i = 0; i < count; i++ )
-			{
-				il2cpp_type_t* param = method->get_param( i );
-				if ( !param )
-					continue;
+			if ( strcmp( method->name(), method_name ) )
+				return false;
 
-				if ( strcmp( param->name( ), name ) == 0 )
-				{
-					if ( flags && !( method->flags( ) & flags ) )
-						continue;
-
-					return true;
-				}
-			}
-
-			return false;
+			return method->get_param( param_idx )->klass() == param_type;
 		};
 
-		return get_method_from_class( filter, klass, get_method_by_param_type_name );
+		return get_method_from_class( filter, klass, get_method_by_param_type_idx );
 	}
 
 	inline method_info_t* get_method_by_param_name( method_filter_t filter, il2cpp_class_t* klass, const char* method_name, const char* param_name, int param_idx ) {
@@ -1589,8 +1573,7 @@ namespace il2cpp
 			if ( strcmp( method->name(), method_name ) )
 				return false;
 
-			if ( !strcmp( method->get_param_name( param_idx ), param_name ) )
-				return true;
+			return strcmp( method->get_param_name( param_idx ), param_name ) == 0;
 		};
 
 		return get_method_from_class( filter, klass, get_method_by_param_name_idx );
