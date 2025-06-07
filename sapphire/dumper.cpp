@@ -2410,7 +2410,6 @@ void dumper::produce() {
 	size_t last_sent_tick_offset = -1;
 	size_t belt_offset = -1;
 
-	uint64_t base_player_send_client_tick = 0;
 	uint64_t base_player_client_input = 0;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "BasePlayer_Static", base_player_static_class );
@@ -2552,12 +2551,23 @@ void dumper::produce() {
 			DUMPER_ATTR_DONT_CARE
 		);
 
-		il2cpp::method_info_t* base_player_send_client_tick_ = il2cpp::get_method_containing_function(
-			FILT_N( DUMPER_METHOD( DUMPER_CLASS( "BasePlayer" ), "ClientUpdateLocalPlayer" ), 3 ),
-			DUMPER_METHOD( DUMPER_CLASS_NAMESPACE( "System.Diagnostics", "Stopwatch" ), "get_ElapsedMilliseconds" )
-		); base_player_send_client_tick = base_player_send_client_tick_->get_fn_ptr<uint64_t>();
+		il2cpp::method_info_t* main_camera_get_is_valid_method = il2cpp::get_method_by_return_type_attrs(
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "HolosightReticlePositioning" ), "Update" ) ),
+			DUMPER_CLASS( "MainCamera" ),
+			DUMPER_CLASS_NAMESPACE( "System", "Boolean" ),
+			METHOD_ATTRIBUTE_STATIC,
+			METHOD_ATTRIBUTE_PUBLIC,
+			0
+		);
 
-		DUMP_METHOD_BY_INFO_PTR( SendClientTick, base_player_send_client_tick_ );
+		if ( main_camera_get_is_valid_method ) {
+			il2cpp::method_info_t* base_player_send_client_tick = il2cpp::get_method_containing_function(
+				FILT_N( DUMPER_METHOD( DUMPER_CLASS( "BasePlayer" ), "ClientUpdateLocalPlayer" ), 3 ),
+				main_camera_get_is_valid_method->get_fn_ptr<uint64_t>()
+			); 
+
+			DUMP_METHOD_BY_INFO_PTR( SendClientTick, base_player_send_client_tick );
+		}
 
 		il2cpp::virtual_method_t base_player_client_input_ = SEARCH_FOR_VIRTUAL_METHOD_WITH_RETTYPE_PARAM_TYPES(
 			FILT( DUMPER_METHOD( DUMPER_CLASS( "BasePlayer" ), "ClientUpdateLocalPlayer" ) ),
@@ -2782,17 +2792,6 @@ void dumper::produce() {
 				}
 			}
 		}
-	DUMPER_SECTION( "Functions" );
-		il2cpp::virtual_method_t player_tick_write_to_stream_delta = SEARCH_FOR_VIRTUAL_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			FILT( base_player_send_client_tick ),
-			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-			DUMPER_ATTR_DONT_CARE,
-			DUMPER_ATTR_DONT_CARE,
-			WILDCARD_VALUE( il2cpp::il2cpp_type_t* ),
-			player_tick_class->type()
-		);
-
-		DUMP_VIRTUAL_METHOD( WriteToStreamDelta, player_tick_write_to_stream_delta );
 	DUMPER_CLASS_END;
 
 	il2cpp::field_info_t* _buttons = nullptr;
@@ -3064,13 +3063,6 @@ void dumper::produce() {
 		if ( fov_command ) {
 			DUMP_MEMBER_BY_X( _fov_getter, DUMPER_RVA( fov_command->get() ) );
 			DUMP_MEMBER_BY_X( _fov_setter, DUMPER_RVA( fov_command->set() ) );
-		}
-
-		rust::console_system::command* viewmodelcamera_command = rust::console_system::client::find( system_c::string_t::create_string( L"graphics.viewmodelcamera" ) );
-
-		if ( viewmodelcamera_command ) {
-			DUMP_MEMBER_BY_X( viewmodelcamera_getter, DUMPER_RVA( viewmodelcamera_command->get() ) );
-			DUMP_MEMBER_BY_X( viewmodelcamera_setter, DUMPER_RVA( viewmodelcamera_command->set() ) );
 		}
 	DUMPER_CLASS_END;
 
