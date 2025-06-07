@@ -3491,7 +3491,7 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "WaterSystem_Static", get_inner_static_class( DUMPER_CLASS( "WaterSystem" ) ) );
 	DUMPER_SECTION( "Offsets" );
-		il2cpp::field_info_t* ocean = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "WaterBody", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* ocean ) { return ocean != nullptr; } );
+		il2cpp::field_info_t* ocean = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, DUMPER_CLASS( "WaterBody" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* ocean ) { return ocean != nullptr; } );
 		DUMP_MEMBER_BY_X( Ocean, ocean->offset() );
 	DUMPER_CLASS_END;
 

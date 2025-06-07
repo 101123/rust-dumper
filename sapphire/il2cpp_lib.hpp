@@ -2286,7 +2286,7 @@ namespace il2cpp
 	}
 
 	template <typename T, typename C>
-	inline field_info_t* get_static_field_if_value_is( il2cpp_class_t* klass, il2cpp_type_t* type, int wanted_vis, int flags, C compare )
+	inline field_info_t* get_static_field_if_value_is( il2cpp_class_t* klass, il2cpp_class_t* type, int wanted_vis, int flags, C compare )
 	{
 		flags |= FIELD_ATTRIBUTE_STATIC;
 
@@ -2295,7 +2295,7 @@ namespace il2cpp
 
 		void* iter = nullptr;
 		while ( field_info_t* field = klass->fields( &iter ) ) {
-			if ( field->type() != type )
+			if ( field->type()->klass() != type )
 				continue;
 
 			int fl = field->flags();
