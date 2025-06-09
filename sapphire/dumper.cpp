@@ -4636,6 +4636,10 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" );
 	DUMPER_CLASS_END;
 
+	DUMPER_CLASS_BEGIN_FROM_NAME( "BlowPipeWeapon" );
+	DUMPER_SECTION( "Offsets" );
+	DUMPER_CLASS_END;
+
 	fclose( outfile_handle );
 	fclose( outfile_log_handle );	
 }
