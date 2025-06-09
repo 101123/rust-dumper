@@ -3852,13 +3852,9 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( stream, buffer_stream_class );
 	DUMPER_SECTION( "Functions" );
-		il2cpp::method_info_t* network_netwrite_uint32 = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			FILT_N( DUMPER_METHOD( DUMPER_CLASS( "BaseEntity" ), "ServerRPC" ), 2 ),
-			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-			METHOD_ATTRIBUTE_PUBLIC,
-			DUMPER_ATTR_DONT_CARE,
-			DUMPER_TYPE_NAMESPACE( "System", "UInt32" )
-		);
+		DUMP_MEMBER_BY_X( UInt8, 0 );
+		DUMP_MEMBER_BY_X( UInt32, 0 );
+		DUMP_MEMBER_BY_X( UInt64, 0 );
 
 		il2cpp::method_info_t* network_netwrite_string = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 			FILT_N( DUMPER_METHOD( DUMPER_CLASS_NAMESPACE( "Rust.UI.ServerAdmin", "ServerAdminUI" ), "RefreshUGC" ), 2 ),
@@ -4621,6 +4617,7 @@ void dumper::produce() {
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "BufferStream", buffer_stream_class );
+	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* buffer_stream_ensure_capacity = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 			FILT_N( DUMPER_METHOD( DUMPER_CLASS( "BaseEntity" ), "ServerRPC" ), 3 ),
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
