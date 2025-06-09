@@ -4637,6 +4637,17 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" );
 	DUMPER_CLASS_END;
 
+	DUMPER_CLASS_BEGIN_FROM_NAME( "AttackHelicopterRockets" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GetProjectedHitPos,
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "AttackHeliUIDialog" ), "Update" ) ),
+			DUMPER_CLASS_NAMESPACE( "UnityEngine", "Vector3" ),
+			0,
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE
+		);
+	DUMPER_CLASS_END;
+
 	fclose( outfile_handle );
 	fclose( outfile_log_handle );	
 }
