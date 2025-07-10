@@ -6,6 +6,7 @@
 #include "hde/hde64.h"
 
 #define is_valid_ptr( x ) !IsBadReadPtr( ( void* )x, 8 )
+#define is_valid_read( x, s ) !IsBadReadPtr( ( void* )x, s )
 
 namespace util {
 	struct function_attributes_t {

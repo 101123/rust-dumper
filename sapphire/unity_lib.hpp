@@ -8,6 +8,7 @@ namespace system_c {
 	public:
 		int size;
 		wchar_t str[ 256 + 1 ];
+		string_t() {};
 		string_t( const wchar_t* st ) {
 			size = min( ( int )wcslen( ( wchar_t* )st ), 256 );
 			for ( int i = 0; i < size; i++ ) {

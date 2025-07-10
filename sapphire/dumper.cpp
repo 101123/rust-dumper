@@ -423,6 +423,261 @@ bool resolved_projectile_attack = false;
 	for ( auto field : fields ) \
 		*( type* )( instance + field->offset() ) = ( type )value; }
 
+bool is_exception_hook( CONTEXT* context, uint64_t search, uint64_t replace, uint64_t limit ) {
+	bool match = false;
+
+	uint64_t* registers = ( uint64_t* )&context->Rax;
+	const uint32_t num_registers = ( offsetof( CONTEXT, Rip ) - offsetof( CONTEXT, Rax ) ) / sizeof( uint64_t );
+
+	for ( uint32_t i = 0; i < num_registers; i++ ) {
+		uint64_t reg = registers[ i ];
+
+		if ( reg >= search && reg < ( search + limit ) ) {
+			registers[ i ] = replace + ( reg - search );
+
+			match = true;
+		}
+	}
+
+	return match;
+}
+
+#define START_WRITE_METHOD_RVA 0xC00E290
+#define CORRUPT_VALUE 0xDEADBEEFCAFEBEEF
+
+uint64_t dumper::start_write_value = 0;
+
+void dumper::dump_projectile_shoot( il2cpp::il2cpp_object_t* object ) {
+	if ( resolved_projectile_shoot )
+		return;
+
+	il2cpp::il2cpp_class_t* klass = object->get_class();
+	if ( !is_valid_ptr( klass ) )
+		return;
+
+	const char* name = klass->name();
+	if ( !is_valid_ptr( name ) )
+		return;
+
+	if ( name[ 0 ] != '%' )
+		return;
+
+	if ( klass->field_count() != 4 )
+		return;
+
+	std::vector<il2cpp::field_info_t*> ints = il2cpp::get_fields_of_type( klass, DUMPER_TYPE_NAMESPACE( "System", "Int32" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+	if ( ints.size() != 1 )
+		return;
+
+	il2cpp::field_info_t* projectile_shoot_projectiles = il2cpp::get_field_if_type_contains( klass, "List<%", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+	if ( !projectile_shoot_projectiles )
+		return;
+
+	std::vector<il2cpp::field_info_t*> public_bools = il2cpp::get_fields_of_type( klass, DUMPER_TYPE_NAMESPACE( "System", "Boolean" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+	if ( public_bools.size() != 1 )
+		return;
+
+	std::vector<il2cpp::field_info_t*> private_bools = il2cpp::get_fields_of_type( klass, DUMPER_TYPE_NAMESPACE( "System", "Boolean" ), FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
+	if ( private_bools.size() != 1 )
+		return;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "ProtoBuf_ProjectileShoot", klass );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_X( projectiles, projectile_shoot_projectiles->offset() );
+	DUMPER_CLASS_END;
+
+	il2cpp::il2cpp_class_t* projectile_shoot_projectile_class = projectile_shoot_projectiles->type()->klass()->get_generic_argument_at( 0 );
+	if ( !projectile_shoot_projectile_class )
+		return;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "ProtoBuf_ProjectileShoot_Projectile", projectile_shoot_projectile_class );
+	DUMPER_SECTION( "Offsets" );
+		auto projectiles = *( system_c::list<uint64_t>** )( object + projectile_shoot_projectiles->offset() );
+
+		if ( projectiles ) {
+			for ( int i = 0; i < projectiles->_size; i++ ) {
+				uint64_t projectile = projectiles->at( i );
+				if ( !projectile )
+					continue;
+
+				SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( projectile, DUMPER_TYPE_NAMESPACE( "System", "Int32" ), int );
+				SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( projectile, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), float );
+			}
+		}
+	DUMPER_CLASS_END;
+
+	resolved_projectile_shoot = true;
+}
+
+void dumper::dump_player_projectile_update( il2cpp::il2cpp_object_t* object ) {
+	if ( resolved_projectile_update )
+		return;
+
+	il2cpp::il2cpp_class_t* klass = object->get_class();
+	if ( !is_valid_ptr( klass ) )
+		return;
+
+	const char* name = klass->name();
+	if ( !is_valid_ptr( name ) )
+		return;
+
+	if ( name[ 0 ] != '%' )
+		return;
+
+	if ( klass->field_count() != 6 )
+		return;
+
+	std::vector<il2cpp::field_info_t*> ints = il2cpp::get_fields_of_type( klass, DUMPER_TYPE_NAMESPACE( "System", "Int32" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+	if ( ints.size() != 1 )
+		return;
+
+	std::vector<il2cpp::field_info_t*> vectors = il2cpp::get_fields_of_type( klass, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+	if ( vectors.size() != 2 )
+		return;
+
+	std::vector<il2cpp::field_info_t*> floats = il2cpp::get_fields_of_type( klass, DUMPER_TYPE_NAMESPACE( "System", "Single" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+	if ( floats.size() != 1 )
+		return;
+
+	std::vector<il2cpp::field_info_t*> public_bools = il2cpp::get_fields_of_type( klass, DUMPER_TYPE_NAMESPACE( "System", "Boolean" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+	if ( public_bools.size() != 1 )
+		return;
+
+	std::vector<il2cpp::field_info_t*> private_bools = il2cpp::get_fields_of_type( klass, DUMPER_TYPE_NAMESPACE( "System", "Boolean" ), FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
+	if ( private_bools.size() != 1 )
+		return;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "ProtoBuf_PlayerProjectileUpdate", klass );
+	DUMPER_SECTION( "Offsets" );
+		SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( object, DUMPER_TYPE_NAMESPACE( "System", "Int32" ), int );
+		SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( object, DUMPER_TYPE_NAMESPACE( "System", "Single" ), float );
+		SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( object, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), float )
+	
+		DUMP_MEMBER_BY_X( ShouldPool, public_bools.at( 0 )->offset() );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_NAME( Dispose );
+	DUMPER_CLASS_END;
+
+	protobuf_player_projectile_update_class = klass;
+	resolved_projectile_update = true;
+}
+
+void dumper::dump_player_projectile_attack( il2cpp::il2cpp_object_t* object ) {
+	if ( resolved_projectile_attack )
+		return;
+
+	il2cpp::il2cpp_class_t* klass = object->get_class();
+	if ( !is_valid_ptr( klass ) )
+		return;
+
+	const char* name = klass->name();
+	if ( !is_valid_ptr( name ) )
+		return;
+
+	if ( name[ 0 ] != '%' )
+		return;
+
+	if ( klass->field_count() != 6 )
+		return;
+
+	std::vector<il2cpp::field_info_t*> vectors = il2cpp::get_fields_of_type( klass, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+	if ( vectors.size() != 1 )
+		return;
+
+	std::vector<il2cpp::field_info_t*> floats = il2cpp::get_fields_of_type( klass, DUMPER_TYPE_NAMESPACE( "System", "Single" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+	if ( floats.size() != 2 )
+		return;
+
+	std::vector<il2cpp::field_info_t*> public_bools = il2cpp::get_fields_of_type( klass, DUMPER_TYPE_NAMESPACE( "System", "Boolean" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+	if ( public_bools.size() != 1 )
+		return;
+
+	std::vector<il2cpp::field_info_t*> private_bools = il2cpp::get_fields_of_type( klass, DUMPER_TYPE_NAMESPACE( "System", "Boolean" ), FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
+	if ( private_bools.size() != 1 )
+		return;
+
+	il2cpp::field_info_t* player_projectile_attack_player_attack = il2cpp::get_field_if_type_contains( klass, "%", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+	if ( !player_projectile_attack_player_attack )
+		return;
+
+	il2cpp::il2cpp_class_t* player_attack_class = player_projectile_attack_player_attack->type()->klass();
+	if ( !player_attack_class )
+		return;
+
+	il2cpp::field_info_t* player_attack_attack = il2cpp::get_field_if_type_contains( player_attack_class, "%", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+	if ( !player_attack_attack )
+		return;
+
+	il2cpp::il2cpp_class_t* attack_class = player_attack_attack->type()->klass();
+	if ( !attack_class )
+		return;
+
+	uint64_t player_projectile_attack = ( uint64_t )object;
+	uint64_t player_attack = *( uint64_t* )( player_projectile_attack + player_projectile_attack_player_attack->offset() );
+	uint64_t attack = *( uint64_t* )( player_attack + player_attack_attack->offset() );
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "ProtoBuf_PlayerProjectileAttack", klass );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( playerAttack, player_attack_class );
+
+		if ( player_projectile_attack ) {
+			SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( player_projectile_attack, DUMPER_TYPE_NAMESPACE( "System", "Single" ), float );
+			SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( player_projectile_attack, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), float );
+		}
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "ProtoBuf_PlayerAttack", player_attack_class );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( attack, attack_class );
+
+		if ( player_attack ) {
+			SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( player_attack, DUMPER_TYPE_NAMESPACE( "System", "Int32" ), int );
+		}
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "ProtoBuf_Attack", attack_class );
+	DUMPER_SECTION( "Offsets" );
+		if ( attack ) {
+			SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( attack, DUMPER_TYPE_NAMESPACE( "System", "UInt32" ), uint32_t );
+			SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( attack, projectile_attack_networkable_id->type(), uint64_t );
+			SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( attack, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), float );
+		}
+	DUMPER_CLASS_END;
+
+	protobuf_player_projectile_attack_class = klass;
+	resolved_projectile_attack = true;
+}
+
+long dumper::exception_handler( _EXCEPTION_POINTERS* exception_info ) {
+	if ( exception_info->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION ) {
+		CONTEXT* context = exception_info->ContextRecord;
+
+		if ( is_exception_hook( context, CORRUPT_VALUE, start_write_value, 0x1000 ) ) {
+			uint64_t** stack = ( uint64_t** )context->Rsp;
+
+			for ( size_t i = 0; i < 128; i++ ) {
+				uint64_t** stack_ptr = &stack[ i ];
+				if ( !is_valid_ptr( stack_ptr ) )
+					continue;
+
+				uint64_t* ptr = *stack_ptr;
+				if ( !is_valid_ptr( ptr ) )
+					continue;
+
+				il2cpp::il2cpp_object_t* object = ( il2cpp::il2cpp_object_t* )ptr;
+
+				dump_projectile_shoot( object );
+				dump_player_projectile_update( object );
+				dump_player_projectile_attack( object );
+			}
+
+			return EXCEPTION_CONTINUE_EXECUTION;
+		}
+	}
+
+	return EXCEPTION_CONTINUE_SEARCH;
+}
+
 void dumper::hk_base_entity_server_rpc_object( rust::base_entity* base_entity, system_c::string_t* func_name, il2cpp::il2cpp_object_t* arg, il2cpp::method_info_t* method ) {
 	if ( !resolved_projectile_shoot && !wcscmp( func_name->str, L"CLProject" ) ) {
 		il2cpp::il2cpp_class_t* proto_buf_projectile_shoot_class = arg->get_class();
@@ -1234,32 +1489,20 @@ void dumper::produce() {
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Network.Networkable", network_networkable_class );
 
 #ifdef HOOK
-	uint64_t sleeping_bag_client_rename = DUMPER_METHOD( DUMPER_CLASS( "SleepingBag" ), "ClientRename" );
+	uint64_t* corrupt_ptr = ( uint64_t* )( game_base + START_WRITE_METHOD_RVA );
+	start_write_value = *corrupt_ptr;
+	*corrupt_ptr = CORRUPT_VALUE;
 
-	if ( sleeping_bag_client_rename ) {
-		uint8_t* jmp = FIND_PATTERN( sleeping_bag_client_rename, 128, "\x5F\xE9\xCC\xCC\xCC\xCC" );
+	std::cout << "Hooked!\n";
 
-		if ( is_valid_ptr( jmp ) ) {
-			void* hook_addr = relative_32( jmp + 1, 1 );
+	while ( true ) {
+		Sleep( 1 );
 
-			if ( is_valid_ptr( hook_addr ) ) {
-				hook_t base_entity_server_rpc_object_hook( hook_addr, hk_base_entity_server_rpc_object, ( void** )&o_base_entity_server_rpc_object );
-				base_entity_server_rpc_object_hook.create();
-				base_entity_server_rpc_object_hook.enable();
+		if ( GetAsyncKeyState( 'Q' ) || ( resolved_projectile_shoot && resolved_projectile_update && resolved_projectile_attack ) ) {
+			std::cout << "Removing Hook!\n";
 
-				std::cout << "Hooked!\n";
-
-				while ( true ) {
-					Sleep( 1 );
-
-					if ( GetAsyncKeyState( 'V' ) || ( resolved_projectile_shoot && resolved_projectile_update && resolved_projectile_attack ) ) {
-						std::cout << "Removing Hook!\n";
-
-						base_entity_server_rpc_object_hook.remove();
-						break;
-					}
-				}
-			}
+			*corrupt_ptr = start_write_value;
+			break;
 		}
 	}
 #endif
@@ -2488,25 +2731,29 @@ void dumper::produce() {
 		DUMP_METHOD_BY_INFO_PTR( GetSpeed, base_player_get_speed );
 
 #ifdef HOOK
-		il2cpp::method_info_t* base_player_send_projectile_update = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-		    FILT( DUMPER_METHOD( DUMPER_CLASS( "Projectile" ), "AdjustVelocity" ) ),
-			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-			METHOD_ATTRIBUTE_PUBLIC,
-			DUMPER_ATTR_DONT_CARE,
-			protobuf_player_projectile_update_class->type()
-		);
+		if ( protobuf_player_projectile_update_class ) {
+			il2cpp::method_info_t* base_player_send_projectile_update = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+				FILT( DUMPER_METHOD( DUMPER_CLASS( "Projectile" ), "AdjustVelocity" ) ),
+				DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+				METHOD_ATTRIBUTE_PUBLIC,
+				DUMPER_ATTR_DONT_CARE,
+				protobuf_player_projectile_update_class->type()
+			);
 
-		DUMP_METHOD_BY_INFO_PTR( SendProjectileUpdate, base_player_send_projectile_update );
+			DUMP_METHOD_BY_INFO_PTR( SendProjectileUpdate, base_player_send_projectile_update );
+		}
 
-		il2cpp::method_info_t* base_player_send_projectile_attack = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-		    FILT_N( DUMPER_METHOD( DUMPER_CLASS( "Projectile" ), "Update" ), 6 ),
-			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-			METHOD_ATTRIBUTE_PUBLIC,
-			DUMPER_ATTR_DONT_CARE,
-			protobuf_player_projectile_attack_class->type()
-		);
+		if ( protobuf_player_projectile_attack_class ) {
+			il2cpp::method_info_t* base_player_send_projectile_attack = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+				FILT_N( DUMPER_METHOD( DUMPER_CLASS( "Projectile" ), "Update" ), 6 ),
+				DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+				METHOD_ATTRIBUTE_PUBLIC,
+				DUMPER_ATTR_DONT_CARE,
+				protobuf_player_projectile_attack_class->type()
+			);
 
-		DUMP_METHOD_BY_INFO_PTR( SendProjectileAttack, base_player_send_projectile_attack );
+			DUMP_METHOD_BY_INFO_PTR( SendProjectileAttack, base_player_send_projectile_attack );
+		}
 #endif
 		il2cpp::method_info_t* base_player_can_build = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 			FILT( DUMPER_METHOD( DUMPER_CLASS( "Hammer" ), "OnInput" ) ),
