@@ -905,9 +905,9 @@ int get_button_offset( const wchar_t* button_command ) {
 #define FLOAT_IS_EQUAL( a, b, c ) abs( a - b ) < c
 #define VECTOR_IS_EQUAL( a, b, c ) abs( a.distance( b ) ) < c 
 
-#define SERVER_IP L"103.214.71.31" 
+#define SERVER_IP L"127.0.0.1" 
 #define SERVER_PORT 28015
-#define WORLD_SIZE 4000
+#define WORLD_SIZE 2500
 #define CAMSPEED 1.0525f
 #define CAMLERP 1.0252f
 
@@ -1201,7 +1201,7 @@ void dumper::produce() {
 
 	il2cpp::method_info_t* network_base_network_start_write = SEARCH_FOR_METHOD_IN_METHOD_WITH_RETTYPE(
 		WILDCARD_VALUE( il2cpp::il2cpp_class_t* ),
-		FILT_N( DUMPER_METHOD( DUMPER_CLASS( "BaseEntity" ), "ServerRPC" ), 2 ),
+		FILT_N( DUMPER_METHOD( DUMPER_CLASS( "BaseEntity" ), "ServerRPC" ), 3 ),
 		network_netwrite_class->type(),
 		METHOD_ATTRIBUTE_PUBLIC,
 		DUMPER_ATTR_DONT_CARE,
@@ -3739,7 +3739,7 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( meshFilter, "UnityEngine.MeshFilter" ); // <MeshFilter>k__BackingField
 	DUMPER_CLASS_END;
-
+		
 	DUMPER_CLASS_BEGIN_FROM_PTR( "WaterSystem_Static", get_inner_static_class( DUMPER_CLASS( "WaterSystem" ) ) );
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* ocean = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, DUMPER_CLASS( "WaterBody" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* ocean ) { return ocean != nullptr; } );
@@ -3755,10 +3755,10 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainMeta" );
 	DUMPER_SECTION( "Offsets" );
-		il2cpp::field_info_t* position = il2cpp::get_static_field_if_value_is<unity::vector3_t>( dumper_klass, "UnityEngine.Vector3", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::vector3_t position ) { return position == unity::vector3_t( -2000.f, -500.f, -2000.f ); } );
+		il2cpp::field_info_t* position = il2cpp::get_static_field_if_value_is<unity::vector3_t>( dumper_klass, "UnityEngine.Vector3", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::vector3_t position ) { return position == unity::vector3_t( -1250.f, -500.f, -1250.f ); } );
 		DUMP_MEMBER_BY_X( Position, position->offset() );
 
-		il2cpp::field_info_t* size = il2cpp::get_static_field_if_value_is<unity::vector3_t>( dumper_klass, "UnityEngine.Vector3", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::vector3_t size ) { return size == unity::vector3_t( 4000.f, 1000.f, 4000.f ); } );
+		il2cpp::field_info_t* size = il2cpp::get_static_field_if_value_is<unity::vector3_t>( dumper_klass, "UnityEngine.Vector3", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::vector3_t size ) { return size == unity::vector3_t( 2500.f, 1000.f, 2500.f ); } );
 		DUMP_MEMBER_BY_X( Size, size->offset() );
 
 		il2cpp::field_info_t* one_over_size = il2cpp::get_static_field_if_value_is<unity::vector3_t>( dumper_klass, "UnityEngine.Vector3", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE, []( unity::vector3_t one_over_size ) { return one_over_size.x == ( 1.f / ( float )WORLD_SIZE ); } );
@@ -4866,7 +4866,7 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_PTR( "BufferStream", buffer_stream_class );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* buffer_stream_ensure_capacity = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			FILT_N( DUMPER_METHOD( DUMPER_CLASS( "BaseEntity" ), "ServerRPC" ), 3 ),
+			FILT_N( DUMPER_METHOD( DUMPER_CLASS( "BaseEntity" ), "ServerRPC" ), 4 ),
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 			METHOD_ATTRIBUTE_PRIVATE,
 			DUMPER_ATTR_DONT_CARE,
