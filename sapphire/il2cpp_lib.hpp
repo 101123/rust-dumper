@@ -1,18 +1,19 @@
 #pragma once
+
 #include <windows.h>
 #include <cstdio>
 #include <vector>
 #include <algorithm>
+#include <map>
+#include <set>
 
-#include "il2cpp_ext.hpp"
 #include "util.hpp"
+#include "il2cpp/il2cpp-class-internals.h"
+#include "il2cpp/il2cpp-tabledefs.h"
 
 #define STR( x ) #x
 #define CREATE_TYPE( name, args ) using il2cpp_##name = args; inline il2cpp_##name name;
-#define ASSIGN_TYPE( name ) name = (decltype(name)) GetProcAddress( GetModuleHandleA( "GameAssembly.dll" ), STR( il2cpp_##name ) );
-
-#include <map>
-#include <set>
+#define ASSIGN_TYPE( name ) name = ( decltype( name ) ) GetProcAddress( GetModuleHandleA( "GameAssembly.dll" ), STR( il2cpp_##name ) );
 
 #define NO_FILT il2cpp::method_filter_t()
 #define FILT_I( x, i, n ) il2cpp::method_filter_t( x, i, n )
@@ -21,11 +22,10 @@
 
 #define WILDCARD_VALUE( t ) ( t )0x1337DEADBEEF7331 
 
-namespace il2cpp
-{
-	using call_set_t = std::set< uint64_t >;
-	using call_map_t = std::map< uint64_t, call_set_t >;
-	using size_map_t = std::map< uint64_t, uint64_t >;
+namespace il2cpp {
+	using call_set_t = std::set<uint64_t>;
+	using call_map_t = std::map<uint64_t, call_set_t>;
+	using size_map_t = std::map<uint64_t, uint64_t>;
 
 	inline call_map_t call_cache;
 	inline call_map_t inverse_call_cache;
@@ -105,7 +105,7 @@ namespace il2cpp
 
 	inline PRUNTIME_FUNCTION resolve_runtime_func( uint64_t game_base, PRUNTIME_FUNCTION func ) {
 		// resolve the chained func
-		PUNWIND_INFO unwind_info = ( PUNWIND_INFO ) ( func->UnwindData + game_base );
+		PUNWIND_INFO unwind_info = ( PUNWIND_INFO )( func->UnwindData + game_base );
 
 		if ( ( unwind_info->Flags & UNW_FLAG_CHAININFO ) != 0 ) {
 			uint32_t index = unwind_info->CountOfCodes;
@@ -171,16 +171,13 @@ namespace il2cpp
 	}
 
 	struct method_filter_t {
-		inline method_filter_t() : target( 0 ), ignore( 0 ), max_depth( 0 ) {
-		}
+		inline method_filter_t() : target( 0 ), ignore( 0 ), max_depth( 0 ) {}
 
 		inline method_filter_t( const method_filter_t& filter )
-		    : target( filter.target ), ignore( filter.ignore ), max_depth( filter.max_depth ) {
-		}
+		    : target( filter.target ), ignore( filter.ignore ), max_depth( filter.max_depth ) {}
 
 		inline method_filter_t( uint64_t _target, uint64_t _ignore, uint32_t _max_depth )
-		    : target( _target ), ignore( _ignore ), max_depth( _max_depth ) {
-		}
+		    : target( _target ), ignore( _ignore ), max_depth( _max_depth ) {}
 
 		uint64_t target;
 		uint64_t ignore;
@@ -193,53 +190,6 @@ namespace il2cpp
 		attr_search_ignore
 	};
 
-#define METHOD_ATTRIBUTE_MEMBER_ACCESS_MASK        0x0007
-#define METHOD_ATTRIBUTE_COMPILER_CONTROLLED       0x0000
-#define METHOD_ATTRIBUTE_PRIVATE                   0x0001
-#define METHOD_ATTRIBUTE_FAM_AND_ASSEM             0x0002
-#define METHOD_ATTRIBUTE_ASSEM                     0x0003
-#define METHOD_ATTRIBUTE_FAMILY                    0x0004
-#define METHOD_ATTRIBUTE_FAM_OR_ASSEM              0x0005
-#define METHOD_ATTRIBUTE_PUBLIC                    0x0006
-
-#define METHOD_ATTRIBUTE_STATIC                    0x0010
-#define METHOD_ATTRIBUTE_FINAL                     0x0020
-#define METHOD_ATTRIBUTE_VIRTUAL                   0x0040
-#define METHOD_ATTRIBUTE_HIDE_BY_SIG               0x0080
-
-#define FIELD_ATTRIBUTE_FIELD_ACCESS_MASK     0x0007
-#define FIELD_ATTRIBUTE_COMPILER_CONTROLLED   0x0000
-#define FIELD_ATTRIBUTE_PRIVATE               0x0001
-#define FIELD_ATTRIBUTE_FAM_AND_ASSEM         0x0002
-#define FIELD_ATTRIBUTE_ASSEMBLY              0x0003
-#define FIELD_ATTRIBUTE_FAMILY                0x0004
-#define FIELD_ATTRIBUTE_FAM_OR_ASSEM          0x0005
-#define FIELD_ATTRIBUTE_PUBLIC                0x0006
-
-#define FIELD_ATTRIBUTE_STATIC                0x0010
-#define FIELD_ATTRIBUTE_INIT_ONLY             0x0020
-#define FIELD_ATTRIBUTE_LITERAL               0x0040
-#define FIELD_ATTRIBUTE_NOT_SERIALIZED        0x0080
-#define FIELD_ATTRIBUTE_SPECIAL_NAME          0x0200
-#define FIELD_ATTRIBUTE_PINVOKE_IMPL          0x2000
-
-#define TYPE_ATTRIBUTE_VISIBILITY_MASK       0x00000007
-#define TYPE_ATTRIBUTE_NOT_PUBLIC            0x00000000
-#define TYPE_ATTRIBUTE_PUBLIC                0x00000001
-#define TYPE_ATTRIBUTE_NESTED_PUBLIC         0x00000002
-#define TYPE_ATTRIBUTE_NESTED_PRIVATE        0x00000003
-#define TYPE_ATTRIBUTE_NESTED_FAMILY         0x00000004
-#define TYPE_ATTRIBUTE_NESTED_ASSEMBLY       0x00000005
-#define TYPE_ATTRIBUTE_NESTED_FAM_AND_ASSEM  0x00000006
-#define TYPE_ATTRIBUTE_NESTED_FAM_OR_ASSEM   0x00000007
-#define TYPE_ATTRIBUTE_INTERFACE			 0x00000020
-#define TYPE_ATTRIBUTE_ABSTRACT 			 0x00000080
-#define TYPE_ATTRIBUTE_SEALED 		         0x00000100
-#define TYPE_ATTRIBUTE_SERIALIZABLE		     0x00002000
-
-#define IL2CPP_TYPE_VALUETYPE 0x11
-
-	struct property_info_t;
 	struct method_info_t;
 	struct field_info_t;
 	struct il2cpp_type_t;
@@ -249,24 +199,21 @@ namespace il2cpp
 	struct il2cpp_domain_t;
 	struct il2cpp_object_t;
 
-	// Domain.
 	CREATE_TYPE( domain_get, il2cpp_domain_t* ( * )( ) );
 	CREATE_TYPE( domain_get_assemblies, il2cpp_assembly_t** ( * )( void*, size_t* ) );
 	CREATE_TYPE( domain_assembly_open, il2cpp_assembly_t* ( * )( void*, const char* ) );
 
-	// Assembly.
 	CREATE_TYPE( assembly_get_image, il2cpp_image_t* ( * )( void* ) );
 
-	// Image.
 	CREATE_TYPE( class_from_name, il2cpp_class_t* ( * )( void*, const char*, const char* ) );
 	CREATE_TYPE( image_get_class_count, size_t( * )( il2cpp_image_t* ) );
 	CREATE_TYPE( image_get_class, il2cpp_class_t* ( * )( il2cpp_image_t*, size_t ) );
-	// Types.
+
 	CREATE_TYPE( type_get_object, il2cpp_object_t* ( * )( void* ) );
 	CREATE_TYPE( type_get_class_or_element_class, il2cpp_class_t* ( * )( void* ) );
 	CREATE_TYPE( type_get_name, const char* ( * )( void* ) );
 	CREATE_TYPE( type_get_attrs, uint32_t( * )( il2cpp_type_t* ) );
-	// Class.
+
 	CREATE_TYPE( class_get_methods, method_info_t* ( * )( void*, void** ) );
 	CREATE_TYPE( class_get_nested_types, il2cpp_class_t* ( * )( void*, void** ) );
 	CREATE_TYPE( class_get_fields, field_info_t* ( * )( void*, void** ) );
@@ -274,13 +221,12 @@ namespace il2cpp
 	CREATE_TYPE( class_get_name, const char* ( * )( void* ) );
 	CREATE_TYPE( class_get_namespace, const char* ( * )( void* ) );
 	CREATE_TYPE( class_from_il2cpp_type, il2cpp_class_t* ( * )( il2cpp_type_t* ) );
-	CREATE_TYPE( class_get_static_field_data, uint64_t( * )( void* ) );
-	CREATE_TYPE( class_get_parent, il2cpp_class_t* ( * )( il2cpp_class_t* klass ) );
+	CREATE_TYPE( class_get_static_field_data, void*( * )( il2cpp_class_t* ) );
+	CREATE_TYPE( class_get_parent, il2cpp_class_t* ( * )( il2cpp_class_t* ) );
 	CREATE_TYPE( class_get_interfaces, il2cpp_class_t* ( * )( void*, void** ) );
 	CREATE_TYPE( class_get_image, il2cpp_image_t* ( * )( void* ) );
 	CREATE_TYPE( class_get_flags, uint32_t( * )( void* ) );
 
-	// Methods.
 	CREATE_TYPE( method_get_param_count, uint32_t( * )( void* ) );
 	CREATE_TYPE( method_get_name, const char* ( * )( void* ) );
 	CREATE_TYPE( method_get_param_name, const char* ( * )( method_info_t*, uint32_t ) );
@@ -289,7 +235,7 @@ namespace il2cpp
 	CREATE_TYPE( method_get_class, il2cpp_class_t* ( * )( method_info_t* ) );
 	CREATE_TYPE( method_get_flags, uint32_t ( * )( method_info_t*, uint32_t* ) );
 	CREATE_TYPE( method_has_attribute, bool( * )( method_info_t*, il2cpp_class_t* ) );
-	// Fields.
+
 	CREATE_TYPE( field_get_offset, size_t( * )( void* ) );
 	CREATE_TYPE( field_get_type, il2cpp_type_t* ( * )( void* ) );
 	CREATE_TYPE( field_get_parent, il2cpp_class_t* ( * )( void* ) );
@@ -298,79 +244,73 @@ namespace il2cpp
 	CREATE_TYPE( field_get_flags, int( * )( void* ) );
 	CREATE_TYPE( field_has_attribute, bool( * )( void*, il2cpp_class_t* ) );
 
-	// Object.
 	CREATE_TYPE( object_get_class, il2cpp_class_t* ( * )( void* ) );
 	CREATE_TYPE( object_new, uint64_t( * )( il2cpp_class_t* ) );
 
 	CREATE_TYPE( resolve_icall, std::uintptr_t( * )( const char* ) );
 
-	struct il2cpp_type_t
-	{
-		il2cpp_class_t* klass( )
-		{
-			if ( !this )
+	struct il2cpp_type_t {
+		il2cpp_class_t* klass() {
+			if ( !is_valid_ptr( this ) )
 				return nullptr;
+
 			return type_get_class_or_element_class( this );
 		}
 
-		const char* name( )
-		{
-			if ( !this )
+		const char* name() {
+			if ( !is_valid_ptr( this ) )
 				return nullptr;
+
 			return type_get_name( this );
 		}
 
-		uint32_t attributes( )
-		{
-			if ( !this )
-				return 0;
+		uint32_t attributes() {
+			if ( !is_valid_ptr( this ) )
+				return 0u;
+
 			return type_get_attrs( this );
 		}
 	};
 
-	struct property_info_t { };
-
-	struct field_info_t
-	{
-		il2cpp_type_t* type( )
-		{
-			if ( !this )
+	struct field_info_t {
+		il2cpp_type_t* type() {
+			if ( !is_valid_ptr( this ) )
 				return nullptr;
 
 			return field_get_type( this );
 		}
 
-		const char* name( )
-		{
-			if ( !this )
+		const char* name() {
+			if ( !is_valid_ptr( this ) )
 				return nullptr;
 
 			return field_get_name( this );
 		}
 
-		size_t offset( )
-		{
-			if ( !this )
-				return 0;
+		size_t offset() {
+			if ( !is_valid_ptr( this ) )
+				return 0ull;
 
 			return field_get_offset( this );
 		}
 
-		size_t offset( il2cpp_class_t* klass )
-		{
-			if ( !this )
-				return 0;
+		size_t offset( il2cpp_class_t* klass ) {
+			if ( !is_valid_ptr( this ) )
+				return 0ull;
 
-			bool is_struct = *( uint8_t* )( ( uint64_t )klass + 0x2a ) == IL2CPP_TYPE_VALUETYPE;
-			size_t offset = field_get_offset( this ) - ( is_struct ? 0x10 : 0x0 );
+			Il2CppClass* native_klass = ( Il2CppClass* )klass;
+			if ( !is_valid_ptr( klass ) )
+				return 0ull;
+
+			bool is_struct = native_klass->byval_arg.type == IL2CPP_TYPE_VALUETYPE;
+			size_t offset = field_get_offset( this ) - ( is_struct ? 0x10 : 0 );
 
 			return offset;
 		}
 
 		template <typename T>
-		T static_get_value( )
-		{
-			if ( !this )
+		T static_get_value() {
+			if ( !is_valid_ptr( this ) )
 				return T();
 
 			T value;
@@ -378,9 +318,8 @@ namespace il2cpp
 			return value;
 		}
 
-		int flags( )
-		{
-			if ( !this )
+		int flags() {
+			if ( !is_valid_ptr( this ) )
 				return 0;
 
 			return field_get_flags( this );
@@ -392,44 +331,41 @@ namespace il2cpp
 		method_info_t* method;
 	};
 
-	struct il2cpp_class_t
-	{ 
-		const char* name( )
-		{
-			if ( !this )
+	struct il2cpp_class_t {
+		const char* name() {
+			if ( !is_valid_ptr( this ) )
 				return nullptr;
 
 			return class_get_name( this );
 		}
 
-		const char* namespaze( )
-		{
-			if ( !this )
+		const char* namespaze() {
+			if ( !is_valid_ptr( this ) )
 				return nullptr;
 
 			return class_get_namespace( this );
 		}
 
-		il2cpp_type_t* type( )
-		{
-			if ( !this )
+		il2cpp_type_t* type() {
+			if ( !is_valid_ptr( this ) )
 				return nullptr;
+
 			return class_get_type( this );
 		}
 
-		field_info_t* fields( void** iter )
-		{
-			if ( !this )
+		field_info_t* fields( void** iter ) {
+			if ( !is_valid_ptr( this ) )
 				return nullptr;
+
 			return class_get_fields( this, iter );
 		}
 
-		uint32_t field_count( ) {
-			if ( !this )
-				return 0;
+		uint32_t field_count() {
+			if ( !is_valid_ptr( this ) )
+				return 0u;
 
-			uint32_t count = 0;
 			void* iter = nullptr;
+			uint32_t count = 0u;
 			while ( field_info_t* field = fields( &iter ) ) {
 				// ignore static fields
 				if ( !( field->flags() & FIELD_ATTRIBUTE_STATIC ) ) {
@@ -440,20 +376,19 @@ namespace il2cpp
 			return count;
 		}
 
-		method_info_t* methods( void** iter )
-		{
-			if ( !this )
+		method_info_t* methods( void** iter ) {
+			if ( !is_valid_ptr( this ) )
 				return nullptr;
 
 			return class_get_methods( this, iter );
 		}
 
 		uint32_t method_count() {
-			if ( !this )
-				return 0;
+			if ( !is_valid_ptr( this ) )
+				return 0u;
 
-			uint32_t count = 0;
 			void* iter = nullptr;
+			uint32_t count = 0u;
 			while ( method_info_t* method = methods( &iter ) ) {
 				count++;
 			}
@@ -462,12 +397,12 @@ namespace il2cpp
 		}
 
 		method_info_t* method_from_addr( uint64_t address ) {
-			if ( !this )
+			if ( !is_valid_ptr( this ) )
 				return nullptr;
 
 			void* iter = nullptr;
 			while ( method_info_t* method = this->methods( &iter ) ) {
-				if ( !method )
+				if ( !is_valid_ptr( method ) )
 					continue;
 
 				if ( *( uint64_t* )( method ) == address )
@@ -477,20 +412,19 @@ namespace il2cpp
 			return nullptr;
 		}
 
-		il2cpp_class_t* nested_types( void** iter )
-		{
-			if ( !this )
+		il2cpp_class_t* nested_types( void** iter ) {
+			if ( !is_valid_ptr( this ) )
 				return nullptr;
 
 			return class_get_nested_types( this, iter );
 		}
 
 		uint32_t nested_type_count() {
-			if ( !this )
-				return 0;
+			if ( !is_valid_ptr( this ) )
+				return 0u;
 
-			uint32_t count = 0;
 			void* iter = nullptr;
+			uint32_t count = 0;
 			while ( il2cpp_class_t* klass = nested_types( &iter ) ) {
 				count++;
 			}
@@ -498,87 +432,80 @@ namespace il2cpp
 			return count;
 		}
 
-		uint64_t static_field_data( )
-		{
-			if ( !this )
-				return 0;
+		void* static_field_data() {
+			if ( !is_valid_ptr( this ) )
+				return nullptr;
 
 			return class_get_static_field_data( this );
 		}
 
-		il2cpp_class_t* parent( )
-		{
-			if ( !this )
+		il2cpp_class_t* parent() {
+			if ( !is_valid_ptr( this ) )
 				return nullptr;
 
 			return class_get_parent( this );
 		}
 
 		il2cpp_class_t* interfaces( void** iter ) {
-			if ( !this )
+			if ( !is_valid_ptr( this ) )
 				return nullptr;
 
 			return class_get_interfaces( this, iter );
 		}
 
 		il2cpp_image_t* image( ) {
-			if ( !this )
+			if ( !is_valid_ptr( this ) )
 				return nullptr;
 
 			return class_get_image( this );
 		}
 
-		il2cpp_class_t* get_generic_argument_at( uint32_t index )
-		{
-			if ( !this )
+		il2cpp_class_t* get_generic_argument_at( uint32_t index ) {
+			Il2CppClass* klass = ( Il2CppClass* )this;
+			if ( !is_valid_ptr( klass ) )
 				return nullptr;
 
-			uint64_t generic_class = *( uint64_t* )( ( uint64_t )this + 0x60 );
-
-			if ( !generic_class )
+			Il2CppGenericClass* generic_class = klass->generic_class;
+			if ( !is_valid_ptr( generic_class ) )
 				return nullptr;
 
-			uint64_t generic_class_inst = *( uint64_t* )( generic_class + 0x8 );
-
-			if ( !generic_class_inst )
+			const Il2CppGenericInst* instance = generic_class->context.class_inst;
+			if ( !is_valid_ptr( instance ) )
 				return nullptr;
 
-			uint32_t argc = *( uint32_t* )( generic_class_inst + 0x0 );
-
-			if ( index > argc )
+			if ( index > instance->type_argc )
 				return nullptr;
 
-			uint64_t argv = *( uint64_t* )( generic_class_inst + 0x8 );
-
-			if ( !argv )
+			const Il2CppType** types = instance->type_argv;
+			if ( !is_valid_ptr( types ) )
 				return nullptr;
 
-			il2cpp::il2cpp_type_t* generic_arg = *( il2cpp::il2cpp_type_t** )( argv + ( index * 0x8llu ) );
-
-			if ( !generic_arg )
+			const Il2CppType* type = types[ index ];
+			if ( !is_valid_ptr( type ) )
 				return nullptr;
 
-			return class_from_il2cpp_type( generic_arg );
+			return class_from_il2cpp_type( ( il2cpp_type_t* )type );
 		}
 
-		uint32_t vtable_count() {
-			if ( !this )
-				return 0;
+		uint16_t vtable_count() {
+			Il2CppClass* klass = ( Il2CppClass* )this;
+			if ( !is_valid_ptr( klass ) )
+				return 0u;
 
-			return ( uint32_t )*( uint16_t* )( ( uint64_t )this + 0x11a );
+			return klass->vtable_count;
 		}
 
 		virtual_invoke_data_t* get_vtable_entry( uint32_t index ) {
-			if ( !this )
+			Il2CppClass* klass = ( Il2CppClass* )this;
+			if ( !is_valid_ptr( klass ) )
 				return nullptr;
 
-			virtual_invoke_data_t* vtable = ( virtual_invoke_data_t* )( ( uint64_t )this + 0x128 );
-			return &vtable[ index ];
+			return ( virtual_invoke_data_t* )&klass->vtable[ index ];
 		}
 
 		uint32_t flags() {
-			if ( !this )
-				return 0;
+			if ( !is_valid_ptr( this ) )
+				return 0u;
 
 			return class_get_flags( this );
 		}
@@ -592,113 +519,99 @@ namespace il2cpp
 		il2cpp_image_t* image;
 	};
 
-	struct il2cpp_image_t
-	{
-		image_global_metadata_t* metadata( ) {
-			return *( image_global_metadata_t** ) ( uint64_t( this ) + 0x28 );
+	struct il2cpp_image_t {
+		uint32_t type_count() {
+			Il2CppImage* image = ( Il2CppImage* )this;
+			if ( !is_valid_ptr( image ) )
+				return 0u;
+
+			return image->typeCount;
 		}
 
-		uint32_t type_count( ) {
-			return *( uint32_t* ) ( uint64_t( this ) + 0x18 );
-		}
-
-		size_t class_count( )
-		{
-			if ( !this )
-				return {};
+		size_t class_count() {
+			if ( !is_valid_ptr( this ) )
+				return 0u;
 
 			return image_get_class_count( this );
 		}
 
-		il2cpp_class_t* get_class( size_t index )
-		{
-			if ( !this )
+		il2cpp_class_t* get_class( size_t index ) {
+			if ( !is_valid_ptr( this ) )
 				return nullptr;
 
 			return image_get_class( this, index );
 		}
 
-		il2cpp_class_t* get_class_from_name( const char* namespaze, const char* klass )
-		{
-			if ( !this )
+		il2cpp_class_t* get_class_from_name( const char* namespaze, const char* klass ) {
+			if ( !is_valid_ptr( this ) )
 				return nullptr;
 
 			return class_from_name( this, namespaze, klass );
 		}
 	};
 
-	struct il2cpp_object_t
-	{
-		il2cpp_class_t* get_class()
-		{
-			if ( !this )
+	struct il2cpp_object_t {
+		il2cpp_class_t* get_class() {
+			if ( !is_valid_ptr( this ) )
 				return nullptr;
 
 			return object_get_class( this );
 		}
 	};
 
-	struct il2cpp_assembly_t
-	{
-		il2cpp_image_t* image( )
-		{
-			if ( !this )
+	struct il2cpp_assembly_t {
+		il2cpp_image_t* image() {
+			if ( !is_valid_ptr( this ) )
 				return nullptr;
 
 			return assembly_get_image( this );
 		}
 	};
 
-	struct il2cpp_domain_t
-	{
-		static il2cpp_domain_t* get( )
-		{
-			return domain_get( );
+	struct il2cpp_domain_t {
+		static il2cpp_domain_t* get() {
+			return domain_get();
 		}
 
-		il2cpp_assembly_t** get_assemblies( size_t* size )
-		{
-			if ( !this )
+		il2cpp_assembly_t** get_assemblies( size_t* size ) {
+			if ( !is_valid_ptr( this ) )
 				return nullptr;
 
 			return domain_get_assemblies( this, size );
 		}
 
-		il2cpp_assembly_t* get_assembly_from_name( const char* name )
-		{
-			if ( !this )
+		il2cpp_assembly_t* get_assembly_from_name( const char* name ) {
+			if ( !is_valid_ptr( this ) )
 				return nullptr;
 
 			return domain_assembly_open( this, name );
 		}
 	};
 
-	struct method_info_t
-	{
-		static method_info_t* from_addr( uint64_t addr )
-		{
+	struct method_info_t {
+		static method_info_t* from_addr( uint64_t addr ) {
 			il2cpp::il2cpp_domain_t* domain = il2cpp::il2cpp_domain_t::get();
-			if ( !domain )
+			if ( !is_valid_ptr( domain ) )
 				return nullptr;
 
 			size_t assembly_ct = 0;
 			il2cpp::il2cpp_assembly_t** assemblies = domain->get_assemblies( &assembly_ct );
-			if ( !assemblies )
+			if ( !is_valid_ptr( assemblies ) )
 				return nullptr;
 
 			for ( size_t i = 0; i < assembly_ct; i++ ) {
 				il2cpp::il2cpp_assembly_t* assembly = assemblies[ i ];
-				if ( !assembly )
+				if ( !is_valid_ptr( assembly ) )
 					continue;
 
 				il2cpp::il2cpp_image_t* image = assembly->image();
-				if ( !image )
+				if ( !is_valid_ptr( image ) )
 					continue;
 
 				size_t class_ct = image->class_count();
 				for ( size_t j = 0; j < class_ct; j++ ) {
 					il2cpp::il2cpp_class_t* klass = image->get_class( j );
-					if ( !klass )
+					if ( !is_valid_ptr( klass ) )
 						continue;
 
 					void* iter = nullptr;
@@ -713,98 +626,87 @@ namespace il2cpp
 			return nullptr;
 		}
 
-		bool should_filter( method_filter_t filter )
-		{
+		bool should_filter( method_filter_t filter ) {
 			if ( !this )
 				return true;
 
 			if ( !filter.max_depth )
 				return false;
 
-			uint64_t address = this->get_fn_ptr< uint64_t >();
-
+			uint64_t address = this->get_fn_ptr<uint64_t>();
 			if ( address == filter.ignore )
 				return true;
 
 			bool match = has_call_in_tree( address, filter.target, filter.max_depth );
-
 			return !match;
 		}
 
-		const char* name()
-		{
-			if ( !this )
+		const char* name() {
+			if ( !is_valid_ptr( this ) )
 				return nullptr;
 
 			return method_get_name( this );
 		}
 
-		il2cpp_type_t* get_param( uint32_t index )
-		{
-			if ( !this )
+		il2cpp_type_t* get_param( uint32_t index ) {
+			if ( !is_valid_ptr( this ) )
 				return nullptr;
 
 			return method_get_param( this, index );
 		}
 
-		const char* get_param_name( uint32_t index )
-		{
-			if ( !this )
+		const char* get_param_name( uint32_t index ) {
+			if ( !is_valid_ptr( this ) )
 				return nullptr;
 
 			return method_get_param_name( this, index );
 		}
 
-		uint32_t param_count()
-		{
-			if ( !this )
-				return 0;
+		uint32_t param_count() {
+			if ( !is_valid_ptr( this ) )
+				return 0u;
 
 			return method_get_param_count( this );
 		}
 
-		il2cpp_type_t* return_type()
-		{
-			if ( !this )
+		il2cpp_type_t* return_type() {
+			if ( !is_valid_ptr( this ) )
 				return nullptr;
 
 			return method_get_return_type( this );
 		}
 
-		il2cpp_class_t* klass()
-		{
-			if ( !this )
+		il2cpp_class_t* klass() {
+			if ( !is_valid_ptr( this ) )
 				return nullptr;
 
 			return method_get_class( this );
 		}
 
-		uint32_t flags()
-		{
-			if ( !this )
-				return { };
+		uint32_t flags() {
+			if ( !is_valid_ptr( this ) )
+				return 0u;
 
 			return method_get_flags( this, nullptr );
 		}
 
 		template<typename T>
-		T get_fn_ptr()
-		{
-			if ( !this )
+		T get_fn_ptr() {
+			if ( !is_valid_ptr( this ) )
 				return T();
 
 			return *( T* )( this );
 		}
 
 		uint32_t get_vtable_offset() {
-			if ( !this )
-				return 0;
+			if ( !is_valid_ptr( this ) )
+				return 0u;
 
 			il2cpp_class_t* klass = this->klass();
-			if ( !klass )
-				return 0;
+			if ( !is_valid_ptr( klass ) )
+				return 0u;
 
-			for ( uint32_t i = 0; i < klass->vtable_count(); i++ ) {
+			for ( uint16_t i = 0, n = klass->vtable_count(); i < n; i++ ) {
 				virtual_invoke_data_t* virtual_invoke_data = klass->get_vtable_entry( i );
 				if ( virtual_invoke_data->method != this )
 					continue;
@@ -812,57 +714,35 @@ namespace il2cpp
 				return ( uint64_t )virtual_invoke_data - ( uint64_t )klass;
 			}
 
-			return 0;
+			return 0u;
 		}
 	};
 
 	struct method_search_flags_t {
-		il2cpp_type_t* m_ret_type{};
+		il2cpp_type_t* m_ret_type;
 
-		int m_wanted_vis{};
-		int m_wanted_attrs{};
-		int m_param_ct{};
+		int m_wanted_vis;
+		int m_wanted_attrs;
+		int m_param_ct;
 
-		std::vector<const char*> m_params_strs{};
+		std::vector<const char*> m_params_strs;
 	};
 
-	extern il2cpp_class_t** s_TypeInfoDefinitionTable;
-
-	inline int32_t get_typedef_idx_for_class( il2cpp_class_t* klass ) {
-		il2cpp_image_t* image = klass->image( );
-		if ( !image )
-			return 0;
-
-		uint32_t type_count = image->type_count( );
-		for ( int i = 0; i < type_count; i++ ) {
-			il2cpp_class_t* type = s_TypeInfoDefinitionTable[ image->metadata( )->m_type_start + i ];
-			if ( !type )
-				continue;
-
-			if ( strcmp( type->namespaze( ), klass->namespaze( ) ) == 0 && strcmp( type->name( ), klass->name( ) ) == 0 )
-				return i;
-		}
-
-		return 0;
-
-	}
-
-	inline il2cpp_assembly_t* get_assembly_by_name( const char* assemblyName )
-	{
+	inline il2cpp_assembly_t* get_assembly_by_name( const char* name ) {
 		il2cpp_domain_t* domain = il2cpp_domain_t::get( );
-		if ( !domain )
+		if ( !is_valid_ptr( domain ) )
 			return nullptr;
 
-		return domain->get_assembly_from_name( assemblyName );
+		return domain->get_assembly_from_name( name );
 	}
 
 	template<typename T>
 	inline il2cpp_class_t* get_class_from_class_field_type( il2cpp_class_t* klass, T comparator ) {
 		void* iter = nullptr;
-		while ( field_info_t* field = klass->fields( &iter ) )
-		{
-			if ( comparator( field ) )
-				return class_from_il2cpp_type( field->type( ) );
+		while ( field_info_t* field = klass->fields( &iter ) ) {
+			if ( comparator( field ) ) {
+				return class_from_il2cpp_type( field->type() );
+			}
 		}
 
 		return nullptr;
@@ -2295,26 +2175,22 @@ namespace il2cpp
 		return nullptr;
 	}
 
-	inline void init( )
-	{
+	inline void init() {
 		ASSIGN_TYPE( domain_get );
 		ASSIGN_TYPE( domain_get_assemblies );
 		ASSIGN_TYPE( domain_assembly_open );
 
-		// Assembly.
 		ASSIGN_TYPE( assembly_get_image );
 
-		// Image.
 		ASSIGN_TYPE( class_from_name );
 		ASSIGN_TYPE( image_get_class_count );
 		ASSIGN_TYPE( image_get_class );
-		// Types.
+
 		ASSIGN_TYPE( type_get_object );
 		ASSIGN_TYPE( type_get_class_or_element_class );
 		ASSIGN_TYPE( type_get_name );
 		ASSIGN_TYPE( type_get_attrs );
 
-		// Class.
 		ASSIGN_TYPE( class_get_methods );
 		ASSIGN_TYPE( class_get_nested_types )
 		ASSIGN_TYPE( class_get_fields);
@@ -2328,7 +2204,6 @@ namespace il2cpp
 		ASSIGN_TYPE( class_get_image );
 		ASSIGN_TYPE( class_get_flags );
 
-		// Methods.
 		ASSIGN_TYPE( method_get_param_count );
 		ASSIGN_TYPE( method_get_name );
 		ASSIGN_TYPE( method_get_param_name );
@@ -2338,7 +2213,6 @@ namespace il2cpp
 		ASSIGN_TYPE( method_get_flags );
 		ASSIGN_TYPE( method_has_attribute );
 
-		// Fields.
 		ASSIGN_TYPE( field_get_offset );
 		ASSIGN_TYPE( field_get_type );
 		ASSIGN_TYPE( field_get_parent );
@@ -2347,7 +2221,6 @@ namespace il2cpp
 		ASSIGN_TYPE( field_get_flags );
 		ASSIGN_TYPE( field_has_attribute );
 
-		// Object.
 		ASSIGN_TYPE( object_get_class );
 		ASSIGN_TYPE( object_new );
 
