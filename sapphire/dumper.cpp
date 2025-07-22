@@ -4068,6 +4068,27 @@ void dumper::produce() {
 				}
 			}
 		}
+	DUMPER_SECTION( "Offsets" );
+		il2cpp::method_info_t* network_client_create_networkable = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_STR(
+			NO_FILT,
+			network_networkable_class->type(),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			networkable_id_class->type()->name(),
+			"System.UInt32",
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( CreateNetworkable, network_client_create_networkable );
+
+		il2cpp::method_info_t* network_client_destroy_networkable = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_STR(
+			NO_FILT,
+			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			format_string( "%s&", network_networkable_class->type()->name() )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( DestroyNetworkable, network_client_destroy_networkable );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "Network_BaseNetwork", network_base_network_class );
@@ -4610,6 +4631,7 @@ void dumper::produce() {
 			"UnityEngine.QueryTriggerInteraction",
 			"BaseEntity"
 		);
+
 		DUMP_METHOD_BY_INFO_PTR( Trace, game_physics_trace );
 
 		il2cpp::method_info_t* game_physics_line_of_sight_internal = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
