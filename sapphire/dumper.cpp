@@ -3785,7 +3785,7 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TerrainCollision" );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* terrain_collision_get_ignore = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-		    FILT_N( DUMPER_METHOD( DUMPER_CLASS( "SocketMod_TerrainCheck" ), "OnDrawGizmos" ), 2 ),
+		    FILT_N( DUMPER_METHOD( DUMPER_CLASS( "CullingManager" ), "MarkSeen" ), 3 ),
 			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			DUMPER_ATTR_DONT_CARE,
@@ -4294,7 +4294,7 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "EnvironmentManager" );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_RETURN_TYPE_STR( Get,
-			FILT( DUMPER_METHOD( DUMPER_CLASS( "BiomeVisuals" ), "Start" ) ),
+			FILT_N( DUMPER_METHOD( DUMPER_CLASS( "BaseProjectile" ), "OnSignal" ), 3 ),
 			"EnvironmentType",
 			2
 		);
@@ -4840,7 +4840,6 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ClothingMovementProperties" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( speedReduction );
-		DUMP_MEMBER_BY_NAME( minSpeedReduction );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "GestureConfig" );
