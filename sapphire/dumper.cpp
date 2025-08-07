@@ -442,7 +442,7 @@ bool is_exception_hook( CONTEXT* context, uint64_t search, uint64_t replace, uin
 	return match;
 }
 
-#define START_WRITE_METHOD_RVA 0xBFE4FF8
+#define START_WRITE_METHOD_RVA 0xCFA0F00
 #define CORRUPT_VALUE 0xDEADBEEFCAFEBEEF
 
 uint64_t dumper::start_write_value = 0;
@@ -2995,6 +2995,8 @@ void dumper::produce() {
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* main_camera_update = il2cpp::get_method_by_name( dumper_klass, "Update" );
 		DUMP_METHOD_BY_INFO_PTR( Update, main_camera_update );
+
+		DUMP_METHOD_BY_NAME( OnPreCull );
 
 		DUMP_MEMBER_BY_X( Trace, DUMPER_RVA( ( uint64_t )main_camera_trace ) );
 	DUMPER_CLASS_END;

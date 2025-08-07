@@ -1919,6 +1919,28 @@ namespace il2cpp {
 		return virtual_method_t( nullptr, 0 );
 	}
 
+	inline virtual_method_t get_virtual_method_by_name( il2cpp_class_t* klass, const char* method_name, int param_ct = 1337 ) {
+		const auto get_virtual_method_by_name = [ = ]( method_info_t* method ) -> bool {
+			if ( param_ct != 1337 && method->param_count() != param_ct )
+				return false;
+
+			if ( !( method->flags() & METHOD_ATTRIBUTE_VIRTUAL ) )
+				return false;
+
+			const char* name = method->name();
+			if ( !name )
+				return false;
+
+			return strcmp( name, method_name ) == 0;
+		};
+
+		method_info_t* method_info = get_method_from_class( NO_FILT, klass, get_virtual_method_by_name );
+		if ( !method_info )
+			return virtual_method_t( nullptr, 0 );
+
+		return virtual_method_t( method_info, method_info->get_vtable_offset() );
+	}
+
 	template<typename Comparator>
 	inline field_info_t* get_field_from_class( il2cpp_class_t* klass, Comparator comparator ) {
 		void* iter = nullptr;
