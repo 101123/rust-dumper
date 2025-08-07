@@ -1163,7 +1163,6 @@ void dumper::produce() {
 	if ( !outfile_log_handle )
 		return;
 
-	dumper::write_to_file( "#include <cstdint>\n\n" );
 	dumper::write_game_assembly();
 	dumper::produce_unity();
 
