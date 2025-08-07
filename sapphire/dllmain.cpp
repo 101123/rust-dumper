@@ -3,13 +3,18 @@
 HMODULE dumper_handle;
 
 void main_thread() {
+#ifdef HOOK
 	HANDLE exception_handler = AddVectoredExceptionHandler( 1, dumper::exception_handler );
+#endif
 
 	il2cpp::init();
 	hook_manager::init();
 	dumper::produce();
 
+#ifdef HOOK
 	RemoveVectoredExceptionHandler( exception_handler );
+#endif
+
 	FreeLibraryAndExitThread( dumper_handle, 0 );
 }
 

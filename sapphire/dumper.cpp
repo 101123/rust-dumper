@@ -4121,9 +4121,7 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( stream, buffer_stream_class );
 	DUMPER_SECTION( "Functions" );
-		DUMP_MEMBER_BY_X( UInt8, 0 );
-		DUMP_MEMBER_BY_X( UInt32, 0 );
-		DUMP_MEMBER_BY_X( UInt64, 0 );
+		DUMP_METHOD_BY_NAME( WriteByte );
 
 		il2cpp::method_info_t* network_netwrite_string = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 			FILT_N( DUMPER_METHOD( DUMPER_CLASS_NAMESPACE( "Rust.UI.ServerAdmin", "ServerAdminUI" ), "RefreshUGC" ), 2 ),
