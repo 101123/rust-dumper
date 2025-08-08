@@ -442,7 +442,7 @@ bool is_exception_hook( CONTEXT* context, uint64_t search, uint64_t replace, uin
 	return match;
 }
 
-#define START_WRITE_METHOD_RVA 0xCFA0F00
+#define START_WRITE_METHOD_RVA 0xCDFE550
 #define CORRUPT_VALUE 0xDEADBEEFCAFEBEEF
 
 uint64_t dumper::start_write_value = 0;
@@ -4507,8 +4507,8 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "CodeLock" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( hasCode, "System.Boolean", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
-		DUMP_MEMBER_BY_NEAR_OFFSET( hasAuth, DUMPER_OFFSET( hasCode ) + 0x1 );
-		DUMP_MEMBER_BY_NEAR_OFFSET( hasGuestAuth, DUMPER_OFFSET( hasCode ) + 0x2 );
+		DUMP_MEMBER_BY_NEAR_OFFSET( HasAuth, DUMPER_OFFSET( hasCode ) + 0x10 );
+		DUMP_MEMBER_BY_NEAR_OFFSET( HasGuestAuth, DUMPER_OFFSET( hasCode ) + 0x11 );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "AutoTurret" );
@@ -4770,12 +4770,6 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TimedExplosive" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( explosionRadius );
-	DUMPER_CLASS_END;
-
-	DUMPER_CLASS_BEGIN_FROM_PTR( "SmokeGrenade_Static", get_inner_static_class( DUMPER_CLASS( "SmokeGrenade" ) ) );
-	DUMPER_SECTION( "Offsets" );
-		il2cpp::field_info_t* active_grenades = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "SmokeGrenade", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* active_grenades ) { return active_grenades != nullptr; } );
-		DUMP_MEMBER_BY_X( activeGrenades, active_grenades->offset() );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "SmokeGrenade" );
