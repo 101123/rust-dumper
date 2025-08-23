@@ -442,7 +442,7 @@ bool is_exception_hook( CONTEXT* context, uint64_t search, uint64_t replace, uin
 	return match;
 }
 
-#define START_WRITE_METHOD_RVA 0xCF9A3A0
+#define START_WRITE_METHOD_RVA 0xCF331F8
 #define CORRUPT_VALUE 0xDEADBEEFCAFEBEEF
 
 uint64_t dumper::start_write_value = 0;
