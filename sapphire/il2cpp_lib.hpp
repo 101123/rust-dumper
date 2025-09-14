@@ -360,6 +360,20 @@ namespace il2cpp {
 			return class_get_fields( this, iter );
 		}
 
+		std::vector<field_info_t*> get_fields( bool include_static = false ) {
+			std::vector<field_info_t*> ret;
+
+			void* iter = nullptr;
+			while ( field_info_t* field_info = class_get_fields( this, &iter ) ) {
+				if ( !include_static && ( field_info->flags() & FIELD_ATTRIBUTE_STATIC ) )
+					continue;
+
+				ret.push_back( field_info );
+			}
+
+			return ret;
+		}
+
 		uint32_t field_count() {
 			if ( !is_valid_ptr( this ) )
 				return 0u;

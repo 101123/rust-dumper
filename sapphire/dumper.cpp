@@ -809,52 +809,30 @@ void dumper::hk_base_entity_server_rpc_object( rust::base_entity* base_entity, s
 	return o_base_entity_server_rpc_object( base_entity, func_name, arg, method );
 }
 
-std::vector<il2cpp::il2cpp_class_t*> get_field_classes_in_class( il2cpp::il2cpp_class_t* klass ) {
-	std::vector<il2cpp::il2cpp_class_t*> klasses;
-	if ( !klass )
-		return klasses;
-
-	if ( klass->field_count() == 0 )
-		return klasses;
-
-	void* iter = nullptr;
-	while ( il2cpp::field_info_t* field = klass->fields( &iter ) ) {
-		if ( ( field->flags() & FIELD_ATTRIBUTE_STATIC ) )
-			continue;
-
-		klasses.push_back( field->type()->klass() );
-	}
-
-	return klasses;
-}
-
-void get_class_by_field_in_class_impl( il2cpp::il2cpp_class_t* klass, const char* target, il2cpp::il2cpp_class_t** result, uint32_t limit ) {
+void get_class_by_field_type_in_member_class_impl( il2cpp::il2cpp_class_t* klass, const char* target, il2cpp::il2cpp_class_t** result, uint32_t limit ) {
 	if ( limit == 0 )
 		return;
 
 	if ( *result )
 		return;
 
-	std::vector<il2cpp::il2cpp_class_t*> klasses = get_field_classes_in_class( klass );
-	if ( klasses.size() == 0 )
-		return;
-
-	for ( il2cpp::il2cpp_class_t* _klass : klasses ) {
-		if ( !_klass )
+	for ( il2cpp::field_info_t* field : klass->get_fields() ) {
+		il2cpp::il2cpp_type_t* type = field->type();
+		if ( !type )
 			continue;
 
-		if ( strstr( _klass->type()->name(), target ) ) {
+		if ( strstr( type->name(), target ) ) {
 			*result = klass;
 			return;
 		}
 
-		get_class_by_field_in_class_impl( _klass, target, result, limit - 1 );
+		get_class_by_field_type_in_member_class_impl( type->klass(), target, result, limit - 1 );
 	}
 }
 
-il2cpp::il2cpp_class_t* get_class_by_field_in_class( il2cpp::il2cpp_class_t* klass, const char* target, uint32_t limit = 1 ) {
+il2cpp::il2cpp_class_t* get_class_by_field_type_in_member_class( il2cpp::il2cpp_class_t* klass, const char* target, uint32_t limit = 1 ) {
 	il2cpp::il2cpp_class_t* result = nullptr;
-	get_class_by_field_in_class_impl( klass, target, &result, limit );
+	get_class_by_field_type_in_member_class_impl( klass, target, &result, limit );
 	return result;
 }
 
@@ -1178,7 +1156,7 @@ void dumper::produce() {
 			network_message_class = xmas_refill_on_rpc_message->get_param( 2 )->klass();
 
 			if ( network_message_class ) {
-				network_netread_class = get_class_by_field_in_class( network_message_class, "System.String", 2 );
+				network_netread_class = get_class_by_field_type_in_member_class( network_message_class, "System.String", 2 );
 			}
 		}
 	}
@@ -1484,7 +1462,7 @@ void dumper::produce() {
 
 	projectile_attack_networkable_id = networkable_id_class;
 
-	il2cpp::il2cpp_class_t* network_networkable_class = get_class_by_field_in_class( DUMPER_CLASS( "BaseNetworkable" ), network_connection_class->type()->name(), 2 );
+	il2cpp::il2cpp_class_t* network_networkable_class = get_class_by_field_type_in_member_class( DUMPER_CLASS( "BaseNetworkable" ), network_connection_class->type()->name(), 2 );
 
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Network.Networkable", network_networkable_class );
 
@@ -1605,6 +1583,10 @@ void dumper::produce() {
 
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "HitInfo", hit_info_class );
 
+	il2cpp::il2cpp_class_t* damage_type_list_class = get_class_by_field_type_in_member_class( hit_info_class, "System.Single[]", 2 );
+
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "DamageTypeList", damage_type_list_class );
+
 	il2cpp::il2cpp_class_t* hitbox_collision_class = DUMPER_CLASS( "HitboxCollision" );
 	il2cpp::il2cpp_class_t* hit_test_class = nullptr;
 
@@ -1655,7 +1637,7 @@ void dumper::produce() {
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "WeaponRackSlot", weapon_rack_slot_class );
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "GameManager", game_manager_class );
 
-	il2cpp::il2cpp_class_t* prefab_pool_collection_class = get_class_by_field_in_class( game_manager_class, "<System.UInt32,%", 2 );
+	il2cpp::il2cpp_class_t* prefab_pool_collection_class = get_class_by_field_type_in_member_class( game_manager_class, "<System.UInt32,%", 2 );
 	il2cpp::il2cpp_class_t* prefab_pool_class = nullptr;
 
 	if ( prefab_pool_collection_class ) {
@@ -1937,7 +1919,7 @@ void dumper::produce() {
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "BasePlayer", base_player_class );
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "BasePlayer (static)", base_player_static_class );
 
-	il2cpp::il2cpp_class_t* buffer_stream_class = get_class_by_field_in_class( network_netwrite_class, "System.Byte", 2 );
+	il2cpp::il2cpp_class_t* buffer_stream_class = get_class_by_field_type_in_member_class( network_netwrite_class, "System.Byte", 2 );
 
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "BufferStream", buffer_stream_class );
 
@@ -2302,6 +2284,16 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "SpinUpWeapon" );
 	DUMPER_SECTION( "Offsets" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "HitInfo", hit_info_class );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( damageTypes, damage_type_list_class );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "DamageTypeList", damage_type_list_class );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( types, "System.Single[]", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
 	DUMPER_CLASS_END;
 
 	uint64_t( *main_camera_trace )( float, uint64_t, float ) = nullptr;
