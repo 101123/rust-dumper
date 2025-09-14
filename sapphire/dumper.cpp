@@ -1385,17 +1385,18 @@ void dumper::produce() {
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "ConsoleSystem.Arg", console_system_arg_class );
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Facepunch.Network.SteamNetworking", facepunch_network_steam_networking_class );
 
-	il2cpp::method_info_t* game_physics_handle_ignore_collision = SEARCH_FOR_METHOD_IN_METHOD_WITH_RETTYPE_PARAM_TYPES(
+	il2cpp::method_info_t* game_physics_verify = SEARCH_FOR_METHOD_IN_METHOD_WITH_RETTYPE_PARAM_TYPES(
 		WILDCARD_VALUE( il2cpp::il2cpp_class_t* ),
-		FILT( DUMPER_METHOD( DUMPER_CLASS( "PoweredLightsDeployer" ), "OnInput" ) ),
-		DUMPER_TYPE_NAMESPACE( "System", "Int32" ),
+		FILT_N( DUMPER_METHOD( DUMPER_CLASS( "SoundSource" ), "DoOcclusionCheck" ), 2 ),
+		DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
 		METHOD_ATTRIBUTE_PUBLIC,
 		METHOD_ATTRIBUTE_STATIC,
+		DUMPER_TYPE_NAMESPACE( "UnityEngine", "RaycastHit" ),
 		DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
-		DUMPER_TYPE_NAMESPACE( "System", "Int32" )
+		DUMPER_TYPE( "BaseEntity" )
 	);
 
-	il2cpp::il2cpp_class_t* game_physics_class = game_physics_handle_ignore_collision->klass();
+	il2cpp::il2cpp_class_t* game_physics_class = game_physics_verify->klass();
 
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "GamePhysics", game_physics_class );
 
@@ -4649,16 +4650,7 @@ void dumper::produce() {
 
 		DUMP_METHOD_BY_INFO_PTR( LineOfSightInternal, game_physics_line_of_sight_internal );
 
-		il2cpp::method_info_t* game_physics_verify = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			FILT_N( DUMPER_METHOD( DUMPER_CLASS( "SoundSource" ), "DoOcclusionCheck" ), 2 ),
-			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
-			METHOD_ATTRIBUTE_PUBLIC,
-			METHOD_ATTRIBUTE_STATIC,
-			DUMPER_TYPE_NAMESPACE( "UnityEngine", "RaycastHit" ),
-			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
-			DUMPER_TYPE( "BaseEntity" )
-		);
-
+		// Already resolved as this method is used to resolve the GamePhysics class itself
 		DUMP_METHOD_BY_INFO_PTR( Verify, game_physics_verify );
 	DUMPER_CLASS_END;
 
