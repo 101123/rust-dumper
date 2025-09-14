@@ -446,11 +446,16 @@ namespace il2cpp {
 			return class_get_parent( this );
 		}
 
-		il2cpp_class_t* interfaces( void** iter ) {
-			if ( !is_valid_ptr( this ) )
-				return nullptr;
+		// All methods that take in an iterator should eventually be transformed into something like this
+		std::vector<il2cpp_class_t*> get_interfaces() {
+			std::vector<il2cpp_class_t*> ret;
 
-			return class_get_interfaces( this, iter );
+			void* iter = nullptr;
+			while ( il2cpp_class_t* interface_ = class_get_interfaces( this, &iter ) ) {
+				ret.push_back( interface_ );
+			}
+
+			return ret;
 		}
 
 		il2cpp_image_t* image( ) {
@@ -1043,10 +1048,10 @@ namespace il2cpp {
 
 	inline il2cpp_class_t* search_for_class_by_interfaces_contain( const char* search ) {
 		const auto search_for_class_by_interfaces_contain = [ = ] ( il2cpp_class_t* klass ) {
-			void* iter = nullptr;
-			while ( il2cpp_class_t* iface = klass->interfaces( &iter ) ) {
-				if ( strstr( iface->name( ), search ) )
+			for ( il2cpp_class_t* interface_ : klass->get_interfaces() ) {
+				if ( strstr( interface_->name(), search ) ) {
 					return true;
+				}
 			}
 
 			return false;
@@ -1746,8 +1751,9 @@ namespace il2cpp {
 				if ( !child_function )
 					continue;
 
-				if ( child_function == function )
+				if ( child_function == function ) {
 					return il2cpp::method_info_t::from_addr( functions_in_function.parent );
+				}
 			}
 		}
 
