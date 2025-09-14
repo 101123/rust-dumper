@@ -4299,7 +4299,7 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "Translate_Phrase", translate_phrase_class );
 	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_NAME( english );
+		DUMP_MEMBER_BY_NAME( legacyEnglish );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ResourceDispenser/GatherPropertyEntry" );
@@ -4665,7 +4665,7 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "DDraw", "UnityEngine" );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* unity_engine_ddraw_sphere = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			FILT( DUMPER_METHOD( DUMPER_CLASS( "PoweredLightsDeployer" ), "OnInput" ) ),
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "WireTool" ), "OnInput" ) ),
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			METHOD_ATTRIBUTE_STATIC,
@@ -4680,7 +4680,7 @@ void dumper::produce() {
 		DUMP_METHOD_BY_INFO_PTR( Sphere, unity_engine_ddraw_sphere );
 
 		il2cpp::method_info_t* unity_engine_ddraw_line = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			FILT( DUMPER_METHOD( DUMPER_CLASS( "PoweredLightsDeployer" ), "OnInput" ) ),
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "WireTool" ), "OnInput" ) ),
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
 			METHOD_ATTRIBUTE_PUBLIC,
 			METHOD_ATTRIBUTE_STATIC,
