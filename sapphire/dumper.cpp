@@ -2309,12 +2309,6 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" );
 	DUMPER_CLASS_END;
 
-	DUMPER_CLASS_BEGIN_FROM_PTR( "HitInfo", hit_info_class );
-	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( damageProperties, DUMPER_CLASS( "DamageProperties" ) );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( damageTypes, damage_type_list_class );
-	DUMPER_CLASS_END;
-
 	uint64_t( *main_camera_trace )( float, uint64_t, float ) = nullptr;
 
 	char searchBuf[ 128 ] = { 0 };
@@ -2609,6 +2603,21 @@ void dumper::produce() {
 
 		projectile_do_hit_method = projectile_do_hit;
 	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "HitInfo", hit_info_class );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( damageProperties, DUMPER_CLASS( "DamageProperties" ) );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( damageTypes, damage_type_list_class );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( get_boneArea,
+			FILT( projectile_do_hit_method->get_fn_ptr<uint64_t>() ),
+			DUMPER_CLASS( "HitArea" ),
+			0,
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE
+		);
+	DUMPER_CLASS_END;
+
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "GameTrace", gametrace_trace->klass() );
 	DUMPER_SECTION( "Functions" );
