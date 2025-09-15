@@ -2139,6 +2139,7 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseCombatEntity" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( skeletonProperties );
+		DUMP_MEMBER_BY_NAME( baseProtection );
 		DUMP_MEMBER_BY_NAME( lifestate );
 		DUMP_MEMBER_BY_NAME( markAttackerHostile );
 		DUMP_MEMBER_BY_NEAR_OFFSET( _health, DUMPER_OFFSET( markAttackerHostile ) + 0x2 );
@@ -2158,6 +2159,28 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( name );
 		DUMP_MEMBER_BY_NAME( area );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "DamageProperties" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( fallback );
+		DUMP_MEMBER_BY_NAME( bones );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "DamageProperties/HitAreaProperty" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( area );
+		DUMP_MEMBER_BY_NAME( damage );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "DamageTypeList", damage_type_list_class );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( types, "System.Single[]", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "ProtectionProperties" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( amounts, "System.Single[]", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemDefinition" );
@@ -2288,12 +2311,8 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "HitInfo", hit_info_class );
 	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( damageProperties, DUMPER_CLASS( "DamageProperties" ) );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( damageTypes, damage_type_list_class );
-	DUMPER_CLASS_END;
-
-	DUMPER_CLASS_BEGIN_FROM_PTR( "DamageTypeList", damage_type_list_class );
-	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( types, "System.Single[]", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
 	DUMPER_CLASS_END;
 
 	uint64_t( *main_camera_trace )( float, uint64_t, float ) = nullptr;
