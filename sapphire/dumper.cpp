@@ -442,7 +442,7 @@ bool is_exception_hook( CONTEXT* context, uint64_t search, uint64_t replace, uin
 	return match;
 }
 
-#define START_WRITE_METHOD_RVA 0xD2C53D8
+#define START_WRITE_METHOD_RVA 0xD295C18
 #define CORRUPT_VALUE 0xDEADBEEFCAFEBEEF
 
 uint64_t dumper::start_write_value = 0;
@@ -2131,8 +2131,9 @@ void dumper::produce() {
 		il2cpp::il2cpp_class_t* transform_snapshot_class = _list->type()->klass()->get_generic_argument_at( 0 );
 
 		DUMPER_CLASS_BEGIN_FROM_PTR( "Interpolator", interpolator_class );
-		DUMP_MEMBER_BY_X( list, _list->offset() );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( last, transform_snapshot_class );
+		DUMPER_SECTION( "Offsets" );
+			DUMP_MEMBER_BY_X( list, _list->offset() );
+			DUMP_MEMBER_BY_FIELD_TYPE_CLASS( last, transform_snapshot_class );
 		DUMPER_CLASS_END;
 	}
 
