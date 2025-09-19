@@ -669,7 +669,7 @@ long dumper::exception_handler( _EXCEPTION_POINTERS* exception_info ) {
 				dump_projectile_shoot( object );
 				dump_player_projectile_update( object );
 				dump_player_projectile_attack( object );
-			}
+		}
 
 			return EXCEPTION_CONTINUE_EXECUTION;
 		}
@@ -975,9 +975,13 @@ void dumper::produce_unity() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Material", "UnityEngine" );
 	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( SetFloatImpl, "UnityEngine.Material::SetFloatImpl(System.Int32,System.Single)" );
+		DUMP_METHOD_BY_ICALL( SetColorImpl_Injected, "UnityEngine.Material::SetColorImpl_Injected(System.Int32,UnityEngine.Color&)" );
+		DUMP_METHOD_BY_ICALL( SetTextureImpl, "UnityEngine.Material::SetTextureImpl(System.Int32,UnityEngine.Texture)" );
 		DUMP_METHOD_BY_ICALL( CreateWithMaterial, "UnityEngine.Material::CreateWithMaterial(UnityEngine.Material,UnityEngine.Material)" );
 		DUMP_METHOD_BY_ICALL( CreateWithShader, "UnityEngine.Material::CreateWithShader(UnityEngine.Material,UnityEngine.Shader)" );	
 		DUMP_METHOD_BY_ICALL( SetBufferImpl, "UnityEngine.Material::SetBufferImpl(System.Int32,UnityEngine.ComputeBuffer)" );
+		DUMP_METHOD_BY_ICALL( set_shader, "UnityEngine.Material::set_shader(UnityEngine.Shader)" );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "MaterialPropertyBlock", "UnityEngine" );
@@ -989,6 +993,7 @@ void dumper::produce_unity() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Shader", "UnityEngine" );
 	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_NAME( Find );
 		DUMP_METHOD_BY_ICALL( PropertyToID, "UnityEngine.Shader::PropertyToID(System.String)" );
 	DUMPER_CLASS_END;
 
@@ -1006,6 +1011,13 @@ void dumper::produce_unity() {
 		DUMP_METHOD_BY_ICALL( UploadMeshDataImpl, "UnityEngine.Mesh::UploadMeshDataImpl(System.Boolean)" );
 	DUMPER_CLASS_END;
 
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Renderer", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( get_enabled, "UnityEngine.Renderer::get_enabled()" );
+		DUMP_METHOD_BY_ICALL( get_isVisible, "UnityEngine.Renderer::get_isVisible()" );
+		DUMP_METHOD_BY_ICALL( GetMaterialArray, "UnityEngine.Renderer::GetMaterialArray()" );
+	DUMPER_CLASS_END;
+
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Texture", "UnityEngine" );
 		DUMP_METHOD_BY_ICALL( set_filterMode, "UnityEngine.Texture::set_filterMode(UnityEngine.FilterMode)" );
 		DUMP_METHOD_BY_ICALL( GetNativeTexturePtr, "UnityEngine.Texture::GetNativeTexturePtr()" );
@@ -1019,10 +1031,17 @@ void dumper::produce_unity() {
 		DUMP_METHOD_BY_ICALL( ApplyImpl, "UnityEngine.Texture2D::ApplyImpl(System.Boolean,System.Boolean)" );
 	DUMPER_CLASS_END;
 
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "RenderTexture", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_NAME_STR_ARG_CT( GetTemporary, "GetTemporary", 3 );
+		DUMP_METHOD_BY_ICALL( ReleaseTemporary, "UnityEngine.RenderTexture::ReleaseTemporary(UnityEngine.RenderTexture)" );
+	DUMPER_CLASS_END;
+
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "CommandBuffer", "UnityEngine.Rendering" );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_NAME_STR( ctor, ".ctor" );
 		DUMP_METHOD_BY_ICALL( Clear, "UnityEngine.Rendering.CommandBuffer::Clear()" );
+		DUMP_METHOD_BY_ICALL( SetRenderTargetSingle_Internal_Injected, "UnityEngine.Rendering.CommandBuffer::SetRenderTargetSingle_Internal_Injected( UnityEngine.Rendering.RenderTargetIdentifier&,UnityEngine.Rendering.RenderBufferLoadAction,UnityEngine.Rendering.RenderBufferStoreAction,UnityEngine.Rendering.RenderBufferLoadAction,UnityEngine.Rendering.RenderBufferStoreAction)" );
 		DUMP_METHOD_BY_ICALL( ClearRenderTarget_Injected, "UnityEngine.Rendering.CommandBuffer::ClearRenderTarget_Injected(UnityEngine.Rendering.RTClearFlags,UnityEngine.Color&,System.Single,System.UInt32)" );
 		DUMP_METHOD_BY_ICALL( SetViewport_Injected, "UnityEngine.Rendering.CommandBuffer::SetViewport_Injected(UnityEngine.Rect&)" );
 		DUMP_METHOD_BY_ICALL( SetViewProjectionMatrices_Injected, "UnityEngine.Rendering.CommandBuffer::SetViewProjectionMatrices_Injected(UnityEngine.Matrix4x4&,UnityEngine.Matrix4x4&)" );
@@ -1030,7 +1049,13 @@ void dumper::produce_unity() {
 		DUMP_METHOD_BY_ICALL( DisableScissorRect, "UnityEngine.Rendering.CommandBuffer::DisableScissorRect()" );
 		DUMP_METHOD_BY_ICALL( Internal_DrawProceduralIndexedIndirect_Injected, "UnityEngine.Rendering.CommandBuffer::Internal_DrawProceduralIndexedIndirect_Injected()" );
 		DUMP_METHOD_BY_ICALL( Internal_DrawMesh_Injected, "UnityEngine.Rendering.CommandBuffer::Internal_DrawMesh_Injected(UnityEngine.Mesh,UnityEngine.Matrix4x4&,UnityEngine.Material,System.Int32,System.Int32,UnityEngine.MaterialPropertyBlock)" )
+		DUMP_METHOD_BY_ICALL( Internal_DrawRenderer, "UnityEngine.Rendering.CommandBuffer::Internal_DrawRenderer(UnityEngine.Renderer,UnityEngine.Material,System.Int32,System.Int32)");
 	DUMPER_CLASS_END; 
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "RenderTargetIdentifier", "UnityEngine.Rendering" )
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_PARAM_NAME( ctor, ".ctor", "tex", 0 );
+	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "ComputeBuffer", "UnityEngine" );
 	DUMPER_SECTION( "Functions" );
@@ -1058,6 +1083,7 @@ void dumper::produce_unity() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Graphics", "UnityEngine" );
 	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( Internal_BlitMaterial5, "UnityEngine.Graphics::Internal_BlitMaterial5(UnityEngine.Texture,UnityEngine.RenderTexture,UnityEngine.Material,System.Int32,System.Boolean)" );
 		DUMP_METHOD_BY_ICALL( ExecuteCommandBuffer, "UnityEngine.Graphics::ExecuteCommandBuffer(UnityEngine.Rendering.CommandBuffer)" );
 	DUMPER_CLASS_END;
 
@@ -3897,6 +3923,8 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemIcon" );
 	DUMPER_SECTION( "Functions" );
+		DUMP_VIRTUAL_METHOD( TryToMove, il2cpp::get_virtual_method_by_name( dumper_klass, "TryToMove", 1 ) );
+
 		il2cpp::method_info_t* item_icon_set_timed_loot_action = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 		    FILT( DUMPER_METHOD( DUMPER_CLASS( "ItemIcon" ), "TryToMove" ) ),
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
@@ -3906,6 +3934,7 @@ void dumper::produce() {
 			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
 			DUMPER_TYPE_NAMESPACE( "System", "Action" )
 		);
+
 		DUMP_METHOD_BY_INFO_PTR( SetTimedLootAction, item_icon_set_timed_loot_action );
 	DUMPER_CLASS_END;
 
@@ -4951,6 +4980,10 @@ void dumper::produce() {
 			METHOD_ATTRIBUTE_PUBLIC,
 			DUMPER_ATTR_DONT_CARE
 		);
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "OutlineManager" );
+	DUMPER_SECTION( "Offsets" );
 	DUMPER_CLASS_END;
 
 	fclose( outfile_handle );
