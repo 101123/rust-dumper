@@ -506,12 +506,21 @@ namespace il2cpp {
 			return class_from_il2cpp_type( ( il2cpp_type_t* )type );
 		}
 
+		// This may still be inaccurate if the class has any interfaces
 		uint16_t vtable_count() {
 			Il2CppClass* klass = ( Il2CppClass* )this;
 			if ( !is_valid_ptr( klass ) )
 				return 0u;
 
-			return klass->vtable_count;
+			Il2CppClass* current_klass = klass;
+			uint16_t count = 0;
+
+			while ( is_valid_ptr( current_klass ) ) {
+				count += current_klass->vtable_count;
+				current_klass = current_klass->parent;
+			}
+
+			return count;
 		}
 
 		virtual_invoke_data_t* get_vtable_entry( uint32_t index ) {
