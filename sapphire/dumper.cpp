@@ -403,8 +403,6 @@ void dumper::write_game_assembly() {
 	dumper::write_to_file( "}\n\n" );
 }
 
-void( *o_base_entity_server_rpc_object )( rust::base_entity*, system_c::string_t*, il2cpp::il2cpp_object_t*, il2cpp::method_info_t* ) = nullptr;
-
 il2cpp::il2cpp_class_t* projectile_attack_networkable_id = nullptr;
 il2cpp::il2cpp_class_t* protobuf_player_projectile_update_class = nullptr;
 il2cpp::il2cpp_class_t* protobuf_player_projectile_attack_class = nullptr;
@@ -442,10 +440,64 @@ bool is_exception_hook( CONTEXT* context, uint64_t search, uint64_t replace, uin
 	return match;
 }
 
-#define START_WRITE_METHOD_RVA 0xD2CE290
+#define START_WRITE_METHOD_RVA 0xD25A270
 #define CORRUPT_VALUE 0xDEADBEEFCAFEBEEF
 
 uint64_t dumper::start_write_value = 0;
+
+void dumper::dump_protobuf_methods( il2cpp::il2cpp_class_t* klass ) {
+	for ( size_t i = 0; i < 60; i++ ) {
+		il2cpp::virtual_invoke_data_t* vtable_entry = klass->get_vtable_entry( i );
+		if ( !vtable_entry->method_ptr || !vtable_entry->method )
+			continue;
+
+		il2cpp::method_info_t* method = vtable_entry->method;
+		if ( !method )
+			continue;
+		
+		const char* method_name = method->name();
+		if ( !method_name )
+			continue;
+
+		// System.IDisposable
+		if ( strcmp( method_name, "Dispose" ) == 0 ) {
+			for ( size_t j = 0; j < 7; j++ ) {
+				vtable_entry = klass->get_vtable_entry( i + j );
+
+				// This is not supposed to happen
+				if ( !vtable_entry->method_ptr || !vtable_entry->method )
+					return;
+
+				method = vtable_entry->method;
+				
+				il2cpp::virtual_method_t virtual_method( method, ( uintptr_t )vtable_entry - ( uintptr_t )klass );
+
+				// Pool.IPooled 
+				if ( j >= 0 && j < 2 ) {
+
+				}
+
+				// IProto<T>
+				else if ( j > 2 && j < 5 ) {
+					// void IProto<T>.WriteToStreamDelta(BufferStream stream, T previousProto);
+					if ( method->param_count() == 2 ) {
+						DUMP_VIRTUAL_METHOD( WriteToStreamDelta, virtual_method );
+					}
+				}
+
+				// IProto
+				else if ( j > 5 && j < 7 ) {
+					// void IProto.WriteToStream(BufferStream stream)
+					if ( method->param_count() == 1 ) {
+						DUMP_VIRTUAL_METHOD( WriteToStream, virtual_method );
+					}
+				}
+			}
+
+			break;
+		}
+	}
+}
 
 void dumper::dump_projectile_shoot( il2cpp::il2cpp_object_t* object ) {
 	if ( resolved_projectile_shoot )
@@ -504,6 +556,9 @@ void dumper::dump_projectile_shoot( il2cpp::il2cpp_object_t* object ) {
 				SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( projectile, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), float );
 			}
 		}
+
+	DUMPER_SECTION( "Functions" )
+		dump_protobuf_methods( klass );
 	DUMPER_CLASS_END;
 
 	resolved_projectile_shoot = true;
@@ -556,6 +611,7 @@ void dumper::dump_player_projectile_update( il2cpp::il2cpp_object_t* object ) {
 		DUMP_MEMBER_BY_X( ShouldPool, public_bools.at( 0 )->offset() );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_NAME( Dispose );
+		dump_protobuf_methods( klass );
 	DUMPER_CLASS_END;
 
 	protobuf_player_projectile_update_class = klass;
@@ -642,6 +698,9 @@ void dumper::dump_player_projectile_attack( il2cpp::il2cpp_object_t* object ) {
 			SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( attack, projectile_attack_networkable_id->type(), uint64_t );
 			SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( attack, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), float );
 		}
+
+	DUMPER_SECTION( "Functions" );
+		dump_protobuf_methods( klass );
 	DUMPER_CLASS_END;
 
 	protobuf_player_projectile_attack_class = klass;
@@ -666,147 +725,15 @@ long dumper::exception_handler( _EXCEPTION_POINTERS* exception_info ) {
 
 				il2cpp::il2cpp_object_t* object = ( il2cpp::il2cpp_object_t* )ptr;
 
-				dump_projectile_shoot( object );
-				dump_player_projectile_update( object );
-				dump_player_projectile_attack( object );
+			dump_projectile_shoot( object );
+			dump_player_projectile_update( object );
+			dump_player_projectile_attack( object );
 		}
 
-			return EXCEPTION_CONTINUE_EXECUTION;
-		}
+		return EXCEPTION_CONTINUE_EXECUTION;
 	}
 
 	return EXCEPTION_CONTINUE_SEARCH;
-}
-
-void dumper::hk_base_entity_server_rpc_object( rust::base_entity* base_entity, system_c::string_t* func_name, il2cpp::il2cpp_object_t* arg, il2cpp::method_info_t* method ) {
-	if ( !resolved_projectile_shoot && !wcscmp( func_name->str, L"CLProject" ) ) {
-		il2cpp::il2cpp_class_t* proto_buf_projectile_shoot_class = arg->get_class();
-		il2cpp::field_info_t* proto_buf_projectile_shoot_projectiles = nullptr;
-
-		il2cpp::il2cpp_class_t* proto_buf_projectile_shoot_projectile_class = nullptr;
-
-		if ( proto_buf_projectile_shoot_class ) {
-			proto_buf_projectile_shoot_projectiles = il2cpp::get_field_if_type_contains( proto_buf_projectile_shoot_class, "List<%", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
-
-			if ( proto_buf_projectile_shoot_projectiles ) {
-				proto_buf_projectile_shoot_projectile_class = proto_buf_projectile_shoot_projectiles->type()->klass()->get_generic_argument_at( 0 );
-			}
-		}
-
-		DUMPER_CLASS_BEGIN_FROM_PTR( "ProtoBuf_ProjectileShoot", proto_buf_projectile_shoot_class );
-		DUMPER_SECTION( "Offsets" );
-			DUMP_MEMBER_BY_X( projectiles, proto_buf_projectile_shoot_projectiles->offset() );
-		DUMPER_CLASS_END;
-
-		DUMPER_CLASS_BEGIN_FROM_PTR( "ProtoBuf_ProjectileShoot_Projectile", proto_buf_projectile_shoot_projectile_class );
-		DUMPER_SECTION( "Offsets" );
-			auto projectiles = *( system_c::list<uint64_t>** )( arg + proto_buf_projectile_shoot_projectiles->offset() );
-			
-			if ( projectiles ) {
-				for ( int i = 0; i < projectiles->_size; i++ ) {
-					uint64_t projectile = projectiles->at( i );
-					if ( !projectile )
-						continue;
-				
-					SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( projectile, DUMPER_TYPE_NAMESPACE( "System", "Int32" ), int );
-					SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( projectile, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), float );
-				}
-			}
-		DUMPER_CLASS_END;
-
-		resolved_projectile_shoot = true;
-	}
-
-	else if ( !resolved_projectile_update && !wcscmp( func_name->str, L"OnProjectileUpdate" ) ) {
-		protobuf_player_projectile_update_class = arg->get_class();
-
-		DUMPER_CLASS_BEGIN_FROM_PTR( "ProtoBuf_PlayerProjectileUpdate", protobuf_player_projectile_update_class );
-		DUMPER_SECTION( "Offsets" );
-			uint64_t player_projectile_update = ( uint64_t )arg;
-			
-			if ( player_projectile_update ) {
-				SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( player_projectile_update, DUMPER_TYPE_NAMESPACE( "System", "Int32" ), int );
-				SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( player_projectile_update, DUMPER_TYPE_NAMESPACE( "System", "Single" ), float );
-				SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( player_projectile_update, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), float );
-			}
-
-			DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( ShouldPool, "System.Boolean", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE ); 
-		DUMPER_SECTION( "Functions" );
-			DUMP_METHOD_BY_NAME( Dispose );
-		DUMPER_CLASS_END;
-
-		resolved_projectile_update = true;
-	}
-
-	else if ( !resolved_projectile_attack && !wcscmp( func_name->str, L"OnProjectileAttack" ) ) {
-		protobuf_player_projectile_attack_class = arg->get_class(); // ProtoBuf.PlayerProjectileAttack
-		il2cpp::field_info_t* protobuf_player_projectile_attack_player_attack = nullptr; // ProtoBuf.PlayerProjectileAttack.playerAttack
-
-		il2cpp::il2cpp_class_t* protobuf_player_attack_class = nullptr; // ProtoBuf.PlayerAttack
-		il2cpp::field_info_t* protobuf_player_attack_attack = nullptr; // ProtoBuf.PlayerAttack.attack
-
-		il2cpp::il2cpp_class_t* protobuf_attack_class = nullptr; // ProtoBuf.Attack
-
-		if ( protobuf_player_projectile_attack_class ) {
-			protobuf_player_projectile_attack_player_attack = il2cpp::get_field_if_type_contains( protobuf_player_projectile_attack_class, "%", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
-
-			if ( protobuf_player_projectile_attack_player_attack ) {
-				protobuf_player_attack_class = protobuf_player_projectile_attack_player_attack->type()->klass();
-
-				if ( protobuf_player_attack_class ) {
-					protobuf_player_attack_attack = il2cpp::get_field_if_type_contains( protobuf_player_attack_class, "%", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
-
-					if ( protobuf_player_attack_attack ) {
-						protobuf_attack_class = protobuf_player_attack_attack->type()->klass();
-					}
-				}
-			}
-		}
-
-		uint64_t protobuf_player_projectile_attack = ( uint64_t )arg;
-		uint64_t protobuf_player_attack = 0;
-		uint64_t protobuf_attack = 0;
-
-		if ( is_valid_ptr( protobuf_player_projectile_attack ) ) {
-			protobuf_player_attack = *( uint64_t* )( protobuf_player_projectile_attack + protobuf_player_projectile_attack_player_attack->offset() );
-
-			if ( is_valid_ptr( protobuf_player_attack ) ) {
-				protobuf_attack = *( uint64_t* )( protobuf_player_attack + protobuf_player_attack_attack->offset() );
-			}
-		}
-
-		DUMPER_CLASS_BEGIN_FROM_PTR( "ProtoBuf_PlayerProjectileAttack", protobuf_player_projectile_attack_class );
-		DUMPER_SECTION( "Offsets" );
-			DUMP_MEMBER_BY_FIELD_TYPE_CLASS( playerAttack, protobuf_player_attack_class );
-
-			if ( protobuf_player_projectile_attack ) {
-				SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( protobuf_player_projectile_attack, DUMPER_TYPE_NAMESPACE( "System", "Single" ), float );
-				SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( protobuf_player_projectile_attack, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), float );
-			}
-		DUMPER_CLASS_END;
-
-		DUMPER_CLASS_BEGIN_FROM_PTR( "ProtoBuf_PlayerAttack", protobuf_player_attack_class );
-		DUMPER_SECTION( "Offsets" );
-			DUMP_MEMBER_BY_FIELD_TYPE_CLASS( attack, protobuf_attack_class );
-
-			if ( protobuf_player_attack ) {
-				SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( protobuf_player_attack, DUMPER_TYPE_NAMESPACE( "System", "Int32" ), int );
-			}
-		DUMPER_CLASS_END;
-
-		DUMPER_CLASS_BEGIN_FROM_PTR( "ProtoBuf_Attack", protobuf_attack_class );
-		DUMPER_SECTION( "Offsets" );
-			if ( protobuf_attack ) {
-				SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( protobuf_attack, DUMPER_TYPE_NAMESPACE( "System", "UInt32" ), uint32_t );
-				SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( protobuf_attack, projectile_attack_networkable_id->type(), uint64_t );
-				SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( protobuf_attack, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), float );
-			}
-		DUMPER_CLASS_END;
-
-		resolved_projectile_attack = true;
-	}
-
-	return o_base_entity_server_rpc_object( base_entity, func_name, arg, method );
 }
 
 void get_class_by_field_type_in_member_class_impl( il2cpp::il2cpp_class_t* klass, const char* target, il2cpp::il2cpp_class_t** result, uint32_t limit ) {
@@ -894,6 +821,7 @@ void dumper::produce_unity() {
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( m_CachedPtr );
 	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_NAME( GetInstanceID );
 		DUMP_METHOD_BY_ICALL( Destroy, "UnityEngine.Object::Destroy(UnityEngine.Object,System.Single)" );
 		DUMP_METHOD_BY_ICALL( DestroyImmediate, "UnityEngine.Object::DestroyImmediate(UnityEngine.Object,System.Boolean)" );
 		DUMP_METHOD_BY_ICALL( DontDestroyOnLoad, "UnityEngine.Object::DontDestroyOnLoad(UnityEngine.Object)" );
@@ -926,6 +854,7 @@ void dumper::produce_unity() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Behaviour", "UnityEngine" );
 	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( get_enabled, "UnityEngine.Behaviour::get_enabled()" );
 		DUMP_METHOD_BY_ICALL( set_enabled, "UnityEngine.Behaviour::set_enabled(System.Boolean)" );
 	DUMPER_CLASS_END;
 	
@@ -1945,7 +1874,7 @@ void dumper::produce() {
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "BasePlayer", base_player_class );
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "BasePlayer (static)", base_player_static_class );
 
-	il2cpp::il2cpp_class_t* buffer_stream_class = get_class_by_field_type_in_member_class( network_netwrite_class, "System.Byte", 2 );
+	il2cpp::il2cpp_class_t* buffer_stream_class = get_class_by_field_type_in_member_class( network_netwrite_class, "System.Byte[]", 2 );
 
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "BufferStream", buffer_stream_class );
 
@@ -3924,18 +3853,7 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemIcon" );
 	DUMPER_SECTION( "Functions" );
 		DUMP_VIRTUAL_METHOD( TryToMove, il2cpp::get_virtual_method_by_name( dumper_klass, "TryToMove", 1 ) );
-
-		il2cpp::method_info_t* item_icon_set_timed_loot_action = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-		    FILT( DUMPER_METHOD( DUMPER_CLASS( "ItemIcon" ), "TryToMove" ) ),
-			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-			METHOD_ATTRIBUTE_PUBLIC,
-			DUMPER_ATTR_DONT_CARE,
-			item_container_class->type(),
-			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
-			DUMPER_TYPE_NAMESPACE( "System", "Action" )
-		);
-
-		DUMP_METHOD_BY_INFO_PTR( SetTimedLootAction, item_icon_set_timed_loot_action );
+		DUMP_METHOD_BY_NAME( RunTimedAction );
 	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* item_icon_static_class = get_inner_static_class( DUMPER_CLASS( "ItemIcon" ) );

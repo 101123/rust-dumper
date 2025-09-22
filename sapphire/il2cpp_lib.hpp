@@ -426,6 +426,17 @@ namespace il2cpp {
 			return nullptr;
 		}
 
+		std::vector<method_info_t*> get_methods() {
+			std::vector<method_info_t*> ret;
+
+			void* iter = nullptr;
+			while ( method_info_t* method = class_get_methods( this, &iter ) ) {
+				ret.push_back( method );
+			}
+
+			return ret;
+		}
+
 		il2cpp_class_t* nested_types( void** iter ) {
 			if ( !is_valid_ptr( this ) )
 				return nullptr;
@@ -506,21 +517,30 @@ namespace il2cpp {
 			return class_from_il2cpp_type( ( il2cpp_type_t* )type );
 		}
 
-		// This may still be inaccurate if the class has any interfaces
 		uint16_t vtable_count() {
-			Il2CppClass* klass = ( Il2CppClass* )this;
-			if ( !is_valid_ptr( klass ) )
-				return 0u;
+			if ( !is_valid_ptr( this ) )
+				return 0;
 
-			Il2CppClass* current_klass = klass;
 			uint16_t count = 0;
 
-			while ( is_valid_ptr( current_klass ) ) {
-				count += current_klass->vtable_count;
-				current_klass = current_klass->parent;
-			}
+			il2cpp_class_t* current = this;
+			while ( current ) {
+				Il2CppClass* klass = ( Il2CppClass* )current;
+				if ( !klass )
+					continue;
 
-			return count;
+				count += klass->vtable_count;
+
+				for ( il2cpp_class_t* interface_ : current->get_interfaces() ) {
+					Il2CppClass* interface_klass = ( Il2CppClass* )interface_;
+					if ( !interface_klass )
+						continue;
+
+					count += interface_klass->vtable_count;
+				}
+
+				current = current->parent();
+			}
 		}
 
 		virtual_invoke_data_t* get_vtable_entry( uint32_t index ) {
