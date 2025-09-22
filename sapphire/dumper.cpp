@@ -536,6 +536,8 @@ void dumper::dump_projectile_shoot( il2cpp::il2cpp_object_t* object ) {
 	DUMPER_CLASS_BEGIN_FROM_PTR( "ProtoBuf_ProjectileShoot", klass );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_X( projectiles, projectile_shoot_projectiles->offset() );
+	DUMPER_SECTION( "Functions" )
+		dump_protobuf_methods( klass );
 	DUMPER_CLASS_END;
 
 	il2cpp::il2cpp_class_t* projectile_shoot_projectile_class = projectile_shoot_projectiles->type()->klass()->get_generic_argument_at( 0 );
@@ -556,9 +558,6 @@ void dumper::dump_projectile_shoot( il2cpp::il2cpp_object_t* object ) {
 				SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( projectile, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), float );
 			}
 		}
-
-	DUMPER_SECTION( "Functions" )
-		dump_protobuf_methods( klass );
 	DUMPER_CLASS_END;
 
 	resolved_projectile_shoot = true;
@@ -680,6 +679,8 @@ void dumper::dump_player_projectile_attack( il2cpp::il2cpp_object_t* object ) {
 			SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( player_projectile_attack, DUMPER_TYPE_NAMESPACE( "System", "Single" ), float );
 			SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( player_projectile_attack, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), float );
 		}
+	DUMPER_SECTION("Functions")
+		dump_protobuf_methods( klass );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "ProtoBuf_PlayerAttack", player_attack_class );
@@ -698,9 +699,6 @@ void dumper::dump_player_projectile_attack( il2cpp::il2cpp_object_t* object ) {
 			SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( attack, projectile_attack_networkable_id->type(), uint64_t );
 			SET_ALL_FIELDS_OF_TYPE_TO_OFFSET( attack, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), float );
 		}
-
-	DUMPER_SECTION( "Functions" );
-		dump_protobuf_methods( klass );
 	DUMPER_CLASS_END;
 
 	protobuf_player_projectile_attack_class = klass;
