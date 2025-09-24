@@ -470,7 +470,7 @@ void dumper::dump_protobuf_methods( il2cpp::il2cpp_class_t* klass ) {
 
 				method = vtable_entry->method;
 				
-				il2cpp::virtual_method_t virtual_method( method, ( uintptr_t )vtable_entry - ( uintptr_t )klass );
+				il2cpp::virtual_method_t virtual_method( method, ( uint64_t )vtable_entry - ( uint64_t )klass );
 
 				// Pool.IPooled 
 				if ( j >= 0 && j < 2 ) {
@@ -3226,6 +3226,8 @@ void dumper::produce() {
 				}
 			}
 		}
+	DUMPER_SECTION( "Functions" );
+		dump_protobuf_methods( player_tick_class );
 	DUMPER_CLASS_END;
 
 	il2cpp::field_info_t* _buttons = nullptr;
@@ -4013,7 +4015,6 @@ void dumper::produce() {
 	DUMPER_CLASS_END;
 
 	il2cpp::field_info_t* _cl = nullptr;
-	uint64_t on_network_message = 0;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "Network_Net", network_net_class );
 	DUMPER_SECTION( "Offsets" );
@@ -4031,13 +4032,13 @@ void dumper::produce() {
 			il2cpp::field_info_t* callback_handler_field = il2cpp::get_field_if_type_contains( dumper_klass, "%", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, TYPE_ATTRIBUTE_INTERFACE );
 
 			if ( callback_handler_field ) {
-				uint64_t callback_handler = *( uint64_t* )( client + callback_handler_field->offset() );
+				il2cpp::il2cpp_object_t* callback_handler = *( il2cpp::il2cpp_object_t** )( client + callback_handler_field->offset() );
 
 				if ( is_valid_ptr( callback_handler ) ) {
-					uint64_t klass = *( uint64_t* )( callback_handler );
+					il2cpp::il2cpp_class_t* i_client_callback = callback_handler->get_class();
 
-					if ( is_valid_ptr( klass ) ) {
-						on_network_message = *( uint64_t* )( klass + 0x1C8 );
+					if ( is_valid_ptr( i_client_callback ) ) {
+
 					}
 				}
 			}
@@ -4529,43 +4530,11 @@ void dumper::produce() {
 		DUMP_METHOD_BY_INFO_PTR( IsAuthed, auto_turret_is_authed );
 	DUMPER_CLASS_END;
 
-	if ( on_network_message ) {
-		uint64_t create_or_update_entity = 0;
-
-		DUMPER_CLASS_BEGIN_FROM_NAME( "Client" );
-		DUMPER_SECTION( "Functions" );
-			il2cpp::method_info_t* method = il2cpp::method_info_t::from_addr( on_network_message );
-			il2cpp::virtual_method_t virtual_method( method, method->get_vtable_offset() );
-			DUMP_VIRTUAL_METHOD( OnNetworkMessage, virtual_method );
-
-			il2cpp::method_info_t* client_create_or_update_entity = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-				FILT_N( on_network_message, 3 ),
-				DUMPER_TYPE( "BaseEntity" ),
-				METHOD_ATTRIBUTE_PRIVATE,
-				DUMPER_ATTR_DONT_CARE,
-				protobuf_entity_class->type(),
-				DUMPER_TYPE_NAMESPACE( "System", "Int64" )
-			); create_or_update_entity = client_create_or_update_entity->get_fn_ptr<uint64_t>();
-
-			DUMP_METHOD_BY_INFO_PTR( CreateOrUpdateEntity, client_create_or_update_entity );
-		DUMPER_CLASS_END;
-
-		if ( create_or_update_entity ) {
-			DUMPER_CLASS_BEGIN_FROM_NAME( "BaseNetworkable" );
-			DUMPER_SECTION( "Functions" );
-				il2cpp::virtual_method_t base_networkable_load = SEARCH_FOR_VIRTUAL_METHOD_WITH_RETTYPE_PARAM_TYPES(
-					FILT_I( create_or_update_entity, 1000, 1 ),
-					DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-					DUMPER_ATTR_DONT_CARE,
-					DUMPER_ATTR_DONT_CARE,
-					base_networkable_load_info_class->type()
-				); 
-
-				DUMP_VIRTUAL_METHOD( Load, base_networkable_load );
-			DUMPER_CLASS_END;
-		}
-	}
-
+	DUMPER_CLASS_BEGIN_FROM_NAME( "Client" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_VIRTUAL_METHOD( OnClientDisconnected, il2cpp::get_virtual_method_by_name( dumper_klass, "OnClientDisconnected", 1 ) );
+	DUMPER_CLASS_END;
+	
 	DUMPER_CLASS_BEGIN_FROM_PTR( "ItemManager_Static", item_manager_static_class );
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* item_list = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "List<ItemDefinition>", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* item_list ) { return item_list != nullptr; } );

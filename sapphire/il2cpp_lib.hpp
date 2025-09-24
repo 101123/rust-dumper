@@ -518,29 +518,26 @@ namespace il2cpp {
 		}
 
 		uint16_t vtable_count() {
+			Il2CppClass* klass = ( Il2CppClass* )this;
+			if ( !is_valid_ptr( klass ) )
+				return 0;
+			
+			return klass->vtable_count;
+		}
+
+		uint16_t total_vtable_count() {
 			if ( !is_valid_ptr( this ) )
 				return 0;
 
 			uint16_t count = 0;
-
 			il2cpp_class_t* current = this;
+
 			while ( current ) {
-				Il2CppClass* klass = ( Il2CppClass* )current;
-				if ( !klass )
-					continue;
-
-				count += klass->vtable_count;
-
-				for ( il2cpp_class_t* interface_ : current->get_interfaces() ) {
-					Il2CppClass* interface_klass = ( Il2CppClass* )interface_;
-					if ( !interface_klass )
-						continue;
-
-					count += interface_klass->vtable_count;
-				}
-
+				count += current->vtable_count();
 				current = current->parent();
 			}
+
+			return count;
 		}
 
 		virtual_invoke_data_t* get_vtable_entry( uint32_t index ) {
@@ -754,7 +751,7 @@ namespace il2cpp {
 			if ( !is_valid_ptr( klass ) )
 				return 0u;
 
-			for ( uint16_t i = 0, n = klass->vtable_count(); i < n; i++ ) {
+			for ( uint16_t i = 0, n = klass->total_vtable_count(); i < n; i++ ) {
 				virtual_invoke_data_t* virtual_invoke_data = klass->get_vtable_entry( i );
 				if ( virtual_invoke_data->method != this )
 					continue;
