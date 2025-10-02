@@ -440,7 +440,7 @@ bool is_exception_hook( CONTEXT* context, uint64_t search, uint64_t replace, uin
 	return match;
 }
 
-#define START_WRITE_METHOD_RVA 0xD25A270
+#define START_WRITE_METHOD_RVA 0xD43C810
 #define CORRUPT_VALUE 0xDEADBEEFCAFEBEEF
 
 uint64_t dumper::start_write_value = 0;
@@ -858,19 +858,20 @@ void dumper::produce_unity() {
 	
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Transform", "UnityEngine" );
 	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_NAME( get_eulerAngles );
 		DUMP_METHOD_BY_ICALL( GetChild, "UnityEngine.Transform::GetChild(System.Int32)" );
 		DUMP_METHOD_BY_ICALL( GetParent, "UnityEngine.Transform::GetParent()" );
 		DUMP_METHOD_BY_ICALL( GetRoot, "UnityEngine.Transform::GetRoot()" );
 		DUMP_METHOD_BY_ICALL( InverseTransformDirection_Injected, "UnityEngine.Transform::InverseTransformDirection_Injected(UnityEngine.Vector3&,UnityEngine.Vector3&)" );
 		DUMP_METHOD_BY_ICALL( InverseTransformPoint_Injected, "UnityEngine.Transform::InverseTransformPoint_Injected(UnityEngine.Vector3&,UnityEngine.Vector3&)" );
 		DUMP_METHOD_BY_ICALL( InverseTransformVector_Injected, "UnityEngine.Transform::InverseTransformVector_Injected(UnityEngine.Vector3&,UnityEngine.Vector3&)" );
+		DUMP_METHOD_BY_ICALL( GetPositionAndRotation, "UnityEngine.Transform::GetPositionAndRotation(UnityEngine.Vector3&,UnityEngine.Quaternion&)" );
 		DUMP_METHOD_BY_ICALL( SetLocalPositionAndRotation_Injected, "UnityEngine.Transform::SetLocalPositionAndRotation_Injected(UnityEngine.Vector3&,UnityEngine.Quaternion&)" );
 		DUMP_METHOD_BY_ICALL( SetPositionAndRotation_Injected, "UnityEngine.Transform::SetPositionAndRotation_Injected(UnityEngine.Vector3&,UnityEngine.Quaternion&)" );
 		DUMP_METHOD_BY_ICALL( TransformDirection_Injected, "UnityEngine.Transform::TransformDirection_Injected(UnityEngine.Vector3&,UnityEngine.Vector3&)" );
 		DUMP_METHOD_BY_ICALL( TransformPoint_Injected, "UnityEngine.Transform::TransformPoint_Injected(UnityEngine.Vector3&,UnityEngine.Vector3&)" );
 		DUMP_METHOD_BY_ICALL( TransformVector_Injected, "UnityEngine.Transform::TransformVector_Injected(UnityEngine.Vector3&,UnityEngine.Vector3&)" );
 		DUMP_METHOD_BY_ICALL( get_childCount, "UnityEngine.Transform::get_childCount()" );
-		DUMP_METHOD_BY_ICALL( get_eulerAngles, "UnityEngine.Transform::get_childCount()" );
 		DUMP_METHOD_BY_ICALL( get_localPosition_Injected, "UnityEngine.Transform::get_localPosition_Injected(UnityEngine.Vector3&)" );
 		DUMP_METHOD_BY_ICALL( get_localRotation_Injected, "UnityEngine.Transform::get_localRotation_Injected(UnityEngine.Quaternion&)" );
 		DUMP_METHOD_BY_ICALL( get_localScale_Injected, "UnityEngine.Transform::get_localScale_Injected(UnityEngine.Vector3&)" );
@@ -1049,6 +1050,17 @@ void dumper::produce_unity() {
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_ICALL( Quit, "UnityEngine.Application::Quit(System.Int32)" );
 	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Gradient", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( SetKeys, "UnityEngine.Gradient::SetKeys(UnityEngine.GradientColorKey[],UnityEngine.GradientAlphaKey[]" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Physics", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_NAME_STR_ARG_CT( Raycast, "Raycast", 6 );
+		DUMP_METHOD_BY_NAME_STR_ARG_CT( RaycastNonAlloc, "RaycastNonAlloc", 6 );
+	DUMPER_CLASS_END;
 }
 
 bool dumper::resolve_type_info_definition_table() {
@@ -1065,7 +1077,7 @@ bool dumper::resolve_type_info_definition_table() {
 }
 
 int dumper::get_class_type_definition_index( il2cpp::il2cpp_class_t* klass ) {
-	for ( int i = 0; i < 21070; i++ ) {
+	for ( int i = 0; i < 25000; i++ ) {
 		if ( dumper::type_info_definition_table[ i ] == klass ) {
 			return i;
 		}
@@ -1236,8 +1248,8 @@ void dumper::produce() {
 
 	il2cpp::method_info_t* console_system_run = SEARCH_FOR_METHOD_IN_METHOD_WITH_RETTYPE_PARAM_TYPES(
 		console_system_class,
-		FILT( DUMPER_METHOD( DUMPER_CLASS( "QuickCraftButton" ), "OnPointerClick" ) ),
-		DUMPER_TYPE_NAMESPACE( "System", "String" ),
+		FILT( DUMPER_METHOD( DUMPER_CLASS( "TweakUI" ), "SetVisible" ) ),
+		WILDCARD_VALUE( il2cpp::il2cpp_type_t* ),
 		METHOD_ATTRIBUTE_PUBLIC,
 		METHOD_ATTRIBUTE_STATIC,
 		WILDCARD_VALUE( il2cpp::il2cpp_type_t* ),
@@ -1328,8 +1340,10 @@ void dumper::produce() {
 	);
 
 	il2cpp::il2cpp_class_t* game_physics_class = game_physics_verify->klass();
+	il2cpp::il2cpp_class_t* game_physics_static_class = get_inner_static_class( game_physics_class );
 
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "GamePhysics", game_physics_class );
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "GamePhysics (static)", game_physics_static_class );
 
 	il2cpp::il2cpp_class_t* player_loot_class = DUMPER_CLASS( "PlayerLoot" );
 	il2cpp::il2cpp_class_t* item_class = nullptr;
@@ -3142,17 +3156,11 @@ void dumper::produce() {
 		DUMP_METHOD_BY_INFO_PTR( Run, console_system_run );
 	DUMPER_CLASS_END;
 
-	DUMPER_PTR_CLASS_NAME( "ConsoleSystem_Option", console_system_option_class );
-	DUMPER_PTR_CLASS_NAME( "ConsoleSystem_Command", console_system_command_class );
-
 	DUMPER_CLASS_BEGIN_FROM_PTR( "ConsoleSystem_Index_Static", console_system_index_static_class );
 	DUMPER_SECTION( "Offsets" );
 		il2cpp::field_info_t* all = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, console_system_command_class->type()->name(), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* all ) { return all != nullptr; } );
 		DUMP_MEMBER_BY_X( All, all->offset() );
 	DUMPER_CLASS_END;
-
-	DUMP_CLASS_NAME( "ConsoleSystem_Arg", console_system_arg_class );
-	DUMP_CLASS_NAME( "Facepunch_Network_SteamNetworking", facepunch_network_steam_networking_class );
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "LootableCorpse" );
 	DUMPER_SECTION( "Offsets" );
@@ -4582,6 +4590,13 @@ void dumper::produce() {
 		DUMP_METHOD_BY_INFO_PTR( WorldPosToImagePos, map_view_world_pos_to_image_pos );
 	DUMPER_CLASS_END;
 
+	DUMPER_CLASS_BEGIN_FROM_PTR( "GamePhysics_Static", game_physics_static_class );
+	DUMPER_SECTION( "Offsets" );
+		// There are two hit buffers, hitBuffer and hitBufferB. For our use case, it doesn't matter which one we resolve
+		il2cpp::field_info_t* hit_buffer = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "UnityEngine.RaycastHit[]", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* hit_buffer ) { return hit_buffer != nullptr; } );
+		DUMP_MEMBER_BY_X( hitBuffer, hit_buffer->offset() );
+	DUMPER_CLASS_END;
+
 	DUMPER_CLASS_BEGIN_FROM_PTR( "GamePhysics", game_physics_class )
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* game_physics_trace = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_STR(
@@ -4869,6 +4884,33 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "OutlineManager" );
 	DUMPER_SECTION( "Offsets" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "ConsoleSystem_Command", console_system_command_class );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_X( GetOveride, rust::console_system::get_override_offset );
+		DUMP_MEMBER_BY_X( SetOveride, rust::console_system::set_override_offset );
+		DUMP_MEMBER_BY_X( Call, rust::console_system::call_offset );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "ConsoleSystem_Option", console_system_option_class );
+	DUMPER_SECTION( "Offsets" );
+		
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "ConsoleSystem_Arg", console_system_arg_class );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( Option, console_system_option_class );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "ConsoleSystem_Index_Client", console_system_index_client_class );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_INFO_PTR( Find, console_system_index_client_find );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "String", "System" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_METHOD_BY_NAME( FastAllocateString );
 	DUMPER_CLASS_END;
 
 	fclose( outfile_handle );
