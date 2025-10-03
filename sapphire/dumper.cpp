@@ -440,7 +440,7 @@ bool is_exception_hook( CONTEXT* context, uint64_t search, uint64_t replace, uin
 	return match;
 }
 
-#define START_WRITE_METHOD_RVA 0xD43C810
+#define START_WRITE_METHOD_RVA 0xD5B4AC8
 #define CORRUPT_VALUE 0xDEADBEEFCAFEBEEF
 
 uint64_t dumper::start_write_value = 0;
@@ -2125,7 +2125,7 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "SkeletonProperties/BoneProperty" );
 	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_NAME( name );
+		DUMP_MEMBER_BY_NAME( boneName );
 		DUMP_MEMBER_BY_NAME( area );
 	DUMPER_CLASS_END;
 
@@ -2195,7 +2195,7 @@ void dumper::produce() {
 		il2cpp::method_info_t* attack_entity_start_attack_cooldown = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 			FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseProjectile" ), "BeginCycle" ) ),
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-			METHOD_ATTRIBUTE_FAMILY,
+			METHOD_ATTRIBUTE_PUBLIC,
 			DUMPER_ATTR_DONT_CARE,
 			DUMPER_TYPE_NAMESPACE( "System", "Single" )
 		);
@@ -2962,7 +2962,7 @@ void dumper::produce() {
 		);
 
 		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( GetHeldEntity,
-			FILT( DUMPER_METHOD( DUMPER_CLASS( "Crosshair" ), "Update" ) ),
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "SledSeat" ), "UpdatePlayerModel" ) ),
 			DUMPER_CLASS( "HeldEntity" ),
 			0,
 			METHOD_ATTRIBUTE_PUBLIC,
