@@ -462,7 +462,7 @@ void dumper::dump_protobuf_methods( il2cpp::il2cpp_class_t* klass ) {
 		// System.IDisposable
 		if ( strcmp( method_name, "Dispose" ) == 0 ) {
 			for ( size_t j = 0; j < 7; j++ ) {
-				vtable_entry = klass->get_vtable_entry( i + j );
+				vtable_entry = klass->get_vtable_entry( i + j + 1u );
 
 				// This is not supposed to happen
 				if ( !vtable_entry->method_ptr || !vtable_entry->method )
@@ -478,7 +478,7 @@ void dumper::dump_protobuf_methods( il2cpp::il2cpp_class_t* klass ) {
 				}
 
 				// IProto<T>
-				else if ( j > 2 && j < 5 ) {
+				else if ( j >= 2 && j < 4 ) {
 					// void IProto<T>.WriteToStreamDelta(BufferStream stream, T previousProto);
 					if ( method->param_count() == 2 ) {
 						DUMP_VIRTUAL_METHOD( WriteToStreamDelta, virtual_method );
@@ -486,7 +486,7 @@ void dumper::dump_protobuf_methods( il2cpp::il2cpp_class_t* klass ) {
 				}
 
 				// IProto
-				else if ( j > 5 && j < 7 ) {
+				else if ( j >= 4 && j < 7 ) {
 					// void IProto.WriteToStream(BufferStream stream)
 					if ( method->param_count() == 1 ) {
 						DUMP_VIRTUAL_METHOD( WriteToStream, virtual_method );
