@@ -808,7 +808,7 @@ int get_button_offset( const wchar_t* button_command ) {
 #define FLOAT_IS_EQUAL( a, b, c ) abs( a - b ) < c
 #define VECTOR_IS_EQUAL( a, b, c ) abs( a.distance( b ) ) < c 
 
-#define SERVER_IP L"127.0.0.1" 
+#define SERVER_IP L"94.130.222.18" 
 #define SERVER_PORT 28015
 #define WORLD_SIZE 2500
 #define CAMSPEED 1.0525f
