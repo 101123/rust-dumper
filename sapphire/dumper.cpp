@@ -3143,6 +3143,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( recoil );
 		DUMP_MEMBER_BY_NAME( sightAimCone );
 		DUMP_MEMBER_BY_NAME( hipAimCone );
+		DUMP_MEMBER_BY_NAME( needsOnForEffects );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ProjectileWeaponMod/Modifier" );
@@ -3221,15 +3222,16 @@ void dumper::produce() {
 				if ( last_sent_tick ) {
 					std::vector<il2cpp::field_info_t*> vectors = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
 
-					if ( vectors.size() == 2 ) {
-						unity::vector3_t vector1 = *( unity::vector3_t* )( last_sent_tick + vectors.at( 0 )->offset() );
-						unity::vector3_t vector2 = *( unity::vector3_t* )( last_sent_tick + vectors.at( 1 )->offset() );
+					if ( vectors.size() == 3 ) {
+						// Sort by verticality 
+						std::sort( vectors.begin(), vectors.end(), [&]( il2cpp::field_info_t* a, il2cpp::field_info_t* b ) {
+							return ( *( unity::vector3_t* )( last_sent_tick + a->offset() ) ).y < 
+								( *( unity::vector3_t* )( last_sent_tick + b->offset() ) ).y;
+						} );
 
-						il2cpp::field_info_t* position_field = ( vector1.y < vector2.y ) ? vectors.at( 0 ) : vectors.at( 1 );
-						il2cpp::field_info_t* eye_pos_field = ( vector1.y > vector2.y ) ? vectors.at( 0 ) : vectors.at( 1 );
-
-						DUMP_MEMBER_BY_X( position, position_field->offset() );
-						DUMP_MEMBER_BY_X( eyePos, eye_pos_field->offset() );
+						DUMP_MEMBER_BY_X( intermediatePosition, vectors.at( 0 )->offset() );
+						DUMP_MEMBER_BY_X( position, vectors.at( 1 )->offset() );
+						DUMP_MEMBER_BY_X( eyePos, vectors.at( 2 )->offset() );
 					}
 				}
 			}
@@ -4250,6 +4252,9 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( MoonColor );
 		DUMP_MEMBER_BY_NAME( CloudColor );
 		DUMP_MEMBER_BY_NAME( AmbientColor );
+
+		il2cpp::field_info_t* ambient_multiplier_field = il2cpp::get_field_by_name( dumper_klass, "<AmbientMultiplier>k__BackingField" );
+		DUMP_MEMBER_BY_X( AmbientMultiplier, ambient_multiplier_field->offset() );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "TOD_StarParameters" );
