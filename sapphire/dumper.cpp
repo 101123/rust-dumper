@@ -440,7 +440,7 @@ bool is_exception_hook( CONTEXT* context, uint64_t search, uint64_t replace, uin
 	return match;
 }
 
-#define START_WRITE_METHOD_RVA 0xD5B4AC8
+#define START_WRITE_METHOD_RVA 0xD426D88
 #define CORRUPT_VALUE 0xDEADBEEFCAFEBEEF
 
 uint64_t dumper::start_write_value = 0;
@@ -2110,8 +2110,8 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( baseProtection );
 		DUMP_MEMBER_BY_NAME( lifestate );
 		DUMP_MEMBER_BY_NAME( markAttackerHostile );
-		DUMP_MEMBER_BY_NEAR_OFFSET( _health, DUMPER_OFFSET( markAttackerHostile ) + 0x2 );
-		DUMP_MEMBER_BY_NEAR_OFFSET( _maxHealth, DUMPER_OFFSET( markAttackerHostile ) + 0x6 );
+		DUMP_MEMBER_BY_NEAR_OFFSET( _health, DUMPER_OFFSET( markAttackerHostile ) + 6 );
+		DUMP_MEMBER_BY_NEAR_OFFSET( _maxHealth, DUMPER_OFFSET( markAttackerHostile ) + 10 );
 
 		il2cpp::field_info_t* last_notify_frame = il2cpp::get_field_if_name_contains( dumper_klass, DUMPER_TYPE_NAMESPACE( "System", "Int32" ), "%", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
 		DUMP_MEMBER_BY_X( lastNotifyFrame, last_notify_frame->offset() );
@@ -3968,6 +3968,7 @@ void dumper::produce() {
 			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Transform" ),
 			DUMPER_TYPE_NAMESPACE( "System", "Boolean" )
 		);
+
 		DUMP_METHOD_BY_INFO_PTR( ToBaseEntity, game_object_ex_to_base_entity );
 	DUMPER_CLASS_END;
 
@@ -4916,6 +4917,19 @@ void dumper::produce() {
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "String", "System" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_METHOD_BY_NAME( FastAllocateString );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "EntityRef", entity_ref_class );
+	DUMPER_SECTION( "Offsets" );
+		il2cpp::method_info_t* entity_ref_get = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
+			FILT_N( DUMPER_METHOD( DUMPER_CLASS( "FootstepEffects" ), "Update" ), 3 ),
+			DUMPER_TYPE( "BaseEntity" ),
+			METHOD_ATTRIBUTE_PUBLIC,
+			DUMPER_ATTR_DONT_CARE,
+			DUMPER_TYPE_NAMESPACE( "System", "Boolean" )
+		);
+
+		DUMP_METHOD_BY_INFO_PTR( Get, entity_ref_get );
 	DUMPER_CLASS_END;
 
 	fclose( outfile_handle );
