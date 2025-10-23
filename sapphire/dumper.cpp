@@ -440,7 +440,7 @@ bool is_exception_hook( CONTEXT* context, uint64_t search, uint64_t replace, uin
 	return match;
 }
 
-#define START_WRITE_METHOD_RVA 0xD426D88
+#define START_WRITE_METHOD_RVA 0xCF08A80
 #define CORRUPT_VALUE 0xDEADBEEFCAFEBEEF
 
 uint64_t dumper::start_write_value = 0;
@@ -947,16 +947,23 @@ void dumper::produce_unity() {
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Texture", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_ICALL( set_filterMode, "UnityEngine.Texture::set_filterMode(UnityEngine.FilterMode)" );
 		DUMP_METHOD_BY_ICALL( GetNativeTexturePtr, "UnityEngine.Texture::GetNativeTexturePtr()" );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Texture2D", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_NAME_STR_ARG_CT( ctor, ".ctor", 9 );
 		DUMP_METHOD_BY_ICALL( Internal_CreateImpl, "UnityEngine.Texture2D::Internal_CreateImpl(UnityEngine.Texture2D,System.Int32,System.Int32,System.Int32,UnityEngine.Experimental.Rendering.GraphicsFormat,UnityEngine.TextureColorSpace,UnityEngine.Experimental.Rendering.TextureCreationFlags,System.IntPtr,System.String)" );
 		DUMP_METHOD_BY_ICALL( GetRawImageDataSize, "UnityEngine.Texture2D::GetRawImageDataSize()" );
 		DUMP_METHOD_BY_ICALL( GetWritableImageData, "UnityEngine.Texture2D::GetWritableImageData(System.Int32)" );
 		DUMP_METHOD_BY_ICALL( ApplyImpl, "UnityEngine.Texture2D::ApplyImpl(System.Boolean,System.Boolean)" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Sprite", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( get_texture, "UnityEngine.Sprite::get_texture()" );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "RenderTexture", "UnityEngine" );
@@ -1061,6 +1068,11 @@ void dumper::produce_unity() {
 		DUMP_METHOD_BY_NAME_STR_ARG_CT( Raycast, "Raycast", 6 );
 		DUMP_METHOD_BY_NAME_STR_ARG_CT( RaycastNonAlloc, "RaycastNonAlloc", 6 );
 	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Image", "UnityEngine.UI" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( m_Sprite );
+	DUMPER_CLASS_END;	
 }
 
 bool dumper::resolve_type_info_definition_table() {
@@ -1890,6 +1902,12 @@ void dumper::produce() {
 
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "BufferStream", buffer_stream_class );
 
+	il2cpp::il2cpp_class_t* unity_engine_instanced_debug_draw_class = DUMPER_CLASS_NAMESPACE( "UnityEngine", "InstancedDebugDraw" );
+	il2cpp::il2cpp_class_t* unity_engine_instanced_debug_draw_instance_creation_data_class = il2cpp::search_for_class_by_field_types( DUMPER_CLASS_NAMESPACE( "UnityEngine", "InstancedDebugDraw/TransformType" )->type(), 1, FIELD_ATTRIBUTE_PUBLIC, FIELD_ATTRIBUTE_INIT_ONLY );
+
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "UnityEngine.InstancedDebugDraw", unity_engine_instanced_debug_draw_class );
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "UnityEngineInstancedDebugDraw.InstanceCreationData", unity_engine_instanced_debug_draw_instance_creation_data_class );
+
 	il2cpp::il2cpp_class_t* scriptable_object_ref_class = DUMPER_CLASS( "ScriptableObjectRef" );
 	uint64_t resource_ref_get = 0;
 
@@ -2044,6 +2062,7 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( rootBone );
 		DUMP_MEMBER_BY_NAME( headBone );
+		DUMP_MEMBER_BY_NAME( eyeBone );
 		DUMP_MEMBER_BY_NAME( boneTransforms );
 	DUMPER_CLASS_END;
 
@@ -2160,6 +2179,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( category );
 		DUMP_MEMBER_BY_NAME( stackable );
 		DUMP_MEMBER_BY_NAME( rarity );
+		DUMP_MEMBER_BY_NAME( condition );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( ItemModWearable, DUMPER_CLASS( "ItemModWearable" ) );
 	DUMPER_CLASS_END;
 
@@ -2251,7 +2271,6 @@ void dumper::produce() {
 		il2cpp::virtual_method_t base_projectile_get_aimcone = SEARCH_FOR_VIRTUAL_METHOD_WITH_RETTYPE(
 			FILT_I( DUMPER_METHOD( DUMPER_CLASS( "BaseProjectile" ), "LaunchProjectile" ), 500, 0 ),
 			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
-			0,
 			METHOD_ATTRIBUTE_PUBLIC,
 			METHOD_ATTRIBUTE_VIRTUAL
 		);
@@ -2261,7 +2280,6 @@ void dumper::produce() {
 		il2cpp::virtual_method_t base_projectile_update_ammo_display = SEARCH_FOR_VIRTUAL_METHOD_WITH_RETTYPE(
 			FILT( DUMPER_METHOD( DUMPER_CLASS( "BaseProjectile" ), "ProcessSpectatorViewmodelEvent" ) ),
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-			0,
 			METHOD_ATTRIBUTE_FAMILY,
 			METHOD_ATTRIBUTE_VIRTUAL
 		);
@@ -2509,7 +2527,6 @@ void dumper::produce() {
 		il2cpp::virtual_method_t projectile_calculate_effect_scale = SEARCH_FOR_VIRTUAL_METHOD_WITH_RETTYPE(
 			FILT( DUMPER_METHOD( DUMPER_CLASS( "Projectile" ), "Update" ) ),
 			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
-			0,
 			METHOD_ATTRIBUTE_FAMILY,
 			METHOD_ATTRIBUTE_VIRTUAL
 		);
@@ -3034,6 +3051,15 @@ void dumper::produce() {
 		);
 
 		DUMP_VIRTUAL_METHOD( OnAttacked, base_player_on_attacked );
+
+		DUMP_METHOD_BY_RETURN_TYPE_ATTRS( get_idealViewMode,
+			FILT( DUMPER_METHOD( DUMPER_CLASS( "BasePlayer" ), "UpdateViewMode" ) ),
+			DUMPER_CLASS( "BasePlayer/CameraMode" ),
+			0,
+			METHOD_ATTRIBUTE_ASSEM,
+			DUMPER_ATTR_DONT_CARE
+		);
+
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ScientistNPC" );
@@ -3861,6 +3887,8 @@ void dumper::produce() {
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemIcon" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( backgroundImage );
 	DUMPER_SECTION( "Functions" );
 		DUMP_VIRTUAL_METHOD( TryToMove, il2cpp::get_virtual_method_by_name( dumper_klass, "TryToMove", 1 ) );
 		DUMP_METHOD_BY_NAME( RunTimedAction );
@@ -3899,6 +3927,22 @@ void dumper::produce() {
 				}
 			}
 		}
+
+	DUMPER_CLASS_END;
+
+	il2cpp::method_info_t* effect_library_setup_effect = SEARCH_FOR_METHOD_IN_METHOD_WITH_RETTYPE_PARAM_TYPES(
+		WILDCARD_VALUE( il2cpp::il2cpp_class_t* ),
+		FILT_N( DUMPER_METHOD( DUMPER_CLASS( "MiningQuarry" ), "BucketDrop" ), 4 ),
+		DUMPER_TYPE_NAMESPACE( "System", "Void" ),
+		METHOD_ATTRIBUTE_PRIVATE,
+		METHOD_ATTRIBUTE_STATIC,
+		DUMPER_TYPE_NAMESPACE( "UnityEngine", "GameObject" ),
+		effect_class->type()
+	);
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "EffectLibrary", effect_library_setup_effect->klass() );
+	DUMPER_CLASS( "Offsets" );
+		DUMP_METHOD_BY_INFO_PTR( SetupEffect, effect_library_setup_effect );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "EffectNetwork", effect_network_class );
@@ -4410,6 +4454,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_X( Right, get_button_offset( L"buttons.right" ) );
 		DUMP_MEMBER_BY_X( Left, get_button_offset( L"buttons.left" ) );
 		DUMP_MEMBER_BY_X( Sprint, get_button_offset( L"buttons.sprint" ) );
+		DUMP_MEMBER_BY_X( Use, get_button_offset( L"buttons.use" ) );
 	DUMPER_SECTION( "Functions" );
 		DUMP_MEMBER_BY_X( Pets_setter, DUMPER_RVA( buttons_pets_command->set() ) );
 	DUMPER_CLASS_END;
@@ -4641,37 +4686,17 @@ void dumper::produce() {
 		DUMP_METHOD_BY_INFO_PTR( Verify, game_physics_verify );
 	DUMPER_CLASS_END;
 
-	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "DDraw", "UnityEngine" );
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "InstancedDebugDraw", "UnityEngine" );
 	DUMPER_SECTION( "Functions" );
-		il2cpp::method_info_t* unity_engine_ddraw_sphere = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			FILT( DUMPER_METHOD( DUMPER_CLASS( "WireTool" ), "OnInput" ) ),
+		il2cpp::method_info_t* unity_engine_instanced_debug_draw_add_instance = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES_STR(
+			FILT_N( DUMPER_METHOD( DUMPER_CLASS( "WireTool" ), "OnInput" ), 7 ),
 			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-			METHOD_ATTRIBUTE_PUBLIC,
-			METHOD_ATTRIBUTE_STATIC,
-			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
-			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
-			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Color" ),
-			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
-			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
-			DUMPER_TYPE_NAMESPACE( "System", "Boolean" )
+			METHOD_ATTRIBUTE_PRIVATE,
+			DUMPER_ATTR_DONT_CARE,
+			format_string( "%s&", unity_engine_instanced_debug_draw_instance_creation_data_class->type()->name() )
 		);
 
-		DUMP_METHOD_BY_INFO_PTR( Sphere, unity_engine_ddraw_sphere );
-
-		il2cpp::method_info_t* unity_engine_ddraw_line = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			FILT( DUMPER_METHOD( DUMPER_CLASS( "WireTool" ), "OnInput" ) ),
-			DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-			METHOD_ATTRIBUTE_PUBLIC,
-			METHOD_ATTRIBUTE_STATIC,
-			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
-			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ),
-			DUMPER_TYPE_NAMESPACE( "UnityEngine", "Color" ),
-			DUMPER_TYPE_NAMESPACE( "System", "Single" ),
-			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
-			DUMPER_TYPE_NAMESPACE( "System", "Boolean" )
-		);
-
-		DUMP_METHOD_BY_INFO_PTR( Line, unity_engine_ddraw_line );
+		DUMP_METHOD_BY_INFO_PTR( AddInstance, unity_engine_instanced_debug_draw_add_instance );
 	DUMPER_CLASS_END;
 
 	il2cpp::method_info_t* raycast_hit_ex_get_entity = SEARCH_FOR_METHOD_IN_METHOD_WITH_RETTYPE_PARAM_TYPES(
@@ -4857,6 +4882,8 @@ void dumper::produce() {
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "BufferStream", buffer_stream_class );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( _buffer, "System.Byte[]", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
 	DUMPER_SECTION( "Functions" );
 		il2cpp::method_info_t* buffer_stream_ensure_capacity = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 			FILT_N( DUMPER_METHOD( DUMPER_CLASS( "BaseEntity" ), "ServerRPC" ), 4 ),
@@ -4930,6 +4957,27 @@ void dumper::produce() {
 		);
 
 		DUMP_METHOD_BY_INFO_PTR( Get, entity_ref_get );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "ConVar_Debugging" );
+	DUMPER_SECTION( "Functions" );
+		rust::console_system::command* debugcamera_command = rust::console_system::client::find( system_c::string_t::create_string( L"debug.debugcamera" ) );
+
+		if ( debugcamera_command ) {
+			DUMP_MEMBER_BY_X( debugcamera, DUMPER_RVA( debugcamera_command->call() ) );
+		}
+
+		rust::console_system::command* noclip_command = rust::console_system::client::find( system_c::string_t::create_string( L"debug.noclip" ) );
+
+		if ( noclip_command ) {
+			DUMP_MEMBER_BY_X( noclip, DUMPER_RVA( noclip_command->call() ) );
+		}
+
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "CursorManager" );
+	DUMPER_SECTION( "Offsets" );
+
 	DUMPER_CLASS_END;
 
 	fclose( outfile_handle );
