@@ -440,7 +440,7 @@ bool is_exception_hook( CONTEXT* context, uint64_t search, uint64_t replace, uin
 	return match;
 }
 
-#define START_WRITE_METHOD_RVA 0xCFE7A08
+#define START_WRITE_METHOD_RVA 0xD101608
 #define CORRUPT_VALUE 0xDEADBEEFCAFEBEEF
 
 uint64_t dumper::start_write_value = 0;
@@ -888,6 +888,14 @@ void dumper::produce_unity() {
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Camera", "UnityEngine" );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_ICALL( WorldToScreenPoint_Injected, "UnityEngine.Camera::WorldToScreenPoint_Injected(UnityEngine.Vector3&,UnityEngine.Camera/MonoOrStereoscopicEye,UnityEngine.Vector3&)" );
+		DUMP_METHOD_BY_ICALL( GetAllCamerasCount, "UnityEngine.Camera::GetAllCamerasCount()" );
+		DUMP_METHOD_BY_ICALL( CopyFrom, "UnityEngine.Camera::CopyFrom(UnityEngine.Camera)" );
+		DUMP_METHOD_BY_ICALL( set_cullingMask, "UnityEngine.Camera::set_cullingMask(System.Int32)" );
+		DUMP_METHOD_BY_ICALL( set_clearFlags, "UnityEngine.Camera::set_clearFlags(UnityEngine.CameraClearFlags)" );
+		DUMP_METHOD_BY_ICALL( set_backgroundColor_Injected, "UnityEngine.Camera::set_backgroundColor_Injected(UnityEngine.Color&)" );
+		DUMP_METHOD_BY_ICALL( set_targetTexture, "UnityEngine.Camera::set_targetTexture(UnityEngine.RenderTexture)" );
+		DUMP_METHOD_BY_ICALL( Render, "UnityEngine.Camera::Render()" );
+		DUMP_METHOD_BY_ICALL( RenderWithShader, "UnityEngine.Camera::RenderWithShader(UnityEngine.Shader,System.String)" );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Time", "UnityEngine" );
@@ -910,6 +918,7 @@ void dumper::produce_unity() {
 		DUMP_METHOD_BY_ICALL( CreateWithShader, "UnityEngine.Material::CreateWithShader(UnityEngine.Material,UnityEngine.Shader)" );	
 		DUMP_METHOD_BY_ICALL( SetBufferImpl, "UnityEngine.Material::SetBufferImpl(System.Int32,UnityEngine.ComputeBuffer)" );
 		DUMP_METHOD_BY_ICALL( set_shader, "UnityEngine.Material::set_shader(UnityEngine.Shader)" );
+		DUMP_METHOD_BY_ICALL( get_shader, "UnityEngine.Material::get_shader()" );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "MaterialPropertyBlock", "UnityEngine" );
@@ -923,6 +932,9 @@ void dumper::produce_unity() {
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_NAME( Find );
 		DUMP_METHOD_BY_ICALL( PropertyToID, "UnityEngine.Shader::PropertyToID(System.String)" );
+		DUMP_METHOD_BY_ICALL( GetPropertyCount, "UnityEngine.Shader::GetPropertyCount()" );
+		DUMP_METHOD_BY_ICALL( GetPropertyName, "UnityEngine.Shader::GetPropertyName(UnityEngine.Shader,System.Int32)" );
+		DUMP_METHOD_BY_ICALL( GetPropertyType, "UnityEngine.Shader::GetPropertyType(UnityEngine.Shader,System.Int32)" );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Mesh", "UnityEngine" );
@@ -943,6 +955,7 @@ void dumper::produce_unity() {
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_ICALL( get_enabled, "UnityEngine.Renderer::get_enabled()" );
 		DUMP_METHOD_BY_ICALL( get_isVisible, "UnityEngine.Renderer::get_isVisible()" );
+		DUMP_METHOD_BY_ICALL( GetMaterial, "UnityEngine.Renderer::GetMaterial()" );
 		DUMP_METHOD_BY_ICALL( GetMaterialArray, "UnityEngine.Renderer::GetMaterialArray()" );
 	DUMPER_CLASS_END;
 
@@ -1055,6 +1068,7 @@ void dumper::produce_unity() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Application", "UnityEngine" );
 	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( get_version, "UnityEngine.Application::get_version()" );
 		DUMP_METHOD_BY_ICALL( Quit, "UnityEngine.Application::Quit(System.Int32)" );
 	DUMPER_CLASS_END;
 
@@ -1067,12 +1081,18 @@ void dumper::produce_unity() {
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_NAME_STR_ARG_CT( Raycast, "Raycast", 6 );
 		DUMP_METHOD_BY_NAME_STR_ARG_CT( RaycastNonAlloc, "RaycastNonAlloc", 6 );
+		DUMP_METHOD_BY_NAME_STR_ARG_CT( CheckCapsule, "CheckCapsule", 5 );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Image", "UnityEngine.UI" );
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_NAME( m_Sprite );
 	DUMPER_CLASS_END;	
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "GraphicsSettings", "UnityEngine.Rendering" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( get_INTERNAL_defaultRenderPipeline, "UnityEngine.Rendering.GraphicsSettings::get_INTERNAL_defaultRenderPipeline()" );
+	DUMPER_CLASS_END;
 }
 
 bool dumper::resolve_type_info_definition_table() {
@@ -1656,6 +1676,7 @@ void dumper::produce() {
 
 	il2cpp::il2cpp_class_t* hide_if_aiming_class = DUMPER_CLASS( "HideIfAiming" );
 	il2cpp::il2cpp_class_t* effect_class = nullptr;
+	il2cpp::il2cpp_class_t* effect_data_class = nullptr;
 
 	if ( hide_if_aiming_class ) {
 		il2cpp::method_info_t* hide_if_aiming_setup_effect = il2cpp::get_method_by_return_type_attrs( NO_FILT, hide_if_aiming_class, DUMPER_CLASS_NAMESPACE( "System", "Void" ), METHOD_ATTRIBUTE_VIRTUAL, METHOD_ATTRIBUTE_PUBLIC, 1 );
@@ -1665,12 +1686,17 @@ void dumper::produce() {
 
 			if ( param_type ) {
 				effect_class = param_type->klass();
+
+				if ( effect_class ) {
+					effect_data_class = effect_class->parent();
+				}
 			}
 		}
 	}
 
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "HideIfAiming", hide_if_aiming_class );
 	CHECK_RESOLVED_VALUE( VALUE_CLASS, "Effect", effect_class );
+	CHECK_RESOLVED_VALUE( VALUE_CLASS, "EffectData", effect_data_class );
 
 	auto effect_network_candidates = il2cpp::search_for_classes_by_field_types( effect_class->type(), 0, DUMPER_ATTR_DONT_CARE, FIELD_ATTRIBUTE_STATIC );
 
@@ -3138,6 +3164,8 @@ void dumper::produce() {
 		);
 
 		DUMP_VIRTUAL_METHOD( FrameUpdate, player_walk_movement_frame_update );
+
+		DUMP_VIRTUAL_METHOD( TeleportTo, il2cpp::get_virtual_method_by_name( dumper_klass, "TeleportTo", 2 ) );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BuildingPrivlidge" );
@@ -3248,16 +3276,15 @@ void dumper::produce() {
 				if ( last_sent_tick ) {
 					std::vector<il2cpp::field_info_t*> vectors = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "UnityEngine", "Vector3" ), FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE );
 
-					if ( vectors.size() == 3 ) {
-						// Sort by verticality 
-						std::sort( vectors.begin(), vectors.end(), [&]( il2cpp::field_info_t* a, il2cpp::field_info_t* b ) {
-							return ( *( unity::vector3_t* )( last_sent_tick + a->offset() ) ).y < 
-								( *( unity::vector3_t* )( last_sent_tick + b->offset() ) ).y;
-						} );
+					if ( vectors.size() == 2 ) {
+						unity::vector3_t vector1 = *( unity::vector3_t* )( last_sent_tick + vectors.at( 0 )->offset() );
+						unity::vector3_t vector2 = *( unity::vector3_t* )( last_sent_tick + vectors.at( 1 )->offset() );
 
-						DUMP_MEMBER_BY_X( intermediatePosition, vectors.at( 0 )->offset() );
-						DUMP_MEMBER_BY_X( position, vectors.at( 1 )->offset() );
-						DUMP_MEMBER_BY_X( eyePos, vectors.at( 2 )->offset() );
+						il2cpp::field_info_t* position_field = ( vector1.y < vector2.y ) ? vectors.at( 0 ) : vectors.at( 1 );
+						il2cpp::field_info_t* eye_pos_field = ( vector1.y > vector2.y ) ? vectors.at( 0 ) : vectors.at( 1 );
+
+						DUMP_MEMBER_BY_X( position, position_field->offset() );
+						DUMP_MEMBER_BY_X( eyePos, eye_pos_field->offset() );
 					}
 				}
 			}
@@ -3900,6 +3927,11 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" )
 		il2cpp::field_info_t* container_loot_start_times = il2cpp::get_static_field_if_value_is<void*>( dumper_klass, "Dictionary", FIELD_ATTRIBUTE_PUBLIC, DUMPER_ATTR_DONT_CARE, []( void* dictionary ) { return dictionary != nullptr; } );
 		DUMP_MEMBER_BY_X( containerLootStartTimes, container_loot_start_times->offset() );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_PTR( "EffectData", effect_data_class );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( source, DUMPER_CLASS_NAMESPACE( "System", "UInt64" ) );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "Effect", effect_class );
