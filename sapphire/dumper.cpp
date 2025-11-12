@@ -440,7 +440,7 @@ bool is_exception_hook( CONTEXT* context, uint64_t search, uint64_t replace, uin
 	return match;
 }
 
-#define START_WRITE_METHOD_RVA 0xD101608
+#define START_WRITE_METHOD_RVA 0xD028A90
 #define CORRUPT_VALUE 0xDEADBEEFCAFEBEEF
 
 uint64_t dumper::start_write_value = 0;
@@ -1070,6 +1070,7 @@ void dumper::produce_unity() {
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_ICALL( get_version, "UnityEngine.Application::get_version()" );
 		DUMP_METHOD_BY_ICALL( Quit, "UnityEngine.Application::Quit(System.Int32)" );
+		DUMP_METHOD_BY_ICALL( get_isFocused, "UnityEngine.Application::get_isFocused()" );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Gradient", "UnityEngine" );
@@ -1092,6 +1093,11 @@ void dumper::produce_unity() {
 	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "GraphicsSettings", "UnityEngine.Rendering" );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_ICALL( get_INTERNAL_defaultRenderPipeline, "UnityEngine.Rendering.GraphicsSettings::get_INTERNAL_defaultRenderPipeline()" );
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME_NAMESPACE( "Cursor", "UnityEngine" );
+	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_ICALL( get_visible, "UnityEngine.Cursor::get_visible()" );
 	DUMPER_CLASS_END;
 }
 
@@ -2220,8 +2226,14 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( newRecoilOverride );
 	DUMPER_CLASS_END;
 
+	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseProjectile/Magazine/Definition" );
+	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( builtInSize );
+	DUMPER_CLASS_END;
+
 	DUMPER_CLASS_BEGIN_FROM_NAME( "BaseProjectile/Magazine" );
 	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_NAME( definition );
 		DUMP_MEMBER_BY_NAME( capacity );
 		DUMP_MEMBER_BY_NAME( contents );
 		DUMP_MEMBER_BY_NAME( ammoType );
@@ -2679,8 +2691,6 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( uid, item_container_id_class );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( itemList, searchBuf );
 	DUMPER_SECTION( "Functions" );
-		DUMP_METHOD_BY_RETURN_TYPE_STR( FindItemsByItemID, FILT_N( DUMPER_METHOD( DUMPER_CLASS( "SellOrderEntry" ), "UpdateNotifications" ), 3 ), searchBuf, 1 );
-			
 		il2cpp::method_info_t* item_container_get_slot = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 			FILT( DUMPER_METHOD( DUMPER_CLASS( "RepairBenchPanel" ), "Update" ) ),
 			item_class->type(),
@@ -2749,9 +2759,6 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( loot, DUMPER_CLASS( "PlayerLoot" ) );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_INFO_PTR( Initialize, player_inventory_initialize_method );
-
-		sprintf_s( searchBuf, "System.Collections.Generic.List<%s>", item_class->name() );
-		DUMP_METHOD_BY_RETURN_TYPE_STR( FindItemsByItemID, FILT_N( DUMPER_METHOD( DUMPER_CLASS( "SellOrderEntry" ), "UpdateNotifications" ), 2 ), searchBuf, 1 );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "PlayerEyes" );
@@ -2972,18 +2979,6 @@ void dumper::produce() {
 
 			DUMP_METHOD_BY_INFO_PTR( SendProjectileUpdate, base_player_send_projectile_update );
 		}
-
-		if ( protobuf_player_projectile_attack_class ) {
-			il2cpp::method_info_t* base_player_send_projectile_attack = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-				FILT_N( DUMPER_METHOD( DUMPER_CLASS( "Projectile" ), "Update" ), 6 ),
-				DUMPER_TYPE_NAMESPACE( "System", "Void" ),
-				METHOD_ATTRIBUTE_PUBLIC,
-				DUMPER_ATTR_DONT_CARE,
-				protobuf_player_projectile_attack_class->type()
-			);
-
-			DUMP_METHOD_BY_INFO_PTR( SendProjectileAttack, base_player_send_projectile_attack );
-		}
 #endif
 		il2cpp::method_info_t* base_player_can_build = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
 			FILT( DUMPER_METHOD( DUMPER_CLASS( "Hammer" ), "OnInput" ) ),
@@ -3197,6 +3192,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( recoil );
 		DUMP_MEMBER_BY_NAME( sightAimCone );
 		DUMP_MEMBER_BY_NAME( hipAimCone );
+		DUMP_MEMBER_BY_NAME( magazineCapacity );
 		DUMP_MEMBER_BY_NAME( needsOnForEffects );
 	DUMPER_CLASS_END;
 
@@ -3438,6 +3434,7 @@ void dumper::produce() {
 	DUMPER_SECTION( "Offsets" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( info, DUMPER_CLASS( "ItemDefinition" ) );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( uid, item_id_class );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS_ATTRS( clientAmmoCount, "System.Nullable<System.Int32>", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
 
 		if ( local_player_get_entity && belt_offset != -1 ) {
 			uint64_t local_player = local_player_get_entity();
@@ -3789,6 +3786,8 @@ void dumper::produce() {
 			METHOD_ATTRIBUTE_PUBLIC,
 			METHOD_ATTRIBUTE_STATIC
 		);
+
+		DUMP_VIRTUAL_METHOD( OnCameraPositionChanged, il2cpp::get_virtual_method_by_name( dumper_klass, "OnCameraPositionChanged", 2 ) );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ViewModel" );
@@ -4603,22 +4602,12 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "AutoTurret" );
 	DUMPER_SECTION( "Offsets" );
-		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( authorizedPlayers, "HashSet<%" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( authorizedPlayers, "System.Collections.Generic.HashSet<System.UInt64>" );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( lastYaw, DUMPER_CLASS_NAMESPACE( "UnityEngine", "Quaternion" ) );
 		DUMP_MEMBER_BY_NAME( muzzlePos );
 		DUMP_MEMBER_BY_NAME( gun_yaw );
 		DUMP_MEMBER_BY_NAME( gun_pitch );
 		DUMP_MEMBER_BY_NAME( sightRange );
-	DUMPER_SECTION( "Functions" );
-		il2cpp::method_info_t* auto_turret_is_authed = SEARCH_FOR_METHOD_WITH_RETTYPE_PARAM_TYPES(
-			FILT_N( DUMPER_METHOD( DUMPER_CLASS( "AutoTurret" ), "GetMenuOptions" ), 2 ),
-			DUMPER_TYPE_NAMESPACE( "System", "Boolean" ),
-			METHOD_ATTRIBUTE_PUBLIC,
-			DUMPER_ATTR_DONT_CARE,
-			DUMPER_TYPE_NAMESPACE( "System", "UInt64" )
-		);
-
-		DUMP_METHOD_BY_INFO_PTR( IsAuthed, auto_turret_is_authed );
 	DUMPER_CLASS_END;
 
 	DUMPER_CLASS_BEGIN_FROM_NAME( "Client" );
@@ -4897,11 +4886,6 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( _hasValue, DUMPER_CLASS_NAMESPACE( "System", "Boolean" ) );
 	DUMPER_CLASS_END;
 
-	DUMPER_CLASS_BEGIN_FROM_NAME( "SimplePrivilege/<>c__DisplayClass3_0" );
-	DUMPER_SECTION( "Functions" );
-		DUMP_METHOD_BY_NAME_STR( IsAuthed, "<IsAuthed>b__0" );
-	DUMPER_CLASS_END;
-
 	DUMPER_CLASS_BEGIN_FROM_NAME( "ItemModRFListener" );
 	DUMPER_SECTION( "Functions" );
 		DUMP_METHOD_BY_NAME( ConfigureClicked );
@@ -5004,11 +4988,6 @@ void dumper::produce() {
 		if ( noclip_command ) {
 			DUMP_MEMBER_BY_X( noclip, DUMPER_RVA( noclip_command->call() ) );
 		}
-
-	DUMPER_CLASS_END;
-
-	DUMPER_CLASS_BEGIN_FROM_NAME( "CursorManager" );
-	DUMPER_SECTION( "Offsets" );
 
 	DUMPER_CLASS_END;
 
