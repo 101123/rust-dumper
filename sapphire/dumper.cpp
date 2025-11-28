@@ -440,7 +440,7 @@ bool is_exception_hook( CONTEXT* context, uint64_t search, uint64_t replace, uin
 	return match;
 }
 
-#define START_WRITE_METHOD_RVA 0xD028A90
+#define START_WRITE_METHOD_RVA 0xD5AD020
 #define CORRUPT_VALUE 0xDEADBEEFCAFEBEEF
 
 uint64_t dumper::start_write_value = 0;
@@ -808,8 +808,6 @@ int get_button_offset( const wchar_t* button_command ) {
 #define FLOAT_IS_EQUAL( a, b, c ) abs( a - b ) < c
 #define VECTOR_IS_EQUAL( a, b, c ) abs( a.distance( b ) ) < c 
 
-#define SERVER_IP L"94.130.222.18" 
-#define SERVER_PORT 28015
 #define WORLD_SIZE 2500
 #define CAMSPEED 1.0525f
 #define CAMLERP 1.0252f
@@ -2918,6 +2916,9 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_NAME_ATTRS( _lookingAt, "UnityEngine.GameObject", FIELD_ATTRIBUTE_PRIVATE, DUMPER_ATTR_DONT_CARE );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( lastSentTickTime, format_string( "%s<System.Single>", encrypted_value_class->name() ) );
 
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( CurrentTutorialAllowance, DUMPER_CLASS( "BasePlayer/TutorialItemAllowance" ) );
+		DUMP_MEMBER_BY_NEAR_OFFSET( nextVisThink, DUMPER_OFFSET( CurrentTutorialAllowance ) + 0x8 );
+
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( lastSentTick, player_tick_class );
 		last_sent_tick_offset = lastSentTick_Offset;
 
@@ -2949,7 +2950,8 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_NAME( clothingWaterSpeedBonus );
 		DUMP_MEMBER_BY_NAME( equippingBlocked );
 	DUMPER_SECTION( "Functions" );
-		DUMP_METHOD_BY_NAME( ClientUpdateLocalPlayer )
+		DUMP_METHOD_BY_NAME( MakeVisible );
+		DUMP_METHOD_BY_NAME( ClientUpdateLocalPlayer );
 		DUMP_METHOD_BY_NAME( Menu_AssistPlayer );
 		DUMP_METHOD_BY_NAME( OnViewModeChanged );
 		DUMP_METHOD_BY_NAME( ChatMessage );
@@ -3115,6 +3117,7 @@ void dumper::produce() {
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( ladder, DUMPER_CLASS( "TriggerLadder" ) );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS_CONTAINS( modify, "BaseEntity.MovementModify" );
 	DUMPER_SECTION( "Functions" );
+		DUMP_METHOD_BY_NAME( Init );
 		DUMP_METHOD_BY_NAME( BlockJump );
 		DUMP_METHOD_BY_NAME( BlockSprint );
 
@@ -3159,7 +3162,6 @@ void dumper::produce() {
 		);
 
 		DUMP_VIRTUAL_METHOD( FrameUpdate, player_walk_movement_frame_update );
-
 		DUMP_VIRTUAL_METHOD( TeleportTo, il2cpp::get_virtual_method_by_name( dumper_klass, "TeleportTo", 2 ) );
 	DUMPER_CLASS_END;
 
@@ -3930,6 +3932,7 @@ void dumper::produce() {
 
 	DUMPER_CLASS_BEGIN_FROM_PTR( "EffectData", effect_data_class );
 	DUMPER_SECTION( "Offsets" );
+		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( entity, networkable_id_class );
 		DUMP_MEMBER_BY_FIELD_TYPE_CLASS( source, DUMPER_CLASS_NAMESPACE( "System", "UInt64" ) );
 	DUMPER_CLASS_END;
 
@@ -4132,10 +4135,12 @@ void dumper::produce() {
 			std::vector<il2cpp::field_info_t*> ints = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "System", "Int32" ), DUMPER_ATTR_DONT_CARE, DUMPER_ATTR_DONT_CARE );
 			std::vector<il2cpp::field_info_t*> strings = il2cpp::get_fields_of_type( dumper_klass, DUMPER_TYPE_NAMESPACE( "System", "String" ), DUMPER_ATTR_DONT_CARE, DUMPER_ATTR_DONT_CARE );
 
+			// These tests are quite crude, but fine for our purpose
 			for ( il2cpp::field_info_t* _int : ints ) {
 				int value = *( int* )( client + _int->offset() );
 
-				if ( value == SERVER_PORT ) {
+				// Default port for rust servers
+				if ( value == 28015 ) {
 					DUMP_MEMBER_BY_X( ConnectedPort, _int->offset() );
 				}
 			}
@@ -4144,7 +4149,10 @@ void dumper::produce() {
 				system_c::string_t* value = *( system_c::string_t** )( client + string->offset() );
 
 				if ( value ) {
-					if ( !wcscmp( value->str, SERVER_IP ) ) {
+					std::wstring wstr( value->str );
+
+					// Just check if the string has 3 dots (192.168.1.1)
+					if ( std::count( wstr.begin(), wstr.end(), L'.' ) == 3 ) {
 						DUMP_MEMBER_BY_X( ConnectedAddress, string->offset() );
 					}
 
@@ -4989,6 +4997,10 @@ void dumper::produce() {
 			DUMP_MEMBER_BY_X( noclip, DUMPER_RVA( noclip_command->call() ) );
 		}
 
+	DUMPER_CLASS_END;
+
+	DUMPER_CLASS_BEGIN_FROM_NAME( "CursorManager" );
+	DUMPER_SECTION( "Offsets" );
 	DUMPER_CLASS_END;
 
 	fclose( outfile_handle );
